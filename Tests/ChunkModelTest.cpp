@@ -10,6 +10,7 @@
 #include "../ToolForClickteamFusion/Chunk/Frame/FrameEvent/FrameEventModel.h"
 #include "../ToolForClickteamFusion/Chunk/Frame/FrameEvent/FrameEventText.h"
 #include "../ToolForClickteamFusion/Chunk/Object/ObjectCommon.h"
+#include "../ToolForClickteamFusion/Chunk/Object/ObjectText.h"
 #include "../ToolForClickteamFusion/Chunk/TwoFivePlusObject/ObjectElementContainer.h"
 
 using namespace std;
@@ -394,7 +395,7 @@ static void testObjects(const string& gameDir)
 		return;
 	}
 	ByteBufferReader reader(all);
-	size_t total = 0, parseFailures = 0, canonicalOk = 0, untouchedOk = 0, withAnimations = 0, withValues = 0, withStrings = 0, mutated = 0, animationEdits = 0;
+	size_t total = 0, parseFailures = 0, canonicalOk = 0, untouchedOk = 0, withAnimations = 0, withValues = 0, withStrings = 0, withText = 0, mutated = 0, animationEdits = 0;
 	while (reader.remaining() > 0) {
 		BYTE layoutId = reader.readU8();
 		INT32 build = reader.readI32();
@@ -414,6 +415,7 @@ static void testObjects(const string& gameDir)
 		if (common.hasAnimations()) { withAnimations++; }
 		if (common.hasValues()) { withValues++; }
 		if (common.hasStrings()) { withStrings++; }
+		if (common.hasText()) { withText++; }
 		if (common.getIdentifier().empty()) {
 			fail("no identifier");
 		}
@@ -495,9 +497,127 @@ static void testObjects(const string& gameDir)
 			fail("mutated object lost data (type " + to_string((long long)type) + ")");
 		}
 	}
-	printf("  objects: %u blobs, parse failures %u, untouched-exact %u, canonical-exact %u, anim/val/str views %u/%u/%u, mutation round trips %u (anim edits %u)\n",
-		(unsigned)total, (unsigned)parseFailures, (unsigned)untouchedOk, (unsigned)canonicalOk, (unsigned)withAnimations, (unsigned)withValues, (unsigned)withStrings, (unsigned)mutated, (unsigned)animationEdits);
+	printf("  objects: %u blobs, parse failures %u, untouched-exact %u, canonical-exact %u, anim/val/str/text views %u/%u/%u/%u, mutation round trips %u (anim edits %u)\n",
+		(unsigned)total, (unsigned)parseFailures, (unsigned)untouchedOk, (unsigned)canonicalOk, (unsigned)withAnimations, (unsigned)withValues, (unsigned)withStrings, (unsigned)withText, (unsigned)mutated, (unsigned)animationEdits);
 	failureCount += (int)parseFailures;
+}
+
+
+// ---------------------------------------------------------------- 오브젝트 텍스트
+
+static void testObjectText(const string& gameDir)
+{
+	ByteBuffer all;
+	if (!readFile(gameDir + "\\objects.bin", all)) {
+		return;
+	}
+
+	// 1) 모든 오브젝트의 텍스트를 표에 모은다
+	struct Blob { BYTE layout; INT32 build; ByteBuffer data; };
+	vector<Blob> blobs;
+	ByteBufferReader reader(all);
+	while (reader.remaining() > 0) {
+		Blob blob;
+		blob.layout = reader.readU8();
+		blob.build = reader.readI32();
+		reader.readI16();	// 타입
+		UINT32 length = reader.readU32();
+		blob.data = reader.readBytes(length);
+		blobs.push_back(blob);
+	}
+	ObjectTextTable table;
+	size_t stringCount = 0, paragraphCount = 0;
+	for (size_t i = 0; i < blobs.size(); i++) {
+		ObjectCommon common;
+		string errorMessage;
+		if (!common.parse(blobs[i].data, (ObjectCommonLayout)blobs[i].layout, (UINT32)blobs[i].build, errorMessage)) {
+			continue;
+		}
+		table.addObject((INT32)i, "object", common);
+	}
+	for (size_t i = 0; i < table.getEntries().size(); i++) {
+		stringCount += table.getEntries()[i].strings.size();
+		paragraphCount += table.getEntries()[i].paragraphs.size();
+	}
+
+	// 2) JSON 으로 내보냈다가 다시 읽는다. 번역 없는 표와, 모든 항목에 번역을 단 표를 만든다
+	Json::Value untranslatedJson;
+	table.exportJson(untranslatedJson);
+	Json::Value translatedJson = untranslatedJson;
+	for (Json::ArrayIndex o = 0; o < translatedJson["objects"].size(); o++) {
+		Json::Value& object = translatedJson["objects"][o];
+		for (Json::ArrayIndex s = 0; s < object["strings"].size(); s++) {
+			object["strings"][s]["translation"] = object["strings"][s]["original"].asString() + "\xED\x95\x9C";
+		}
+		for (Json::ArrayIndex p = 0; p < object["paragraphs"].size(); p++) {
+			object["paragraphs"][p]["translation"] = object["paragraphs"][p]["original"].asString() + "\xED\x95\x9C";
+		}
+	}
+	ObjectTextTable emptyTable, translatedTable;
+	if (!emptyTable.importJson(untranslatedJson) || !translatedTable.importJson(translatedJson)) {
+		fail("object text table json import");
+		return;
+	}
+	if ((emptyTable.getEntryCount() != table.getEntryCount()) || (translatedTable.getEntryCount() != table.getEntryCount())) {
+		fail("object text table entry count changed by the json round trip");
+	}
+
+	// 3) 번역이 없으면 바이트가 그대로여야 하고, 모두 번역하면 모든 문자열이 바뀌고 다른 하위 블록은 그대로여야 한다
+	size_t replacedTotal = 0, expectedTotal = stringCount + paragraphCount, skippedTotal = 0;
+	for (size_t i = 0; i < blobs.size(); i++) {
+		const ObjectTextEntry* translatedEntry = translatedTable.findEntry((INT32)i);
+		const ObjectTextEntry* emptyEntry = emptyTable.findEntry((INT32)i);
+		if (translatedEntry == NULL) {
+			continue;
+		}
+		ObjectCommon common;
+		string errorMessage;
+		common.parse(blobs[i].data, (ObjectCommonLayout)blobs[i].layout, (UINT32)blobs[i].build, errorMessage);
+
+		ObjectCommon untouched = common;
+		UINT32 replaced = 0, skipped = 0;
+		ByteBuffer untouchedData;
+		if (!replaceObjectText(untouched, *emptyEntry, replaced, skipped) || (replaced != 0) || !untouched.serialize(untouchedData, errorMessage) || (untouchedData != blobs[i].data)) {
+			fail("empty object text table changed an object");
+			continue;
+		}
+
+		replaceObjectText(common, *translatedEntry, replaced, skipped);
+		replacedTotal += replaced;
+		skippedTotal += skipped;
+		ByteBuffer translatedData;
+		if (!common.serialize(translatedData, errorMessage)) {
+			// i16 오프셋이 넘치는 큰 오브젝트는 정상적인 거부이다
+			if ((errorMessage.find("exceeds 32767") == string::npos) && (errorMessage.find("too large") == string::npos) && (errorMessage.find("overflow") == string::npos)) {
+				fail("object text serialize: " + errorMessage);
+			}
+			continue;
+		}
+		ObjectCommon reparsed;
+		if (!reparsed.parse(translatedData, (ObjectCommonLayout)blobs[i].layout, (UINT32)blobs[i].build, errorMessage)) {
+			fail("object text reparse: " + errorMessage);
+			continue;
+		}
+		bool ok = true;
+		for (size_t s = 0; s < translatedEntry->strings.size(); s++) {
+			const ObjectTextString& item = translatedEntry->strings[s];
+			if (!reparsed.hasStrings() || (reparsed.getStrings()[item.index] != item.translation)) { ok = false; }
+		}
+		for (size_t p = 0; p < translatedEntry->paragraphs.size(); p++) {
+			const ObjectTextParagraphEntry& item = translatedEntry->paragraphs[p];
+			if (!reparsed.hasText() || (reparsed.getText().paragraphs[item.index].text != item.translation)) { ok = false; }
+		}
+		if ((reparsed.getMovementBlock() != common.getMovementBlock()) || (reparsed.getExtensionBlock() != common.getExtensionBlock())
+			|| (reparsed.getCounterBlock() != common.getCounterBlock())) { ok = false; }
+		if (!ok) {
+			fail("object text lost data (object " + to_string((long long)i) + ")");
+		}
+	}
+	if (skippedTotal != 0) {
+		fail("original text mismatch while applying the object text table");
+	}
+	printf("  objtext: %u objects with text, %u strings + %u paragraphs, translated %u/%u, empty table keeps bytes\n",
+		(unsigned)table.getEntryCount(), (unsigned)stringCount, (unsigned)paragraphCount, (unsigned)replacedTotal, (unsigned)expectedTotal);
 }
 
 
@@ -587,6 +707,7 @@ int main(int argc, char** argv)
 		testEvents(dir, build);
 		testEventText(dir, build);
 		testObjects(dir);
+		testObjectText(dir);
 		testContainer(dir);
 	}
 	printf("\n%s (%d failures)\n", failureCount ? "FAILED" : "ALL PASS", failureCount);

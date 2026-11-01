@@ -7,6 +7,8 @@
 #include "../Chunk/Frame/Headers.h"
 #include "../Chunk/AppInfo/Headers.h"
 #include "../Chunk/Literal/Headers.h"
+#include "../Chunk/Object/ObjectText.h"
+#include "../Chunk/TwoFivePlusObject/ObjectHeaderListChunk.h"
 #include "../Common.h"
 
 namespace CTT {
@@ -110,6 +112,9 @@ namespace CTT {
 			// 프레임 이벤트 텍스트 번역 표 (추출할 때 모으고, 교체할 때 읽어 들인다)
 			FrameEventTextTable frameEventTextTable;
 
+			// 오브젝트 텍스트 번역 표 (2.5+ 오브젝트의 Alterable 문자열과 Text 문단)
+			ObjectTextTable objectTextTable;
+
 			// application 버전 등을 포함한 정보 세팅
 			bool setApplicationInfo();
 
@@ -127,6 +132,11 @@ namespace CTT {
 			bool rewriteTrueTypeFontInfosChunk(HANDLE hNewArchive, vector<UINT32> &ttfOffsetList);
 			bool rewriteLogFontsChunk(HANDLE hNewArchive);
 			bool rewriteUnknownChunk(HANDLE hNewArchive);
+
+			// 2.5+ 오브젝트 속성 데이터(0x2256)와 이어지는 오프셋(0x2257)을 오브젝트 텍스트 번역을 적용하여 다시 쓴다
+			bool rewriteObjectElementChunks(HANDLE hNewArchive);
+			// 2.5+ 오브젝트 헤더(0x2253)와 이름(0x2254)을 읽는다 (아카이브 핸들 위치는 그대로 유지된다)
+			bool readObjectHeaders(vector<ObjectHeaderEntry>& headers, vector<string>& names);
 
 			// 프로텍션 체크섬 계산 함수 (프로텍션 체크 실패시 false)
 			bool caculateProtectionChecksum(HANDLE hTargetArchive, UINT32& protectionChecksum, bool notNeedToCheckProtectionChunk = false);

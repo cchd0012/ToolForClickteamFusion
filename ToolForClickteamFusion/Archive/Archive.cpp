@@ -242,6 +242,16 @@ void Archive::setDataCount(vector<wstring>& extractingDataTypes)
 				break;
 			}
 
+			// Object 2.5+ (오브젝트 텍스트)
+			case ChunkType::CHUNK_2_5_PLUS_OBJECT_DATA:
+			{
+				if (contains(extractingDataTypes, L"text")) {
+					getStates()->totalDataCount++;
+				}
+				SetFilePointer(hArchive, sizeof(ChunkInfo) + chunkInfo.size, NULL, FILE_CURRENT);
+				break;
+			}
+
 			// default
 			default:
 			{
@@ -478,6 +488,7 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 	// 프레임 이벤트 텍스트를 모으기 위한 변수
 	UINT32 frameIndex = 0;
 	frameEventTextTable.clear();
+	objectTextTable.clear();
 
 	// 초기화 및 chunk 시작 위치 지정
 	memset(&chunkInfo, 0, sizeof(ChunkInfo));
@@ -756,6 +767,49 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 				break;
 			}
 
+			// Object 2.5+ (오브젝트 텍스트)
+			case ChunkType::CHUNK_2_5_PLUS_OBJECT_DATA:
+			{
+				if (contains(extractingDataTypes, L"text")) {
+					ObjectElementDataChunk chunk;
+					if (!chunk.readFromArchive(hArchive)) {
+						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 오브젝트 속성 데이터를 읽어들이지 못했습니다." << endl;
+						triggerError(__FUNCTION__, u8"오브젝트 속성 데이터를 읽어들이지 못했습니다");
+						return false;
+					}
+					vector<ObjectHeaderEntry> headers;
+					vector<string> names;
+					if (!readObjectHeaders(headers, names)) {
+						triggerError(__FUNCTION__, u8"오브젝트 헤더를 읽어들이지 못했습니다");
+						return false;
+					}
+					vector<ObjectContainerElement>& elements = chunk.getContainer().getElements();
+					if (headers.size() != elements.size()) {
+						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 오브젝트 헤더 수와 속성 데이터 수가 다릅니다." << endl;
+						triggerError(__FUNCTION__, u8"오브젝트 헤더 수와 속성 데이터 수가 다릅니다");
+						return false;
+					}
+					for (size_t i = 0; i < elements.size(); i++) {
+						// 타입 0 ~ 1 (배경)은 ObjectCommon 이 없다
+						if (headers[i].type < 2) {
+							continue;
+						}
+						ObjectCommon common;
+						string errorMessage;
+						if (!common.parse(elements[i].data, ObjectCommonLayout::TWO_FIVE_PLUS, getBuildVersion(), errorMessage)) {
+							wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 오브젝트 " << dec << i << L" 번을 해석하지 못해 건너뜁니다." << endl;
+							continue;
+						}
+						objectTextTable.addObject((INT32)i, (i < names.size()) ? names[i] : string(), common);
+					}
+					getStates()->currentDataIndex++;
+				}
+				else {
+					SetFilePointer(hArchive, sizeof(ChunkInfo) + chunkInfo.size, NULL, FILE_CURRENT);
+				}
+				break;
+			}
+
 			// default
 			default:
 			{
@@ -767,7 +821,6 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 
 	}
 
-	// 만일 개수를 다 세어도 합이 0이라면 그냥 1/1로 맞춘다
 	// 모아 둔 프레임 이벤트 텍스트를 JSON 으로 저장한다
 	if (contains(extractingDataTypes, L"text") && (frameEventTextTable.getEntryCount() > 0)) {
 		Json::Value textValue;
@@ -781,6 +834,20 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 		wcout << infoPrefix << L"Frame 이벤트 텍스트 " << dec << frameEventTextTable.getEntryCount() << L"개를 추출했습니다." << endl;
 	}
 
+	// 모아 둔 오브젝트 텍스트를 JSON 으로 저장한다
+	if (contains(extractingDataTypes, L"text") && (objectTextTable.getEntryCount() > 0)) {
+		Json::Value textValue;
+		objectTextTable.exportJson(textValue);
+		wstring exportJsonPath = getExtentionRemovedPath(archivePath) + L"/text/objectText.json";
+		if (!writeIntoJson(textValue, exportJsonPath)) {
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 오브젝트 텍스트를 json 으로 저장하지 못했습니다." << endl;
+			triggerError(__FUNCTION__, u8"오브젝트 텍스트를 json 으로 저장하지 못했습니다");
+			return false;
+		}
+		wcout << infoPrefix << L"오브젝트 텍스트 " << dec << objectTextTable.getEntryCount() << L"개 오브젝트를 추출했습니다." << endl;
+	}
+
+	// 만일 개수를 다 세어도 합이 0이라면 그냥 1/1로 맞춘다
 	if (getStates()->totalDataCount == 0) {
 		getStates()->totalDataCount = 1;
 		getStates()->currentDataIndex = 1;
@@ -817,8 +884,9 @@ bool Archive::rewriteNewArchive(vector<wstring>& replacingDataTypes)
 	// 암호화 테이블 초기화
 	initializeEncryptionTable();
 
-	// 프레임 이벤트 텍스트 번역 표는 처음 필요할 때 다시 읽어 들인다
+	// 프레임 이벤트 텍스트와 오브젝트 텍스트 번역 표는 처음 필요할 때 다시 읽어 들인다
 	frameEventTextTable.clear();
+	objectTextTable.clear();
 
 	// chunkStartOffset : 현재 아카이브 데이터에서 chunk가 시작하는 위치
 
@@ -1089,6 +1157,21 @@ bool Archive::rewriteAllChunk(HANDLE hNewArchive, vector<wstring>& replacingData
 			case ChunkType::CHUNK_2_5_TTF_INFO_LIST: {
 				if (contains(replacingDataTypes, L"font")) {
 					if (!rewriteTrueTypeFontInfosChunk(hNewArchive, ttfOffsetList)) {
+						return false;
+					}
+				}
+				else {
+					if (!rewriteUnknownChunk(hNewArchive)) {
+						return false;
+					}
+				}
+				break;
+			}
+
+			// Object 2.5+ 속성 데이터(0x2256) + 오프셋(0x2257), 오브젝트 텍스트 교체
+			case ChunkType::CHUNK_2_5_PLUS_OBJECT_DATA: {
+				if (contains(replacingDataTypes, L"text")) {
+					if (!rewriteObjectElementChunks(hNewArchive)) {
 						return false;
 					}
 				}
@@ -1560,6 +1643,151 @@ bool Archive::caculateProtectionChecksum(HANDLE hTargetArchive, UINT32& protecti
 	protectionChecksum = getChecksum(protectionBuffer, protectionBufferSize);
 	protectionChecksum ^= 0x0000000D;
 	free(protectionBuffer);
+
+	return true;
+}
+
+
+bool Archive::readObjectHeaders(vector<ObjectHeaderEntry>& headers, vector<string>& names)
+{
+	// 아카이브 핸들의 현재 위치를 백업해 두었다가 마지막에 되돌린다
+	DWORD backupOffset = SetFilePointer(hArchive, 0, NULL, FILE_CURRENT);
+	bool success = false;
+
+	do {
+		ObjectHeaderListChunk headerChunk;
+		SetFilePointer(hArchive, chunkStartOffset, NULL, FILE_BEGIN);
+		if (!moveArchiveHandleToChunk(hArchive, ChunkType::CHUNK_2_5_PLUS_OBJECT_HEADERS) || !headerChunk.readFromArchive(hArchive)) {
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 오브젝트 헤더(0x2253)를 읽어들이지 못했습니다." << endl;
+			break;
+		}
+
+		ObjectNamesChunk nameChunk;
+		SetFilePointer(hArchive, chunkStartOffset, NULL, FILE_BEGIN);
+		if (!moveArchiveHandleToChunk(hArchive, ChunkType::CHUNK_2_5_PLUS_OBJECT_NAMES) || !nameChunk.readFromArchive(hArchive)) {
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 오브젝트 이름(0x2254)을 읽어들이지 못했습니다." << endl;
+			break;
+		}
+
+		headers = headerChunk.getEntries();
+		names = nameChunk.getValue();
+		success = true;
+	} while (false);
+
+	SetFilePointer(hArchive, backupOffset, NULL, FILE_BEGIN);
+	return success;
+}
+
+
+bool Archive::rewriteObjectElementChunks(HANDLE hNewArchive)
+{
+	// 번역 표는 처음 필요할 때 한 번만 읽어 들인다
+	if (!objectTextTable.isLoaded()) {
+		wstring importJsonPath = getExtentionRemovedPath(archivePath) + L"/text/objectText.json";
+		if (isFileOrDir(importJsonPath) != FSOType::FSO_FILE) {
+			wcout << infoPrefix << L"오브젝트 텍스트 json 이 없어 오브젝트 텍스트 교체를 건너뜁니다: " << importJsonPath << endl;
+			objectTextTable.markLoaded();
+		}
+		else {
+			Json::Value textValue;
+			if (!readFromJson(textValue, importJsonPath) || !objectTextTable.importJson(textValue)) {
+				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 오브젝트 텍스트 json 을 읽어들이지 못했습니다." << endl;
+				triggerError(__FUNCTION__, u8"오브젝트 텍스트 json 을 읽어들이지 못했습니다", true);
+				return false;
+			}
+			wcout << infoPrefix << L"오브젝트 텍스트 " << dec << objectTextTable.getEntryCount() << L"개 오브젝트를 읽어들였습니다." << endl;
+		}
+	}
+
+	// 교체할 것이 없으면 원본 청크를 그대로 옮긴다
+	if (objectTextTable.getEntryCount() == 0) {
+		return rewriteUnknownChunk(hNewArchive);
+	}
+
+	ObjectElementDataChunk chunk;
+
+	wcout << L"--------------------------------------" << endl;
+	wcout << infoPrefix << L"Object Data Chunk rewriting processing..." << endl;
+
+	if (!chunk.readFromArchive(hArchive)) {
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 오브젝트 속성 데이터 chunk를 읽어들이지 못해 변환을 실패했습니다." << endl;
+		return false;
+	}
+
+	vector<ObjectHeaderEntry> headers;
+	vector<string> names;
+	if (!readObjectHeaders(headers, names)) {
+		return false;
+	}
+
+	vector<ObjectContainerElement>& elements = chunk.getContainer().getElements();
+	if (headers.size() != elements.size()) {
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 오브젝트 헤더 수와 속성 데이터 수가 다릅니다." << endl;
+		return false;
+	}
+
+	// 번역이 있는 오브젝트만 해석하여 교체한다
+	UINT32 replacedTotal = 0;
+	UINT32 skippedTotal = 0;
+	for (size_t i = 0; i < elements.size(); i++) {
+		const ObjectTextEntry* entry = objectTextTable.findEntry((INT32)i);
+		if ((entry == NULL) || (headers[i].type < 2)) {
+			continue;
+		}
+		ObjectCommon common;
+		string errorMessage;
+		if (!common.parse(elements[i].data, ObjectCommonLayout::TWO_FIVE_PLUS, getBuildVersion(), errorMessage)) {
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 오브젝트 " << dec << i << L" 번을 해석하지 못해 건너뜁니다." << endl;
+			continue;
+		}
+		UINT32 replacedCount = 0;
+		UINT32 skippedCount = 0;
+		replaceObjectText(common, *entry, replacedCount, skippedCount);
+		skippedTotal += skippedCount;
+		if (replacedCount == 0) {
+			continue;
+		}
+		ByteBuffer blob;
+		if (!common.serialize(blob, errorMessage)) {
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 오브젝트 " << dec << i << L" 번을 다시 만들지 못했습니다: " << wstring(errorMessage.begin(), errorMessage.end()) << endl;
+			return false;
+		}
+		chunk.getContainer().setElementData(i, blob);
+		replacedTotal += replacedCount;
+	}
+
+	if (!chunk.writeIntoArchive(hNewArchive)) {
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 오브젝트 속성 데이터 chunk를 기록하지 못해 변환을 실패했습니다." << endl;
+		return false;
+	}
+
+	// 이어지는 오프셋 chunk(0x2257)는 새로 계산한 오프셋으로 다시 쓴다
+	ChunkInfo nextInfo;
+	DWORD dRead = 0;
+	DWORD nextOffset = SetFilePointer(hArchive, 0, NULL, FILE_CURRENT);
+	ReadFile(hArchive, &nextInfo, sizeof(ChunkInfo), &dRead, NULL);
+	SetFilePointer(hArchive, nextOffset, NULL, FILE_BEGIN);
+	if ((dRead == sizeof(ChunkInfo)) && (nextInfo.type == ChunkType::CHUNK_2_5_PLUS_OBJECT_OFFSETS)) {
+		ObjectOffsetsChunk offsetChunk;
+		if (!offsetChunk.readFromArchive(hArchive)) {
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 오브젝트 오프셋 chunk를 읽어들이지 못해 변환을 실패했습니다." << endl;
+			return false;
+		}
+		const ByteBuffer& offsetPayload = chunk.getOffsetPayload();
+		vector<UINT32> offsetList(offsetPayload.size() / sizeof(UINT32));
+		if (!offsetList.empty()) {
+			memcpy(offsetList.data(), &offsetPayload[0], offsetList.size() * sizeof(UINT32));
+		}
+		offsetChunk.setValue(offsetList);
+		if (!offsetChunk.writeIntoArchive(hNewArchive)) {
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 오브젝트 오프셋 chunk를 기록하지 못해 변환을 실패했습니다." << endl;
+			return false;
+		}
+	}
+
+	wcout << infoPrefix << L"오브젝트 텍스트 " << dec << replacedTotal << L"개를 교체했습니다. (원문이 달라 건너뜀: " << skippedTotal << L"개)" << endl;
+	wcout << infoPrefix << L"Object Data Chunk rewriting complete!" << endl;
+	wcout << L"--------------------------------------" << endl << endl;
 
 	return true;
 }

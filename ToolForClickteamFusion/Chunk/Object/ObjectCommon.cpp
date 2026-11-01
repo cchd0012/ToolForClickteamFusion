@@ -13,6 +13,8 @@ ObjectCommon::ObjectCommon()
 	valuesChanged = false;
 	stringsParsed = false;
 	stringsChanged = false;
+	textParsed = false;
+	textChanged = false;
 }
 
 
@@ -201,6 +203,51 @@ bool ObjectCommon::parse(const ByteBuffer& blob, ObjectCommonLayout commonLayout
 				strings.clear();
 			}
 		}
+
+		// ---- 일반 Text 문단 ----
+		ByteBuffer identifier = getIdentifier();
+		string identifierText(identifier.begin(), identifier.end());
+		bool isTextObject = (identifierText == "TEXT") || (identifierText == "TE");
+		if (isTextObject && segments[SEGMENT_SYSTEM].present) {
+			try {
+				size_t start = (size_t)segments[SEGMENT_SYSTEM].offset;
+				size_t end = start + segments[SEGMENT_SYSTEM].length;
+				ByteBufferReader textReader(&raw[0], end, start);
+				textReader.readI32();	// 블록 전체 크기
+				ObjectText parsedText;
+				parsedText.width = textReader.readI32();
+				parsedText.height = textReader.readI32();
+				INT32 paragraphCount = textReader.readI32();
+				if ((paragraphCount < 0) || ((size_t)paragraphCount > ((end - start) / 4))) {
+					throw ByteBufferError("bad paragraph count");
+				}
+				vector<INT32> paragraphOffsets(paragraphCount);
+				for (INT32 i = 0; i < paragraphCount; i++) {
+					paragraphOffsets[i] = textReader.readI32();
+				}
+				parsedText.paragraphs.resize(paragraphCount);
+				for (INT32 i = 0; i < paragraphCount; i++) {
+					if ((paragraphOffsets[i] < 0) || ((start + (size_t)paragraphOffsets[i]) >= end)) {
+						throw ByteBufferError("paragraph offset outside block");
+					}
+					ByteBufferReader paragraphReader(&raw[0], end, start + (size_t)paragraphOffsets[i]);
+					ObjectTextParagraph& paragraph = parsedText.paragraphs[i];
+					paragraph.font = paragraphReader.readU16();
+					paragraph.flags = paragraphReader.readU16();
+					ByteBuffer color = paragraphReader.readBytes(4);
+					memcpy(paragraph.color, &color[0], 4);
+					paragraph.text = paragraphReader.readWString();
+				}
+				// 다시 인코딩한 결과가 원본 블록과 정확히 같을 때에만 이 해석을 신뢰한다
+				if (encodeText(parsedText) == getSegmentBytes(SEGMENT_SYSTEM)) {
+					text = parsedText;
+					textParsed = true;
+				}
+			}
+			catch (const exception&) {
+				textParsed = false;
+			}
+		}
 	}
 	catch (const exception& e) {
 		errorMessage = e.what();
@@ -309,6 +356,36 @@ ByteBuffer ObjectCommon::encodeStrings(const vector<wstring>& value, const ByteB
 
 
 
+ByteBuffer ObjectCommon::encodeText(const ObjectText& value)
+{
+	// 구조: [i32 블록 크기][i32 너비][i32 높이][i32 문단 수][i32 문단 오프셋 * 문단 수] + 문단들
+	// 문단: [u16 폰트][u16 플래그][4바이트 색상][UTF-16 문자열 + 0x0000]
+	ByteBufferWriter body;
+	vector<INT32> offsets;
+	const size_t headLength = 16 + 4 * value.paragraphs.size();
+	for (size_t i = 0; i < value.paragraphs.size(); i++) {
+		const ObjectTextParagraph& paragraph = value.paragraphs[i];
+		offsets.push_back((INT32)(headLength + body.size()));
+		body.writeU16(paragraph.font);
+		body.writeU16(paragraph.flags);
+		body.writeBytes(paragraph.color, 4);
+		body.writeWString(paragraph.text);
+	}
+	ByteBufferWriter writer;
+	writer.writeI32((INT32)(headLength + body.size()));
+	writer.writeI32(value.width);
+	writer.writeI32(value.height);
+	writer.writeI32((INT32)value.paragraphs.size());
+	for (size_t i = 0; i < offsets.size(); i++) {
+		writer.writeI32(offsets[i]);
+	}
+	writer.writeBytes(body.getBuffer());
+	return writer.getBuffer();
+}
+
+
+
+
 bool ObjectCommon::build(bool canonical, ByteBuffer& blob, string& errorMessage) const
 {
 	try {
@@ -335,6 +412,9 @@ bool ObjectCommon::build(bool canonical, ByteBuffer& blob, string& errorMessage)
 			}
 			else if ((segment == SEGMENT_STRINGS) && stringsParsed && (canonical || stringsChanged)) {
 				data = encodeStrings(strings, stringsTail);
+			}
+			else if ((segment == SEGMENT_SYSTEM) && textParsed && (canonical || textChanged)) {
+				data = encodeText(text);
 			}
 			else {
 				data = getSegmentBytes((Segment)segment);

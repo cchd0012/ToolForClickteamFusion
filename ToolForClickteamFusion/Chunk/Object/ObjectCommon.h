@@ -45,6 +45,22 @@ namespace CTT {
 			vector<ObjectAnimation> slots;	// 원본 테이블의 슬롯 하나당 항목 하나
 		} ObjectAnimations;
 
+		// 일반 Text 오브젝트의 문단 하나
+		typedef struct _object_text_paragraph {
+			UINT16 font;		// LogFont 핸들
+			UINT16 flags;
+			BYTE color[4];
+			wstring text;
+			_object_text_paragraph() : font(0), flags(0) { memset(color, 0, sizeof(color)); }
+		} ObjectTextParagraph;
+
+		typedef struct _object_text {
+			INT32 width;
+			INT32 height;
+			vector<ObjectTextParagraph> paragraphs;
+			_object_text() : width(0), height(0) {}
+		} ObjectText;
+
 		class ObjectCommon
 		{
 		public:
@@ -81,6 +97,11 @@ namespace CTT {
 			ByteBuffer& getStringsTail() { return stringsTail; }
 			void markStringsChanged() { stringsChanged = true; }
 
+			// 일반 Text 오브젝트의 문단 (식별자가 'TEXT' 이고 인코딩 결과가 원본과 같을 때에만 해석한다)
+			bool hasText() const { return textParsed; }
+			ObjectText& getText() { return text; }
+			void markTextChanged() { textChanged = true; }
+
 			// 해석하지 않는 하위 블록의 원본 바이트 (없으면 빈 값)
 			ByteBuffer getMovementBlock() const { return getSegmentBytes(SEGMENT_MOVEMENT); }
 			ByteBuffer getExtensionBlock() const { return getSegmentBytes(SEGMENT_EXTENSION); }
@@ -113,6 +134,7 @@ namespace CTT {
 			static ByteBuffer encodeAnimations(const ObjectAnimations& value);
 			static ByteBuffer encodeValues(const vector<INT32>& value, const ByteBuffer& tail);
 			static ByteBuffer encodeStrings(const vector<wstring>& value, const ByteBuffer& tail);
+			static ByteBuffer encodeText(const ObjectText& value);
 
 			ByteBuffer raw;
 			ObjectCommonLayout layout;
@@ -132,6 +154,10 @@ namespace CTT {
 			vector<wstring> strings;
 			ByteBuffer stringsTail;
 			bool stringsChanged;
+
+			bool textParsed;
+			ObjectText text;
+			bool textChanged;
 		};
 
 	}

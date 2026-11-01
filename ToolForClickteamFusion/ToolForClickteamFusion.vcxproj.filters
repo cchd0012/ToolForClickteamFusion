@@ -103,6 +103,15 @@
     <ClCompile Include="Chunk\Object\ObjectCommon.cpp">
       <Filter>Chunk\Object</Filter>
     </ClCompile>
+    <ClCompile Include="Chunk\Object\ObjectText.cpp">
+      <Filter>Chunk\Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\TwoFivePlusObject\ObjectHeaderListChunk.cpp">
+      <Filter>Chunk\TwoFivePlusObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\TwoFivePlusObject\ObjectElementDataChunk.cpp">
+      <Filter>Chunk\TwoFivePlusObject</Filter>
+    </ClCompile>
     <ClCompile Include="Chunk\TwoFivePlusObject\ObjectElementContainer.cpp">
       <Filter>Chunk\TwoFivePlusObject</Filter>
     </ClCompile>
@@ -299,6 +308,15 @@
     </ClInclude>
     <ClInclude Include="Chunk\Object\ObjectCommon.h">
       <Filter>Chunk\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Object\ObjectText.h">
+      <Filter>Chunk\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\TwoFivePlusObject\ObjectHeaderListChunk.h">
+      <Filter>Chunk\TwoFivePlusObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\TwoFivePlusObject\ObjectElementDataChunk.h">
+      <Filter>Chunk\TwoFivePlusObject</Filter>
     </ClInclude>
     <ClInclude Include="Chunk\TwoFivePlusObject\ObjectElementContainer.h">
       <Filter>Chunk\TwoFivePlusObject</Filter>

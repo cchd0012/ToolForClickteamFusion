@@ -156,24 +156,6 @@ bool FrameEventChunk::recompileScript(const Json::Value& value, string& errorMes
 }
 
 
-void FrameEventChunk::detectParserSkeleton(vector<ParserSkeletonTarget>& targets)
-{
-	if (!parsed) {
-		return;
-	}
-	detectParserSkeletonTargets(model, targets);
-}
-
-
-bool FrameEventChunk::patchParserSkeleton(const ParserSkeletonConfig& config, ParserSkeletonStats& stats, string& errorMessage)
-{
-	if (!parsed) {
-		return true;
-	}
-	return applyParserSkeletonPatch(model, config, stats, errorMessage);
-}
-
-
 void FrameEventChunk::renderData()
 {
 	if (parsed) {

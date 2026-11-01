@@ -361,25 +361,6 @@ bool FrameChunk::replaceEventText(const FrameEventTextTable& table, UINT32& repl
 }
 
 
-void FrameChunk::detectParserSkeleton(vector<ParserSkeletonTarget>& targets)
-{
-	FrameEventChunk* eventChunk = findFrameEventChunk(chunkList);
-	if (eventChunk != NULL) {
-		eventChunk->detectParserSkeleton(targets);
-	}
-}
-
-
-bool FrameChunk::patchParserSkeleton(const ParserSkeletonConfig& config, ParserSkeletonStats& stats, string& errorMessage)
-{
-	FrameEventChunk* eventChunk = findFrameEventChunk(chunkList);
-	if (eventChunk == NULL) {
-		return true;
-	}
-	return eventChunk->patchParserSkeleton(config, stats, errorMessage);
-}
-
-
 // 프레임에 들어 있는 이름 청크를 찾는다 (없으면 NULL)
 static FrameNameChunk* findFrameNameChunk(vector<CTT::Chunk::Chunk*>& chunkList)
 {

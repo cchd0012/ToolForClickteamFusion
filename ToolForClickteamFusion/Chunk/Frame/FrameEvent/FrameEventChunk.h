@@ -4,7 +4,6 @@
 #include "FrameEventModel.h"
 #include "FrameEventText.h"
 #include "FrameEventScript.h"
-#include "FrameEventPatch.h"
 
 namespace CTT {
 
@@ -31,10 +30,6 @@ namespace CTT {
 			bool decompileScript(const FrameEventScriptContext& context, Json::Value& value);
 			// JSON 을 이벤트에 반영한다 (리컴파일). 실패하면 이벤트는 바뀌지 않고 errorMessage 에 이유가 담긴다
 			bool recompileScript(const Json::Value& value, string& errorMessage);
-
-			// ANSI 확장 문자열 왕복 보정 대상을 찾는다 / 보정을 적용한다 (모델을 사용할 수 없으면 건너뛴다)
-			void detectParserSkeleton(vector<ParserSkeletonTarget>& targets);
-			bool patchParserSkeleton(const ParserSkeletonConfig& config, ParserSkeletonStats& stats, string& errorMessage);
 
 			bool isParsed() const { return parsed; }
 			FrameEventChunkModel& getModel() { return model; }

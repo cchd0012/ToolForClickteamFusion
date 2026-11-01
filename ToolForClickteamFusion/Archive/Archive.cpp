@@ -494,7 +494,6 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 	objectTextTable.clear();
 	frameScriptContext.objectNames.clear();
 	frameScriptContextLoaded = false;
-	detectedParserTargets.clear();
 
 	// 초기화 및 chunk 시작 위치 지정
 	memset(&chunkInfo, 0, sizeof(ChunkInfo));
@@ -800,8 +799,6 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 							return false;
 						}
 					}
-					// ANSI 확장 문자열 왕복 보정 대상 감지 (추출이 끝나면 설정 파일로 남긴다)
-					chunk.detectParserSkeleton(detectedParserTargets);
 					frameIndex++;
 					getStates()->currentDataIndex++;
 				}
@@ -907,17 +904,6 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 		wcout << infoPrefix << L"오브젝트 텍스트 " << dec << objectTextTable.getEntryCount() << L"개 오브젝트를 추출했습니다." << endl;
 	}
 
-	// 감지한 ANSI 확장 문자열 왕복 보정 대상을 설정 파일로 남긴다 (이미 설정 파일이 있으면 건드리지 않는다)
-	if ((contains(extractingDataTypes, L"text") || contains(extractingDataTypes, L"script")) && !detectedParserTargets.empty()) {
-		wstring configPath = getParserSkeletonConfigPath();
-		if (isFileOrDir(configPath) != FSOType::FSO_FILE) {
-			ParserSkeletonConfig config;
-			config.targets = detectedParserTargets;
-			config.enabled = false;		// 기본은 사용하지 않는다. 유니코드 확장 모듈로 교체하는 것을 권장한다 (아래 안내 참고)
-			saveParserSkeletonConfig(config);
-		}
-	}
-
 	// 만일 개수를 다 세어도 합이 0이라면 그냥 1/1로 맞춘다
 	if (getStates()->totalDataCount == 0) {
 		getStates()->totalDataCount = 1;
@@ -959,14 +945,6 @@ bool Archive::rewriteNewArchive(vector<wstring>& replacingDataTypes)
 	frameEventTextTable.clear();
 	objectTextTable.clear();
 	rewriteFrameIndex = 0;
-	parserSkeleton = ParserSkeletonConfig();
-	parserSkeleton.enabled = false;
-
-	// ANSI 확장 문자열 왕복 보정 설정 (텍스트나 스크립트를 교체할 때만)
-	if (!prepareParserSkeleton(replacingDataTypes)) {
-		CloseHandle(hNewArchive);
-		return false;
-	}
 
 	// chunkStartOffset : 현재 아카이브 데이터에서 chunk가 시작하는 위치
 
@@ -1400,20 +1378,6 @@ bool Archive::rewriteFrameChunk(HANDLE hNewArchive, vector<wstring>& replacingDa
 		}
 	}
 
-	// ANSI 확장 문자열 왕복 보정: 번역과 스크립트를 반영한 뒤의 대사로 뼈대 문자열을 만든다
-	if (parserSkeleton.enabled) {
-		ParserSkeletonStats stats;
-		string errorMessage;
-		if (!chunk.patchParserSkeleton(parserSkeleton, stats, errorMessage)) {
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 문자열 왕복 보정을 적용하지 못했습니다: " << wstring(errorMessage.begin(), errorMessage.end()) << endl;
-			triggerError(__FUNCTION__, u8"문자열 왕복 보정을 적용하지 못했습니다", true);
-			return false;
-		}
-		if ((stats.skeletonActions + stats.copiedActions + stats.retargetedTokens) > 0) {
-			wcout << infoPrefix << L"Frame " << dec << currentFrameIndex << L" 번 문자열 왕복 보정: 뼈대 지정 " << stats.skeletonActions << L"개, 복사 " << stats.copiedActions << L"개, 식 변경 " << stats.retargetedTokens << L"곳" << endl;
-		}
-	}
-
 	if (!chunk.writeIntoArchive(hNewArchive)) {
 		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 신규 frame을 기록하지 못해 변환을 실패했습니다." << endl;
 		return false;
@@ -1808,103 +1772,6 @@ bool Archive::readObjectHeaders(vector<ObjectHeaderEntry>& headers, vector<strin
 }
 
 
-wstring Archive::getParserSkeletonConfigPath()
-{
-	return getExtentionRemovedPath(archivePath) + L"/script/patch/parserSkeleton.json";
-}
-
-
-bool Archive::saveParserSkeletonConfig(ParserSkeletonConfig& config)
-{
-	// 읽기 쉽도록 오브젝트 이름을 함께 적는다 (읽지 못해도 보정에는 영향이 없다)
-	vector<ObjectHeaderEntry> headers;
-	vector<string> names;
-	if (readObjectHeaders(headers, names)) {
-		for (size_t i = 0; i < config.targets.size(); i++) {
-			if (config.targets[i].textObject < names.size()) {
-				config.targets[i].textObjectName = names[config.targets[i].textObject];
-			}
-			if (config.targets[i].parserObject < names.size()) {
-				config.targets[i].parserObjectName = names[config.targets[i].parserObject];
-			}
-		}
-	}
-	Json::Value value;
-	exportParserSkeletonConfig(config, value);
-	wstring configPath = getParserSkeletonConfigPath();
-	if (!writeIntoJson(value, configPath)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 문자열 왕복 보정 설정을 json 으로 저장하지 못했습니다." << endl;
-		return false;
-	}
-	wcout << infoPrefix << L"ANSI 확장(문자열을 1바이트로 받는 확장) 사용을 " << dec << config.targets.size() << L"곳 감지하여 설정을 저장했습니다: " << configPath << endl;
-	wcout << infoPrefix << L"  한글이 들어가면 글자 배치가 깨질 수 있습니다. 해당 확장을 유니코드 모듈로 교체하는 것을 권장합니다 (Extensions/ParserUnicode)." << endl;
-	wcout << infoPrefix << L"  모듈을 바꿀 수 없다면 이 파일의 enabled 를 true 로 바꾸면 이벤트에 뼈대 문자열 보정을 적용합니다. (현재: " << (config.enabled ? L"사용" : L"사용 안 함") << L")" << endl;
-	return true;
-}
-
-
-bool Archive::prepareParserSkeleton(vector<wstring>& replacingDataTypes)
-{
-	parserSkeleton = ParserSkeletonConfig();
-	parserSkeleton.enabled = false;
-	if (!contains(replacingDataTypes, L"text") && !contains(replacingDataTypes, L"script")) {
-		return true;
-	}
-
-	// 설정 파일이 있으면 그대로 따른다 (enabled 를 false 로 두면 보정을 쓰지 않는다)
-	wstring configPath = getParserSkeletonConfigPath();
-	if (isFileOrDir(configPath) == FSOType::FSO_FILE) {
-		Json::Value value;
-		ParserSkeletonConfig loaded;
-		if (!readFromJson(value, configPath) || !importParserSkeletonConfig(value, loaded)) {
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 문자열 왕복 보정 설정 json 을 읽어들이지 못했습니다: " << configPath << endl;
-			triggerError(__FUNCTION__, u8"문자열 왕복 보정 설정 json 을 읽어들이지 못했습니다", true);
-			return false;
-		}
-		parserSkeleton = loaded;
-		if (parserSkeleton.enabled && !parserSkeleton.targets.empty()) {
-			wcout << infoPrefix << L"ANSI 확장 문자열 왕복 보정을 적용합니다. (대상 " << dec << parserSkeleton.targets.size() << L"개)" << endl;
-		}
-		return true;
-	}
-
-	// 설정 파일이 없으면 프레임 이벤트에서 대상을 감지한다 (프레임을 한 번 훑는다)
-	DWORD backupOffset = SetFilePointer(hArchive, 0, NULL, FILE_CURRENT);
-	vector<ParserSkeletonTarget> targets;
-	SetFilePointer(hArchive, chunkStartOffset, NULL, FILE_BEGIN);
-	while (1) {
-		ChunkInfo info;
-		DWORD dRead = 0;
-		UINT32 chunkOffset = SetFilePointer(hArchive, 0, NULL, FILE_CURRENT);
-		ReadFile(hArchive, &info, sizeof(ChunkInfo), &dRead, NULL);
-		SetFilePointer(hArchive, chunkOffset, NULL, FILE_BEGIN);
-		if (dRead != sizeof(ChunkInfo)) {
-			break;
-		}
-		if (info.type == ChunkType::CHUNK_FRAME) {
-			FrameChunk frame;
-			if (!frame.readFromArchive(hArchive)) {
-				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 보정 대상을 감지하는 중 Frame 데이터를 읽어들이지 못했습니다." << endl;
-				SetFilePointer(hArchive, backupOffset, NULL, FILE_BEGIN);
-				return false;
-			}
-			frame.detectParserSkeleton(targets);
-		}
-		else {
-			SetFilePointer(hArchive, sizeof(ChunkInfo) + info.size, NULL, FILE_CURRENT);
-		}
-	}
-	SetFilePointer(hArchive, backupOffset, NULL, FILE_BEGIN);
-
-	if (!targets.empty()) {
-		parserSkeleton.targets = targets;
-		parserSkeleton.enabled = false;		// 감지만 하고 기본은 사용하지 않는다
-		saveParserSkeletonConfig(parserSkeleton);
-	}
-	return true;
-}
-
-
 bool Archive::rewriteObjectElementChunks(HANDLE hNewArchive, vector<wstring>& replacingDataTypes)
 {
 	bool useText = contains(replacingDataTypes, L"text");
@@ -1933,11 +1800,8 @@ bool Archive::rewriteObjectElementChunks(HANDLE hNewArchive, vector<wstring>& re
 	}
 	bool hasTextTable = useText && (objectTextTable.getEntryCount() > 0);
 
-	// ANSI 확장 문자열 왕복 보정: 대사를 담는 오브젝트는 뼈대를 저장할 문자열 칸을 하나 늘려야 한다
-	bool needSkeleton = parserSkeleton.enabled && !parserSkeleton.targets.empty() && (useText || useScript);
-
 	// 적용할 것이 없으면 원본 청크를 그대로 옮긴다
-	if (!hasTextTable && !scriptDirExists && !needSkeleton) {
+	if (!hasTextTable && !scriptDirExists) {
 		if (useScript) {
 			wcout << infoPrefix << L"오브젝트 스크립트 폴더가 없어 오브젝트 스크립트 교체를 건너뜁니다: " << scriptDirPath << endl;
 		}
@@ -1978,17 +1842,7 @@ bool Archive::rewriteObjectElementChunks(HANDLE hNewArchive, vector<wstring>& re
 		wstring scriptPath = scriptDirPath + L"/" + indexStream.str() + L".json";
 		bool hasScript = scriptDirExists && (isFileOrDir(scriptPath) == FSOType::FSO_FILE);
 
-		bool isSkeletonObject = false;
-		if (needSkeleton) {
-			for (size_t k = 0; k < parserSkeleton.targets.size(); k++) {
-				if (parserSkeleton.targets[k].textObject == (UINT16)i) {
-					isSkeletonObject = true;
-					break;
-				}
-			}
-		}
-
-		if (((entry == NULL) && !hasScript && !isSkeletonObject) || (headers[i].type < 2)) {
+		if (((entry == NULL) && !hasScript) || (headers[i].type < 2)) {
 			continue;
 		}
 
@@ -2021,41 +1875,7 @@ bool Archive::rewriteObjectElementChunks(HANDLE hNewArchive, vector<wstring>& re
 		}
 		skippedTotal += skippedCount;
 
-		// 뼈대 문자열 칸 확보 (대사를 담는 오브젝트의 문자열을 하나 늘리고, 그 번호를 보정 설정에 기록한다)
-		bool changedBySkeleton = false;
-		if (isSkeletonObject) {
-			if (!common.hasStrings()) {
-				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 오브젝트 " << dec << i << L" 번에 문자열이 없어 문자열 왕복 보정을 적용하지 못합니다." << endl;
-			}
-			else {
-				vector<wstring>& strings = common.getStrings();
-				for (size_t k = 0; k < parserSkeleton.targets.size(); k++) {
-					ParserSkeletonTarget& target = parserSkeleton.targets[k];
-					if (target.textObject != (UINT16)i) {
-						continue;
-					}
-					// 같은 오브젝트의 같은 문자열을 쓰는 다른 대상이 이미 칸을 정했다면 그 칸을 같이 쓴다
-					INT16 index = -1;
-					for (size_t m = 0; m < k; m++) {
-						if ((parserSkeleton.targets[m].textObject == target.textObject) && (parserSkeleton.targets[m].stringIndex == target.stringIndex)) {
-							index = parserSkeleton.targets[m].skeletonIndex;
-							break;
-						}
-					}
-					if (index < 0) {
-						index = (INT16)strings.size();
-						strings.push_back(L"");
-						changedBySkeleton = true;
-					}
-					target.skeletonIndex = index;
-				}
-				if (changedBySkeleton) {
-					common.markStringsChanged();
-				}
-			}
-		}
-
-		if (!changedByScript && (replacedCount == 0) && !changedBySkeleton) {
+		if (!changedByScript && (replacedCount == 0)) {
 			continue;
 		}
 

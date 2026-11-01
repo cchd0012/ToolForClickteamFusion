@@ -123,10 +123,6 @@ namespace CTT {
 			// 교체할 때 몇 번째 프레임인지 세는 변수
 			UINT32 rewriteFrameIndex;
 
-			// ANSI 확장 문자열 왕복 보정 (한글이 들어가면 글자 배치가 깨지는 문제): 설정과 추출할 때 감지한 대상
-			ParserSkeletonConfig parserSkeleton;
-			vector<ParserSkeletonTarget> detectedParserTargets;
-
 			// application 버전 등을 포함한 정보 세팅
 			bool setApplicationInfo();
 
@@ -149,11 +145,6 @@ namespace CTT {
 			bool rewriteObjectElementChunks(HANDLE hNewArchive, vector<wstring>& replacingDataTypes);
 			// 2.5+ 오브젝트 헤더(0x2253)와 이름(0x2254)을 읽는다 (아카이브 핸들 위치는 그대로 유지된다)
 			bool readObjectHeaders(vector<ObjectHeaderEntry>& headers, vector<string>& names);
-
-			// ANSI 확장 문자열 왕복 보정: 설정을 읽거나 (없으면) 프레임에서 대상을 감지하고, 설정 파일로 남긴다
-			bool prepareParserSkeleton(vector<wstring>& replacingDataTypes);
-			bool saveParserSkeletonConfig(ParserSkeletonConfig& config);
-			wstring getParserSkeletonConfigPath();
 
 			// 프로텍션 체크섬 계산 함수 (프로텍션 체크 실패시 false)
 			bool caculateProtectionChecksum(HANDLE hTargetArchive, UINT32& protectionChecksum, bool notNeedToCheckProtectionChunk = false);

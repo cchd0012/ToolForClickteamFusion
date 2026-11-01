@@ -18,6 +18,7 @@ cl /nologo /EHsc /W3 /O2 /MT /D_CRT_SECURE_NO_WARNINGS ^
   "%ROOT%\includes\src\jsoncpp\jsoncpp.cpp" ^
   "%SRC%\Chunk\Object\ObjectCommon.cpp" ^
   "%SRC%\Chunk\Object\ObjectText.cpp" ^
+  "%SRC%\Chunk\Object\ObjectScript.cpp" ^
   "%SRC%\Chunk\TwoFivePlusObject\ObjectElementContainer.cpp" ^
   "%SRC%\Util\ZlibUtil.cpp" ^
   /link /LIBPATH:"%ROOT%\includes\lib\x64\Release" zlib.lib

@@ -134,7 +134,7 @@ namespace CTT {
 			bool rewriteUnknownChunk(HANDLE hNewArchive);
 
 			// 2.5+ 오브젝트 속성 데이터(0x2256)와 이어지는 오프셋(0x2257)을 오브젝트 텍스트 번역을 적용하여 다시 쓴다
-			bool rewriteObjectElementChunks(HANDLE hNewArchive);
+			bool rewriteObjectElementChunks(HANDLE hNewArchive, vector<wstring>& replacingDataTypes);
 			// 2.5+ 오브젝트 헤더(0x2253)와 이름(0x2254)을 읽는다 (아카이브 핸들 위치는 그대로 유지된다)
 			bool readObjectHeaders(vector<ObjectHeaderEntry>& headers, vector<string>& names);
 

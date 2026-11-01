@@ -103,6 +103,9 @@
     <ClCompile Include="Chunk\Object\ObjectCommon.cpp">
       <Filter>Chunk\Object</Filter>
     </ClCompile>
+    <ClCompile Include="Chunk\Object\ObjectScript.cpp">
+      <Filter>Chunk\Object</Filter>
+    </ClCompile>
     <ClCompile Include="Chunk\Object\ObjectText.cpp">
       <Filter>Chunk\Object</Filter>
     </ClCompile>
@@ -307,6 +310,9 @@
       <Filter>Chunk\Frame\FrameEvent</Filter>
     </ClInclude>
     <ClInclude Include="Chunk\Object\ObjectCommon.h">
+      <Filter>Chunk\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Object\ObjectScript.h">
       <Filter>Chunk\Object</Filter>
     </ClInclude>
     <ClInclude Include="Chunk\Object\ObjectText.h">

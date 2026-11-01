@@ -158,6 +158,7 @@
     <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventModel.cpp" />
     <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventText.cpp" />
     <ClCompile Include="Chunk\Object\ObjectCommon.cpp" />
+    <ClCompile Include="Chunk\Object\ObjectScript.cpp" />
     <ClCompile Include="Chunk\Object\ObjectText.cpp" />
     <ClCompile Include="Chunk\TwoFivePlusObject\ObjectHeaderListChunk.cpp" />
     <ClCompile Include="Chunk\TwoFivePlusObject\ObjectElementDataChunk.cpp" />
@@ -234,6 +235,7 @@
     <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventModel.h" />
     <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventText.h" />
     <ClInclude Include="Chunk\Object\ObjectCommon.h" />
+    <ClInclude Include="Chunk\Object\ObjectScript.h" />
     <ClInclude Include="Chunk\Object\ObjectText.h" />
     <ClInclude Include="Chunk\TwoFivePlusObject\ObjectHeaderListChunk.h" />
     <ClInclude Include="Chunk\TwoFivePlusObject\ObjectElementDataChunk.h" />

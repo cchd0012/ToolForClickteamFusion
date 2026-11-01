@@ -4,3 +4,4 @@
 #include "ObjectHeaderChunk.h"
 #include "ObjectCommon.h"
 #include "ObjectText.h"
+#include "ObjectScript.h"

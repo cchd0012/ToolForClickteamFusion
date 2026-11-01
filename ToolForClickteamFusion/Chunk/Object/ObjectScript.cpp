@@ -1,0 +1,320 @@
+﻿#include "ObjectScript.h"
+#include "../../Util/CommonUtil.h"
+
+using namespace CTT::Chunk;
+using namespace CTT::CommonUtil;
+
+
+static const char* objectScriptJsonType = "objectScript";
+static const UINT32 objectScriptJsonVersion = 1;
+
+
+// ------------------------------------------------------------------ 비교 보조 함수
+
+static bool sameAnimations(const ObjectAnimations& a, const ObjectAnimations& b)
+{
+	if (a.slots.size() != b.slots.size()) {
+		return false;
+	}
+	for (size_t i = 0; i < a.slots.size(); i++) {
+		if (a.slots[i].used != b.slots[i].used) {
+			return false;
+		}
+		const map<INT32, ObjectAnimationDirection>& da = a.slots[i].directions;
+		const map<INT32, ObjectAnimationDirection>& db = b.slots[i].directions;
+		if (da.size() != db.size()) {
+			return false;
+		}
+		map<INT32, ObjectAnimationDirection>::const_iterator ia = da.begin();
+		map<INT32, ObjectAnimationDirection>::const_iterator ib = db.begin();
+		for (; ia != da.end(); ++ia, ++ib) {
+			if ((ia->first != ib->first) || (ia->second.minSpeed != ib->second.minSpeed) || (ia->second.maxSpeed != ib->second.maxSpeed)
+				|| (ia->second.repeat != ib->second.repeat) || (ia->second.backTo != ib->second.backTo) || (ia->second.frames != ib->second.frames)) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+
+static bool sameText(const ObjectText& a, const ObjectText& b)
+{
+	if ((a.width != b.width) || (a.height != b.height) || (a.paragraphs.size() != b.paragraphs.size())) {
+		return false;
+	}
+	for (size_t i = 0; i < a.paragraphs.size(); i++) {
+		if ((a.paragraphs[i].font != b.paragraphs[i].font) || (a.paragraphs[i].flags != b.paragraphs[i].flags)
+			|| (memcmp(a.paragraphs[i].color, b.paragraphs[i].color, 4) != 0) || (a.paragraphs[i].text != b.paragraphs[i].text)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+
+// JSON 정수를 범위를 확인하며 읽는다
+static bool readInt(const Json::Value& value, INT64 minValue, INT64 maxValue, INT64& out)
+{
+	if (!value.isIntegral()) {
+		return false;
+	}
+	out = value.asInt64();
+	return (out >= minValue) && (out <= maxValue);
+}
+
+
+
+
+// ------------------------------------------------------------------ 디컴파일
+
+bool CTT::Chunk::decompileObjectScript(INT32 index, const string& name, INT16 objectType, ObjectCommon& common, Json::Value& value)
+{
+	value = Json::Value(Json::objectValue);
+	value["type"] = objectScriptJsonType;
+	value["version"] = objectScriptJsonVersion;
+	value["index"] = index;
+	value["name"] = name;
+	value["objectType"] = objectType;
+	ByteBuffer identifier = common.getIdentifier();
+	value["identifier"] = string(identifier.begin(), identifier.end());
+
+	if (common.hasAnimations()) {
+		ObjectAnimations& animations = common.getAnimations();
+		value["animationSlotCount"] = (Json::UInt)animations.slots.size();
+		Json::Value slots(Json::arrayValue);
+		for (size_t s = 0; s < animations.slots.size(); s++) {
+			if (!animations.slots[s].used) {
+				continue;
+			}
+			Json::Value slot(Json::objectValue);
+			slot["slot"] = (Json::UInt)s;
+			Json::Value directions(Json::arrayValue);
+			for (map<INT32, ObjectAnimationDirection>::const_iterator it = animations.slots[s].directions.begin(); it != animations.slots[s].directions.end(); ++it) {
+				Json::Value direction(Json::objectValue);
+				direction["direction"] = it->first;
+				direction["minSpeed"] = (int)it->second.minSpeed;
+				direction["maxSpeed"] = (int)it->second.maxSpeed;
+				direction["repeat"] = (int)it->second.repeat;
+				direction["backTo"] = (int)it->second.backTo;
+				Json::Value frames(Json::arrayValue);
+				for (size_t f = 0; f < it->second.frames.size(); f++) {
+					frames.append((int)it->second.frames[f]);
+				}
+				direction["frames"] = frames;
+				directions.append(direction);
+			}
+			slot["directions"] = directions;
+			slots.append(slot);
+		}
+		value["animations"] = slots;
+	}
+
+	if (common.hasValues()) {
+		Json::Value values(Json::arrayValue);
+		for (size_t i = 0; i < common.getValues().size(); i++) {
+			values.append((int)common.getValues()[i]);
+		}
+		value["alterableValues"] = values;
+	}
+
+	if (common.hasStrings()) {
+		Json::Value strings(Json::arrayValue);
+		for (size_t i = 0; i < common.getStrings().size(); i++) {
+			strings.append(getAnsiStr(common.getStrings()[i], CodePage::CP_UTF_8));
+		}
+		value["alterableStrings"] = strings;
+	}
+
+	if (common.hasText()) {
+		ObjectText& text = common.getText();
+		Json::Value textValue(Json::objectValue);
+		textValue["width"] = text.width;
+		textValue["height"] = text.height;
+		Json::Value paragraphs(Json::arrayValue);
+		for (size_t i = 0; i < text.paragraphs.size(); i++) {
+			Json::Value paragraph(Json::objectValue);
+			paragraph["font"] = text.paragraphs[i].font;
+			paragraph["flags"] = text.paragraphs[i].flags;
+			Json::Value color(Json::arrayValue);
+			for (int c = 0; c < 4; c++) {
+				color.append((int)text.paragraphs[i].color[c]);
+			}
+			paragraph["color"] = color;
+			paragraph["text"] = getAnsiStr(text.paragraphs[i].text, CodePage::CP_UTF_8);
+			paragraphs.append(paragraph);
+		}
+		textValue["paragraphs"] = paragraphs;
+		value["text"] = textValue;
+	}
+	return true;
+}
+
+
+
+
+// ------------------------------------------------------------------ 리컴파일
+
+bool CTT::Chunk::recompileObjectScript(ObjectCommon& common, const Json::Value& value, bool& changed, string& errorMessage)
+{
+	changed = false;
+	if (!value.isObject() || (value["type"].asString() != objectScriptJsonType)) {
+		errorMessage = "not an objectScript json";
+		return false;
+	}
+
+	// ---- 애니메이션 ----
+	if (value.isMember("animations") && common.hasAnimations()) {
+		ObjectAnimations parsed;
+		INT64 slotCount = 0;
+		if (value.isMember("animationSlotCount") && !readInt(value["animationSlotCount"], 0, 32767, slotCount)) {
+			errorMessage = "bad animationSlotCount";
+			return false;
+		}
+		if (!value["animations"].isArray()) {
+			errorMessage = "animations must be an array";
+			return false;
+		}
+		const Json::Value& slots = value["animations"];
+		// 슬롯 수는 지정한 값과 가장 큰 슬롯 번호 + 1 중 큰 값이다
+		INT64 neededCount = slotCount;
+		for (Json::ArrayIndex s = 0; s < slots.size(); s++) {
+			INT64 slotIndex;
+			if (!readInt(slots[s]["slot"], 0, 32766, slotIndex)) {
+				errorMessage = "bad animation slot";
+				return false;
+			}
+			if (slotIndex + 1 > neededCount) {
+				neededCount = slotIndex + 1;
+			}
+		}
+		parsed.slots.resize((size_t)neededCount);
+		for (Json::ArrayIndex s = 0; s < slots.size(); s++) {
+			INT64 slotIndex;
+			readInt(slots[s]["slot"], 0, 32766, slotIndex);
+			ObjectAnimation& animation = parsed.slots[(size_t)slotIndex];
+			animation.used = true;
+			const Json::Value& directions = slots[s]["directions"];
+			if (!directions.isArray()) {
+				errorMessage = "animation directions must be an array";
+				return false;
+			}
+			for (Json::ArrayIndex d = 0; d < directions.size(); d++) {
+				const Json::Value& item = directions[d];
+				INT64 directionIndex, minSpeed, maxSpeed, repeat, backTo;
+				if (!readInt(item["direction"], 0, 31, directionIndex) || !readInt(item["minSpeed"], -128, 127, minSpeed)
+					|| !readInt(item["maxSpeed"], -128, 127, maxSpeed) || !readInt(item["repeat"], -32768, 32767, repeat)
+					|| !readInt(item["backTo"], -32768, 32767, backTo) || !item["frames"].isArray()) {
+					errorMessage = "bad animation direction";
+					return false;
+				}
+				ObjectAnimationDirection direction;
+				direction.minSpeed = (INT8)minSpeed;
+				direction.maxSpeed = (INT8)maxSpeed;
+				direction.repeat = (INT16)repeat;
+				direction.backTo = (INT16)backTo;
+				for (Json::ArrayIndex f = 0; f < item["frames"].size(); f++) {
+					INT64 handle;
+					if (!readInt(item["frames"][f], -32768, 32767, handle)) {
+						errorMessage = "bad animation frame handle";
+						return false;
+					}
+					direction.frames.push_back((INT16)handle);
+				}
+				if (animation.directions.find((INT32)directionIndex) != animation.directions.end()) {
+					errorMessage = "duplicate animation direction";
+					return false;
+				}
+				animation.directions[(INT32)directionIndex] = direction;
+			}
+		}
+		if (!sameAnimations(common.getAnimations(), parsed)) {
+			common.getAnimations() = parsed;
+			common.markAnimationsChanged();
+			changed = true;
+		}
+	}
+
+	// ---- Alterable 값 ----
+	if (value.isMember("alterableValues") && common.hasValues()) {
+		if (!value["alterableValues"].isArray()) {
+			errorMessage = "alterableValues must be an array";
+			return false;
+		}
+		vector<INT32> parsed;
+		for (Json::ArrayIndex i = 0; i < value["alterableValues"].size(); i++) {
+			INT64 number;
+			if (!readInt(value["alterableValues"][i], -2147483647 - 1, 2147483647, number)) {
+				errorMessage = "bad alterable value";
+				return false;
+			}
+			parsed.push_back((INT32)number);
+		}
+		if (parsed != common.getValues()) {
+			common.getValues() = parsed;
+			common.markValuesChanged();
+			changed = true;
+		}
+	}
+
+	// ---- Alterable 문자열 ----
+	if (value.isMember("alterableStrings") && common.hasStrings()) {
+		if (!value["alterableStrings"].isArray()) {
+			errorMessage = "alterableStrings must be an array";
+			return false;
+		}
+		vector<wstring> parsed;
+		for (Json::ArrayIndex i = 0; i < value["alterableStrings"].size(); i++) {
+			if (!value["alterableStrings"][i].isString()) {
+				errorMessage = "alterable string must be a string";
+				return false;
+			}
+			parsed.push_back(getUniStr(value["alterableStrings"][i].asString(), CodePage::CP_UTF_8));
+		}
+		if (parsed != common.getStrings()) {
+			common.getStrings() = parsed;
+			common.markStringsChanged();
+			changed = true;
+		}
+	}
+
+	// ---- Text 문단 ----
+	if (value.isMember("text") && common.hasText()) {
+		const Json::Value& textValue = value["text"];
+		ObjectText parsed;
+		INT64 width, height;
+		if (!readInt(textValue["width"], -2147483647 - 1, 2147483647, width) || !readInt(textValue["height"], -2147483647 - 1, 2147483647, height) || !textValue["paragraphs"].isArray()) {
+			errorMessage = "bad text object";
+			return false;
+		}
+		parsed.width = (INT32)width;
+		parsed.height = (INT32)height;
+		for (Json::ArrayIndex i = 0; i < textValue["paragraphs"].size(); i++) {
+			const Json::Value& item = textValue["paragraphs"][i];
+			INT64 font, flags;
+			if (!readInt(item["font"], 0, 65535, font) || !readInt(item["flags"], 0, 65535, flags) || !item["color"].isArray() || (item["color"].size() != 4) || !item["text"].isString()) {
+				errorMessage = "bad text paragraph";
+				return false;
+			}
+			ObjectTextParagraph paragraph;
+			paragraph.font = (UINT16)font;
+			paragraph.flags = (UINT16)flags;
+			for (int c = 0; c < 4; c++) {
+				INT64 channel;
+				if (!readInt(item["color"][c], 0, 255, channel)) {
+					errorMessage = "bad text color";
+					return false;
+				}
+				paragraph.color[c] = (BYTE)channel;
+			}
+			paragraph.text = getUniStr(item["text"].asString(), CodePage::CP_UTF_8);
+			parsed.paragraphs.push_back(paragraph);
+		}
+		if (!sameText(common.getText(), parsed)) {
+			common.getText() = parsed;
+			common.markTextChanged();
+			changed = true;
+		}
+	}
+	return true;
+}

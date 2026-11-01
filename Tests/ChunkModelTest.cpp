@@ -11,6 +11,7 @@
 #include "../ToolForClickteamFusion/Chunk/Frame/FrameEvent/FrameEventText.h"
 #include "../ToolForClickteamFusion/Chunk/Object/ObjectCommon.h"
 #include "../ToolForClickteamFusion/Chunk/Object/ObjectText.h"
+#include "../ToolForClickteamFusion/Chunk/Object/ObjectScript.h"
 #include "../ToolForClickteamFusion/Chunk/TwoFivePlusObject/ObjectElementContainer.h"
 
 using namespace std;
@@ -503,6 +504,114 @@ static void testObjects(const string& gameDir)
 }
 
 
+// ---------------------------------------------------------------- 오브젝트 스크립트 (디컴파일 / 리컴파일)
+
+static void testObjectScript(const string& gameDir)
+{
+	ByteBuffer all;
+	if (!readFile(gameDir + "\\objects.bin", all)) {
+		return;
+	}
+	ByteBufferReader reader(all);
+	size_t total = 0, stable = 0, edited = 0, framesAdded = 0, jsonBytes = 0;
+	while (reader.remaining() > 0) {
+		BYTE layoutId = reader.readU8();
+		INT32 build = reader.readI32();
+		INT16 type = reader.readI16();
+		UINT32 length = reader.readU32();
+		ByteBuffer blob = reader.readBytes(length);
+		ObjectCommon common;
+		string errorMessage;
+		if (!common.parse(blob, (ObjectCommonLayout)layoutId, (UINT32)build, errorMessage)) {
+			continue;
+		}
+		total++;
+
+		// 1) 풀어낸 JSON 을 문자열로 만들었다가 다시 읽어서 그대로 적용하면 아무것도 바뀌지 않아야 한다
+		Json::Value script;
+		decompileObjectScript((INT32)total, "object", type, common, script);
+		Json::StreamWriterBuilder builder;
+		builder.settings_["emitUTF8"] = true;
+		string jsonText = Json::writeString(builder, script);
+		jsonBytes += jsonText.size();
+		Json::Value reread;
+		Json::CharReaderBuilder readerBuilder;
+		string parseErrors;
+		istringstream stream(jsonText);
+		if (!Json::parseFromStream(readerBuilder, stream, &reread, &parseErrors)) {
+			fail("object script json does not parse back: " + parseErrors);
+			continue;
+		}
+		ObjectCommon same = common;
+		bool changed = true;
+		ByteBuffer sameData;
+		if (!recompileObjectScript(same, reread, changed, errorMessage) || changed || !same.serialize(sameData, errorMessage) || (sameData != blob)) {
+			fail("unchanged object script changed the object");
+			continue;
+		}
+		stable++;
+
+		// 2) JSON 을 고치면 그 부분만 바뀌어야 한다 (프레임 하나 추가, 문자열/값/문단 수정)
+		Json::Value editedScript = reread;
+		bool didFrame = false;
+		if (editedScript.isMember("animations")) {
+			for (Json::ArrayIndex s = 0; s < editedScript["animations"].size() && !didFrame; s++) {
+				Json::Value& directions = editedScript["animations"][s]["directions"];
+				if (directions.size() > 0) {
+					directions[0]["frames"].append(1234);
+					didFrame = true;
+				}
+			}
+		}
+		if (editedScript.isMember("alterableStrings")) {
+			editedScript["alterableStrings"].append("\xED\x95\x9C\xEA\xB8\x80");	// UTF-8 '한글'
+		}
+		if (editedScript.isMember("alterableValues")) {
+			editedScript["alterableValues"].append(77);
+		}
+		if (editedScript.isMember("text") && editedScript["text"]["paragraphs"].size() > 0) {
+			editedScript["text"]["paragraphs"][0]["text"] = "\xED\x95\x9C\xEA\xB8\x80";
+		}
+		ObjectCommon target = common;
+		if (!recompileObjectScript(target, editedScript, changed, errorMessage)) {
+			fail("edited object script rejected: " + errorMessage);
+			continue;
+		}
+		ByteBuffer editedData;
+		if (!target.serialize(editedData, errorMessage)) {
+			// i16 오프셋이 넘치는 큰 오브젝트는 정상적인 거부이다
+			if ((errorMessage.find("exceeds 32767") == string::npos) && (errorMessage.find("too large") == string::npos) && (errorMessage.find("overflow") == string::npos)) {
+				fail("edited object script serialize: " + errorMessage);
+			}
+			continue;
+		}
+		ObjectCommon reparsed;
+		if (!reparsed.parse(editedData, (ObjectCommonLayout)layoutId, (UINT32)build, errorMessage)) {
+			fail("edited object script reparse: " + errorMessage);
+			continue;
+		}
+		Json::Value again;
+		decompileObjectScript((INT32)total, "object", type, reparsed, again);
+		// 정수 타입(int/uint) 차이로 인한 오탐을 피하려고 직렬화한 문자열로 비교한다
+		if (Json::writeString(builder, again) != Json::writeString(builder, editedScript)) {
+			fail("edited object script differs after rebuild (object " + to_string((long long)total) + ")");
+			continue;
+		}
+		if ((reparsed.getMovementBlock() != common.getMovementBlock()) || (reparsed.getExtensionBlock() != common.getExtensionBlock())
+			|| (reparsed.getCounterBlock() != common.getCounterBlock())) {
+			fail("edited object script changed an opaque sub-block");
+			continue;
+		}
+		edited++;
+		if (didFrame) {
+			framesAdded++;
+		}
+	}
+	printf("  script : %u objects decompiled (%u KB json), unchanged recompile keeps bytes %u/%u, edited recompile exact %u (frame added in %u)\n",
+		(unsigned)total, (unsigned)(jsonBytes / 1024), (unsigned)stable, (unsigned)total, (unsigned)edited, (unsigned)framesAdded);
+}
+
+
 // ---------------------------------------------------------------- 오브젝트 텍스트
 
 static void testObjectText(const string& gameDir)
@@ -708,6 +817,7 @@ int main(int argc, char** argv)
 		testEventText(dir, build);
 		testObjects(dir);
 		testObjectText(dir);
+		testObjectScript(dir);
 		testContainer(dir);
 	}
 	printf("\n%s (%d failures)\n", failureCount ? "FAILED" : "ALL PASS", failureCount);

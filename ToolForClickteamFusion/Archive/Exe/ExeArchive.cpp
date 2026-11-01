@@ -336,6 +336,23 @@ bool ExeArchive::exportModules()
 }
 
 
+// 모듈 체크섬: 4바이트 단위로 읽어 "왼쪽으로 1비트 회전한 값 + 읽은 값" 을 누적하고, 남는 바이트도 같은 방식으로 더한다
+static UINT32 calculateModuleChecksum(const BYTE* data, UINT32 size)
+{
+	UINT32 checksum = 0;
+	UINT32 alignedCount = size / sizeof(UINT32);
+	for (UINT32 i = 0; i < alignedCount; i++) {
+		UINT32 value;
+		memcpy(&value, data + (i * sizeof(UINT32)), sizeof(UINT32));
+		checksum = (checksum << 1) + (checksum >> 31) + value;
+	}
+	for (UINT32 i = alignedCount * sizeof(UINT32); i < size; i++) {
+		checksum = (checksum << 1) + (checksum >> 31) + data[i];
+	}
+	return checksum;
+}
+
+
 bool ExeArchive::importModules()
 {
 	wcout << infoPrefix << L"<<function>> " << __FUNCTIONW__ << L": processing..." << endl;
@@ -386,6 +403,14 @@ bool ExeArchive::importModules()
 					BYTE* moduleBuffer = (BYTE*)malloc(moduleSize);
 					ReadFile(hModuleRead, moduleBuffer, moduleSize, &dRead, NULL);
 					CloseHandle(hModuleRead);
+
+					// 확장(.mfx)의 체크섬은 데이터에서 계산한 값이다 (dll / mvx / ift / sft 는 0). 데이터를 고친 확장은 파일 이름의 값과 달라지므로 계산한 값을 쓴다
+					UINT32 computedChecksum = calculateModuleChecksum(moduleBuffer, moduleSize);
+					bool isExtensionModule = (onlyName.size() > 4) && (_wcsicmp(onlyName.c_str() + (onlyName.size() - 4), L".mfx") == 0);
+					if (isExtensionModule && (computedChecksum != checksum)) {
+						wcout << infoPrefix << wfd.cFileName << L": 파일 이름의 체크섬(" << uppercase << hex << checksum << L") 대신 데이터에서 계산한 값(" << computedChecksum << L")을 사용합니다." << dec << endl;
+						checksum = computedChecksum;
+					}
 
 					CTT::Archive::Module tmpModule;
 

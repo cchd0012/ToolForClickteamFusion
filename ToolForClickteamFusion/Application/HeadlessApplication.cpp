@@ -3,6 +3,7 @@
 //   ToolForClickteamFusion.exe --roundtrip <아카이브 경로> [데이터 종류...]   읽은 뒤 그대로 다시 쓴다 (기본: script)
 //   ToolForClickteamFusion.exe --extract   <아카이브 경로> [데이터 종류...]   데이터를 추출한다 (기본: text)
 //   ToolForClickteamFusion.exe --replace   <아카이브 경로> [데이터 종류...]   추출해 둔 데이터로 교체한다 (기본: text)
+//                                          데이터 종류 자리에 codepage=949 locale=1042 를 적으면 앱 코드페이지/로케일도 바꾼다
 //
 // --roundtrip / --replace 는 일반 "저장" 과정(rewriteNewArchive)을 실행하고, 입력 파일 옆에
 // <이름>_new.<확장자> 로 기록한다. 게임을 읽고 다시 쓸 때 모든 청크(프레임/이벤트 포함)가 그대로 유지되는지
@@ -88,6 +89,23 @@ int CTT::App::runHeadlessCommand(int argc, WCHAR** argv)
 			success = arc->exportFromArchive(types);
 		}
 		else {
+			// 데이터 종류 자리에 codepage=949, locale=1042 를 적으면 앱 정보의 코드페이지/로케일을 바꿔서 저장한다
+			for (size_t i = 0; i < types.size(); ) {
+				if (types[i].compare(0, 9, L"codepage=") == 0) {
+					arc->setAppCodepageFromEditor((UINT32)_wtoi(types[i].c_str() + 9));
+					types.erase(types.begin() + i);
+				}
+				else if (types[i].compare(0, 7, L"locale=") == 0) {
+					arc->setAppLocaleIdFromEditor((UINT32)_wtoi(types[i].c_str() + 7));
+					types.erase(types.begin() + i);
+				}
+				else {
+					i++;
+				}
+			}
+			if (types.empty()) {
+				types.push_back(L"script");
+			}
 			success = arc->rewriteNewArchive(types);
 		}
 		if (success) {

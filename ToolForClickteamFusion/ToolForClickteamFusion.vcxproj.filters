@@ -169,6 +169,12 @@
     <ClCompile Include="$(SolutionDir)includes\src\freetype-2.13.2\src\autofit\autofit.c">
       <Filter>Glyph\FreeType</Filter>
     </ClCompile>
+    <ClCompile Include="Glyph\FtFont.cpp">
+      <Filter>Glyph</Filter>
+    </ClCompile>
+    <ClCompile Include="Glyph\TxtbltHangul.cpp">
+      <Filter>Glyph</Filter>
+    </ClCompile>
     <ClCompile Include="Glyph\GlyphGenerator.cpp">
       <Filter>Glyph</Filter>
     </ClCompile>
@@ -386,6 +392,15 @@
     </ClInclude>
     <ClInclude Include="Util\CommonUtilConstant.h">
       <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Glyph\FtFont.h">
+      <Filter>Glyph</Filter>
+    </ClInclude>
+    <ClInclude Include="Glyph\TxtbltFoldCode.h">
+      <Filter>Glyph</Filter>
+    </ClInclude>
+    <ClInclude Include="Glyph\TxtbltHangul.h">
+      <Filter>Glyph</Filter>
     </ClInclude>
     <ClInclude Include="Glyph\GlyphGenerator.h">
       <Filter>Glyph</Filter>

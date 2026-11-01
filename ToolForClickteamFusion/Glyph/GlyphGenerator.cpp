@@ -6,9 +6,7 @@
 #include <map>
 #include <set>
 
-// 폰트 래스터라이저: FreeType (includes/src/freetype-2.13.2). 힌팅까지 FreeType 기본 동작을 그대로 쓴다
-#include <ft2build.h>
-#include FT_FREETYPE_H
+#include "FtFont.h"
 
 using namespace CTT::Glyph;
 using namespace CTT::CommonUtil;
@@ -35,24 +33,12 @@ namespace {
 	string utf8(const wstring& s) { return getAnsiStr(s, CodePage::CP_UTF_8); }
 	wstring fromUtf8(const string& s) { return getUniStr(s, CodePage::CP_UTF_8); }
 
-	// 26.6 고정소수점을 픽셀로 반올림한다 (Pillow 의 PIXEL 매크로와 같다)
-	int pixel26_6(long value) { return (int)((value + 32) >> 6); }
-
-
-	// 폰트 파일 하나 (FreeType 얼굴은 스타일마다 크기가 달라서 따로 만들고, 파일 내용은 공유한다)
-	struct FontFile
-	{
-		vector<unsigned char> data;
-		vector<wchar_t> hangulSyllables;		// 폰트가 가진 한글 음절 (대체 글자 고르는 데 사용)
-	};
-
 
 	// 하나의 글자 스타일: 폰트, 크기, 셀 높이 등
 	struct Style
 	{
 		wstring name;
-		FontFile* font;
-		FT_Face face;
+		FtFont font;
 		int size;
 		int cellHeight;
 		bool hasDy;
@@ -62,8 +48,6 @@ namespace {
 		int hangulPad;
 		bool regenerateExisting;
 		bool substituteHangulHash;
-		int ascent;
-		int descent;
 	};
 
 
@@ -81,7 +65,7 @@ namespace {
 
 		FT_Library library;
 		vector<Style*> styles;
-		map<wstring, FontFile*> fontFiles;
+		map<wstring, shared_ptr<vector<unsigned char> > > fontData;			// 폰트 파일 내용 (스타일이 크기만 달라도 공유한다)
 		map<pair<int, int>, Style*> styleOf;		// (오브젝트, 슬롯) -> 스타일
 
 		UINT32 nextHandle;
@@ -96,7 +80,7 @@ namespace {
 		bool saveJson(const wstring& relative, Json::Value& value);
 
 		bool loadStyles();
-		FontFile* getFontFile(const wstring& relativePath);
+		shared_ptr<vector<unsigned char> > getFontData(const wstring& relativePath);
 		bool collectWantedChars(wstring& wanted);
 		int64_t makeGlyph(Style* style, wchar_t ch);
 		wchar_t substituteChar(Style* style, wchar_t ch);
@@ -106,13 +90,7 @@ namespace {
 	GlyphGenerator::~GlyphGenerator()
 	{
 		for (size_t i = 0; i < styles.size(); i++) {
-			if (styles[i]->face != NULL) {
-				FT_Done_Face(styles[i]->face);
-			}
 			delete styles[i];
-		}
-		for (map<wstring, FontFile*>::iterator it = fontFiles.begin(); it != fontFiles.end(); ++it) {
-			delete it->second;
 		}
 		if (library != NULL) {
 			FT_Done_FreeType(library);
@@ -134,41 +112,17 @@ namespace {
 	}
 
 
-	FontFile* GlyphGenerator::getFontFile(const wstring& relativePath)
+	shared_ptr<vector<unsigned char> > GlyphGenerator::getFontData(const wstring& relativePath)
 	{
-		map<wstring, FontFile*>::iterator it = fontFiles.find(relativePath);
-		if (it != fontFiles.end()) {
+		map<wstring, shared_ptr<vector<unsigned char> > >::iterator it = fontData.find(relativePath);
+		if (it != fontData.end()) {
 			return it->second;
 		}
-
-		wstring fullPath = path(relativePath);
-		HANDLE hFile = CreateFileW(fullPath.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-		if (hFile == INVALID_HANDLE_VALUE) {
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 폰트 파일을 열지 못했습니다: " << fullPath << endl;
-			return NULL;
+		shared_ptr<vector<unsigned char> > data = FtFont::readFile(path(relativePath));
+		if (data) {
+			fontData[relativePath] = data;
 		}
-		FontFile* font = new FontFile();
-		DWORD size = GetFileSize(hFile, NULL);
-		DWORD readBytes = 0;
-		font->data.resize(size);
-		bool readOk = (ReadFile(hFile, &font->data[0], size, &readBytes, NULL) != FALSE) && (readBytes == size);
-		CloseHandle(hFile);
-
-		// 한글 음절 목록을 위해 한 번 열어 본다
-		FT_Face probe = NULL;
-		if (!readOk || FT_New_Memory_Face(library, &font->data[0], (FT_Long)font->data.size(), 0, &probe) != 0) {
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 폰트를 읽지 못했습니다: " << fullPath << endl;
-			delete font;
-			return NULL;
-		}
-		for (UINT32 cp = 0xAC00; cp <= 0xD7A3; cp++) {
-			if (FT_Get_Char_Index(probe, cp) != 0) {
-				font->hangulSyllables.push_back((wchar_t)cp);
-			}
-		}
-		FT_Done_Face(probe);
-		fontFiles[relativePath] = font;
-		return font;
+		return data;
 	}
 
 
@@ -188,11 +142,10 @@ namespace {
 			}
 
 			Style* style = new Style();
-			style->face = NULL;
 			styles.push_back(style);
 			style->name = fromUtf8(s["name"].asString());
-			style->font = getFontFile(fromUtf8(s["font"].asString()));
-			if (style->font == NULL) {
+			shared_ptr<vector<unsigned char> > data = getFontData(fromUtf8(s["font"].asString()));
+			if (!data) {
 				return false;
 			}
 			style->size = s["size"].asInt();
@@ -205,13 +158,10 @@ namespace {
 			style->regenerateExisting = s.get("regenerateExisting", false).asBool();
 			style->substituteHangulHash = (s.get("substitute", "").asString() == "hangulHash");
 
-			if (FT_New_Memory_Face(library, &style->font->data[0], (FT_Long)style->font->data.size(), 0, &style->face) != 0
-				|| FT_Set_Pixel_Sizes(style->face, 0, style->size) != 0) {
-				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 스타일 " << style->name << L" 의 폰트 크기를 지정하지 못했습니다." << endl;
+			if (!style->font.open(library, data, style->size)) {
+				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 스타일 " << style->name << L" 의 폰트를 열거나 크기를 지정하지 못했습니다." << endl;
 				return false;
 			}
-			style->ascent = pixel26_6(style->face->size->metrics.ascender);
-			style->descent = pixel26_6(-style->face->size->metrics.descender);
 
 			const Json::Value& targets = s["targets"];
 			for (Json::ArrayIndex t = 0; t < targets.size(); t++) {
@@ -288,8 +238,9 @@ namespace {
 	// 폰트에 없는 글자를 대신할 글자. hangulHash: 코드 포인트로 폰트의 한글 음절 하나를 골라 기호가 고르게 퍼지게 한다
 	wchar_t GlyphGenerator::substituteChar(Style* style, wchar_t ch)
 	{
-		if (style->substituteHangulHash && !style->font->hangulSyllables.empty()) {
-			return style->font->hangulSyllables[(size_t)ch % style->font->hangulSyllables.size()];
+		const vector<wchar_t>& syllables = style->font.hangulSyllables();
+		if (style->substituteHangulHash && !syllables.empty()) {
+			return syllables[(size_t)ch % syllables.size()];
 		}
 		return 0;
 	}
@@ -304,31 +255,29 @@ namespace {
 			return cached->second;
 		}
 
-		FT_UInt glyphIndex = FT_Get_Char_Index(style->face, (FT_ULong)ch);
-		if (glyphIndex == 0) {
+		wchar_t drawCh = ch;
+		if (!style->font.hasChar(ch)) {
 			wchar_t sub = substituteChar(style, ch);
 			if (sub == 0) {
 				missing[style->name].push_back(ch);
 				handleCache[key] = -1;
 				return -1;
 			}
-			glyphIndex = FT_Get_Char_Index(style->face, (FT_ULong)sub);
+			drawCh = sub;
 		}
-
-		// Pillow 와 같은 로드 방식: 내장 비트맵은 쓰지 않고, 기본 힌팅 + 8비트 안티앨리어싱으로 그린다
-		if (FT_Load_Glyph(style->face, glyphIndex, FT_LOAD_NO_BITMAP) != 0 || FT_Render_Glyph(style->face->glyph, FT_RENDER_MODE_NORMAL) != 0) {
+		GlyphBitmap bitmap;
+		if (!style->font.render(drawCh, bitmap)) {
 			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 스타일 " << style->name << L" 에서 글자(U+" << hex << (int)ch << dec << L")를 그리지 못했습니다." << endl;
 			return -2;
 		}
-		FT_GlyphSlot slot = style->face->glyph;
-		const FT_Bitmap& bitmap = slot->bitmap;
 
 		const int cellHeight = style->cellHeight;
 		const int dx = style->dx;
-		const int dy = style->hasDy ? style->dy : floorDiv(cellHeight - (style->ascent + style->descent), 2);
+		const int ascent = style->font.ascent();
+		const int dy = style->hasDy ? style->dy : floorDiv(cellHeight - (ascent + style->font.descent()), 2);
 
-		int advancePx = pixel26_6(slot->metrics.horiAdvance);
-		int inkRight = (bitmap.width > 0) ? (slot->bitmap_left + (int)bitmap.width) : 0;
+		int advancePx = bitmap.advance;
+		int inkRight = (bitmap.width > 0) ? (bitmap.left + bitmap.width) : 0;
 		int bboxRight = (std::max)(advancePx, inkRight);
 
 		int width = (std::max)(1, (std::max)(advancePx, dx + bboxRight));
@@ -338,15 +287,15 @@ namespace {
 
 		// 글리프를 그려서 문턱값 이상인 픽셀만 흰색으로 남긴다 (흰색/투명 두 가지 색)
 		vector<unsigned char> rgba((size_t)width * cellHeight * 4, 0);
-		if (bitmap.buffer != NULL && bitmap.width > 0 && bitmap.rows > 0 && bitmap.pixel_mode == FT_PIXEL_MODE_GRAY) {
-			int originX = dx + slot->bitmap_left;
-			int originY = dy + style->ascent - slot->bitmap_top;
-			for (int gy = 0; gy < (int)bitmap.rows; gy++) {
+		if (bitmap.buffer != NULL && bitmap.width > 0 && bitmap.rows > 0) {
+			int originX = dx + bitmap.left;
+			int originY = dy + ascent - bitmap.top;
+			for (int gy = 0; gy < bitmap.rows; gy++) {
 				int py = originY + gy;
 				if (py < 0 || py >= cellHeight) {
 					continue;
 				}
-				for (int gx = 0; gx < (int)bitmap.width; gx++) {
+				for (int gx = 0; gx < bitmap.width; gx++) {
 					int px = originX + gx;
 					if (px < 0 || px >= width) {
 						continue;

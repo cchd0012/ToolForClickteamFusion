@@ -9,7 +9,7 @@ using namespace CTT::App;
 // Application/HeadlessApplication.cpp
 namespace CTT { namespace App { int runHeadlessCommand(int argc, WCHAR** argv); } }
 // Glyph/GlyphGenerator.cpp
-namespace CTT { namespace Glyph { int runGlyphCommand(int argc, WCHAR** argv); } }
+namespace CTT { namespace Glyph { int runGlyphCommand(int argc, WCHAR** argv); int runTxtbltHangulCommand(int argc, WCHAR** argv); } }
 
 // Main code
 int wmain(int argc, WCHAR* argv[])
@@ -24,6 +24,11 @@ int wmain(int argc, WCHAR* argv[])
 	// 개발용 스위치: 추출해 둔 폴더에 글자 이미지를 만들어 넣는다 (--glyphs, Glyph/GlyphGenerator.cpp)
 	if (argc >= 2 && wcscmp(argv[1], L"--glyphs") == 0) {
 		return CTT::Glyph::runGlyphCommand(argc, argv);
+	}
+
+	// 개발용 스위치: txtblt(Text Blitter) 확장에 한글을 그리게 한다 (--txtblt-hangul, Glyph/TxtbltHangul.cpp)
+	if (argc >= 2 && wcscmp(argv[1], L"--txtblt-hangul") == 0) {
+		return CTT::Glyph::runTxtbltHangulCommand(argc, argv);
 	}
 
 	wcout << L"----------------------------------------------------" << endl;

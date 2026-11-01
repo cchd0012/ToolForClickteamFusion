@@ -198,7 +198,9 @@
     <ClCompile Include="ImGUI\imgui_widgets.cpp" />
     <ClCompile Include="jsoncpp.cpp" />
     <ClCompile Include="ToolForClickteamFusion.cpp" />
+    <ClCompile Include="Glyph\FtFont.cpp" />
     <ClCompile Include="Glyph\GlyphGenerator.cpp" />
+    <ClCompile Include="Glyph\TxtbltHangul.cpp" />
     <ClCompile Include="$(SolutionDir)includes\src\freetype-2.13.2\src\base\ftsystem.c">
       <PreprocessorDefinitions>FT2_BUILD_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CompileAs>CompileAsC</CompileAs>
@@ -316,7 +318,10 @@
     <ClInclude Include="Chunk\TwoFivePlusObject\ObjectHeaderListChunk.h" />
     <ClInclude Include="Chunk\TwoFivePlusObject\ObjectElementDataChunk.h" />
     <ClInclude Include="Chunk\TwoFivePlusObject\ObjectElementContainer.h" />
+    <ClInclude Include="Glyph\FtFont.h" />
     <ClInclude Include="Glyph\GlyphGenerator.h" />
+    <ClInclude Include="Glyph\TxtbltFoldCode.h" />
+    <ClInclude Include="Glyph\TxtbltHangul.h" />
     <ClInclude Include="Util\ByteBufferUtil.h" />
     <ClInclude Include="Chunk\Frame\FrameEffectChunk.h" />
     <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventChunk.h" />

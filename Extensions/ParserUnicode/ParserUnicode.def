@@ -1,0 +1,12 @@
+﻿LIBRARY parser.mfx
+EXPORTS
+	GetInfos
+	GetRunObjectInfos
+	GetRunObjectDataSize
+	CreateRunObject
+	DestroyRunObject
+	HandleRunObject
+	DisplayRunObject
+	ReInitRunObject
+	PauseRunObject
+	ContinueRunObject

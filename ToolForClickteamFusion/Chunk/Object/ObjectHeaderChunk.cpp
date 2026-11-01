@@ -1,4 +1,4 @@
-#include "ObjectHeaderChunk.h"
+Ôªø#include "ObjectHeaderChunk.h"
 #include "../../Util/JsonUtil.h"
 #include "../../Util/CommonUtil.h"
 #include "../../ImGUI/Headers.h"
@@ -21,7 +21,7 @@ ObjectHeaderChunk::~ObjectHeaderChunk()
 
 bool ObjectHeaderChunk::loadFromOrgBuffer()
 {
-	// chunk µ•¿Ã≈Õ: [ObjectHeader]
+	// chunk Îç∞Ïù¥ÌÑ∞: [ObjectHeader]
 	memcpy(&value, orgBuffer, sizeof(ObjectHeader));
 
 	free(orgBuffer);
@@ -114,7 +114,7 @@ void ObjectHeaderChunk::importFromJson(Json::Value& importValues)
 }
 
 
-// µ•¿Ã≈Õ ∑ª¥ı∏µøÎ
+// Îç∞Ïù¥ÌÑ∞ Î†åÎçîÎßÅÏö©
 void ObjectHeaderChunk::renderData()
 {
 	ImGui::TextDisabled(u8"--");

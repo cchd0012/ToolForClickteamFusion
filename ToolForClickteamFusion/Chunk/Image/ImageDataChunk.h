@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../DataChunk.h"
 #include "../../Archive/Archive.h"
@@ -17,7 +17,7 @@ namespace CTT {
 			BaseData* allocateData() 
 			{
 				BaseImage* img = NULL;
-				// ÀÌ°Ç ³ªÁß¿¡ Á¦º¸¸¦ ¹ÞÀ¸¸é¼­ È®ÀÎÇÏ´ø°¡ ÇØ¾ß°ÚÀ½
+				// ì´ê±´ ë‚˜ì¤‘ì— ì œë³´ë¥¼ ë°›ìœ¼ë©´ì„œ í™•ì¸í•˜ë˜ê°€ í•´ì•¼ê² ìŒ
 				if (getArchive()->isTwoPointFiveImage()) {
 					img = new TwoFivePlusImage();
 				}

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../DataChunk.h"
 #include "TrueTypeFontInfo.h"
@@ -7,7 +7,7 @@ namespace CTT {
 
 	namespace Chunk {
 
-		// µ¥ÀÌÅÍ ÃâÇöÀº º¸Åë TrueTypeFontDataChunk -> TrueTypeFontInfoDataChunk ·Î ³ª¿À´Â°Å °°À½
+		// ë°ì´í„° ì¶œí˜„ì€ ë³´í†µ TrueTypeFontDataChunk -> TrueTypeFontInfoDataChunk ë¡œ ë‚˜ì˜¤ëŠ”ê±° ê°™ìŒ
 
 		class TrueTypeFontInfoDataChunk : public DataChunk
 		{

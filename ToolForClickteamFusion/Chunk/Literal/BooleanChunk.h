@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../Chunk.h"
 
@@ -11,12 +11,12 @@ namespace CTT {
 		public:
 			bool& getValue() { return value; }
 			void setValue(bool value)  { this->value = value; }
-			// µ¥ÀÌÅÍ ·»´õ¸µ¿ë ÇÔ¼ö
+			// ë°ì´í„° ë Œë”ë§ìš© í•¨ìˆ˜
 			void renderData();
 		protected:
 			bool loadFromOrgBuffer()
 			{
-				// chunk µ¥ÀÌÅÍ: [bool]
+				// chunk ë°ì´í„°: [bool]
 				value = *(bool*)orgBuffer;
 				free(orgBuffer);
 				orgBuffer = NULL;
@@ -37,7 +37,7 @@ namespace CTT {
 			bool value;
 		};
 
-		// BooleanChunk¸¦ ±×´ë·Î »ó¼Ó¹Ş´Â Å¬·¡½ºµé
+		// BooleanChunkë¥¼ ê·¸ëŒ€ë¡œ ìƒì†ë°›ëŠ” í´ë˜ìŠ¤ë“¤
 		class IsDemoChunk : public BooleanChunk { ; };
 		class ExeOnlyChunk : public BooleanChunk { ; };
 	}

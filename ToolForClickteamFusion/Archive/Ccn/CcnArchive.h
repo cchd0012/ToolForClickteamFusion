@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../Archive.h"
 
@@ -6,7 +6,7 @@ namespace CTT {
 
 	namespace Archive {
 
-		// exe ¾ÆÄ«ÀÌºê¿Í °¡Àå Å« Â÷ÀÌ´Â ¾È¿¡ modules µ¥ÀÌÅÍ°¡ ÀÖ´À³Ä ¾ø´À³Ä
+		// exe ì•„ì¹´ì´ë¸Œì™€ ê°€ì¥ í° ì°¨ì´ëŠ” ì•ˆì— modules ë°ì´í„°ê°€ ìˆëŠëƒ ì—†ëŠëƒ
 		class CcnArchive : public Archive 
 		{
 		public:

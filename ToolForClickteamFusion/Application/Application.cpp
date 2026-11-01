@@ -1,4 +1,4 @@
-#include "Application.h"
+ï»¿#include "Application.h"
 #include "Dx9Application.h"
 #include "../ImGUI/Headers.h"
 
@@ -48,17 +48,17 @@ Application::~Application()
 
 
 
-// app »óÅÂ ÃÊ±âÈ­ ÇÔ¼ö
+// app ìƒíƒœ ì´ˆê¸°í™” í•¨ìˆ˜
 void Application::initializeAppState()
 {
 	states = ApplicationState();
 
-	// À©µµ¿ì ¿ÀÇÂ »óÅÂ ÃÊ±âÈ­
+	// ìœˆë„ìš° ì˜¤í”ˆ ìƒíƒœ ì´ˆê¸°í™”
 	states.isOpen = true;
 	states.isDirty = false;
 	states.isDraggable = false;
 
-	// À©µµ¿ì »óÅÂ°ª ÃÊ±âÈ­ (±âº» 840*600)
+	// ìœˆë„ìš° ìƒíƒœê°’ ì´ˆê¸°í™” (ê¸°ë³¸ 840*600)
 	states.windowWidth = 840;
 	states.windowHeight = 600;
 	states.menuHeight = 40;
@@ -66,34 +66,34 @@ void Application::initializeAppState()
 	states.chunkListWindowWidth = 400;
 	states.buttonGap = 6;
 
-	// ¿¡·¯ »óÅÂ ÃÊ±âÈ­
+	// ì—ëŸ¬ ìƒíƒœ ì´ˆê¸°í™”
 	states.isError = false;
 	memset(states.lastErrorTitle, 0, MAX_ERROR_TITLE_LENGTH);
 	memset(states.lastErrorMsg, 0, MAX_ERROR_MSG_LENGTH);
 
-	// open (¿­±â) °ü·Ã »óÅÂ°ª ÃÊ±âÈ­
+	// open (ì—´ê¸°) ê´€ë ¨ ìƒíƒœê°’ ì´ˆê¸°í™”
 	states.isOpenModalShow = false;
 	memset(states.openArchivePath, 0, MAX_UTF8_PATH);
 
-	// ÀúÀå °ü·Ã »óÅÂ°ª ÃÊ±âÈ­
+	// ì €ìž¥ ê´€ë ¨ ìƒíƒœê°’ ì´ˆê¸°í™”
 	states.isSaveModalShow = false;
 	states.savingThreadState = ThreadState::THREAD_READY;
 	states.totalSavingDataCount = 0;
 	states.currentSavingDataIndex = 0;
 
-	// ÃßÃâ °ü·Ã »óÅÂ°ª ÃÊ±âÈ­
+	// ì¶”ì¶œ ê´€ë ¨ ìƒíƒœê°’ ì´ˆê¸°í™”
 	states.isExtractModalShow = false;
 	states.isPartExtractModalShow = false;
 	states.extractingThreadState = ThreadState::THREAD_READY;
 
-	// ±³Ã¼ °ü·Ã »óÅÂ°ª ÃÊ±âÈ­
+	// êµì²´ ê´€ë ¨ ìƒíƒœê°’ ì´ˆê¸°í™”
 	states.isReplaceModalShow = false;
 	states.isPartReplaceModalShow = false;
 	states.replacingThreadState = ThreadState::THREAD_READY;
 	states.totalReplacingDataCount = 0;
 	states.currentReplacingDataIndex = 0;
 
-	// ÃßÃâ/±³Ã¼ °øÅë »óÅÂ°ª ÃÊ±âÈ­
+	// ì¶”ì¶œ/êµì²´ ê³µí†µ ìƒíƒœê°’ ì´ˆê¸°í™”
 	states.usingImage = true;
 	states.usingImageAndExtractNoneTransparent = false;
 	states.usingSound = true;
@@ -106,14 +106,14 @@ void Application::initializeAppState()
 	states.totalDataCount = 0;
 	states.currentDataIndex = 0;
 
-	// ¾ÆÄ«ÀÌºê °ü·Ã »óÅÂ°ª ÃÊ±âÈ­
+	// ì•„ì¹´ì´ë¸Œ ê´€ë ¨ ìƒíƒœê°’ ì´ˆê¸°í™”
 	states.isArchiveOpened = false;
 	states.isArchiveGameNameEditing = false;
 	states.archiveType = ArchiveType::ARCHIVE_UNK;
 	states.engineType = EngineType::ENGINE_UNK;
 	memset(states.archiveGameName, 0, MAX_GAME_NAME_LENGTH);
 
-	// Chunk °ü·Ã »óÅÂ°ª ÃÊ±âÈ­
+	// Chunk ê´€ë ¨ ìƒíƒœê°’ ì´ˆê¸°í™”
 	states.chunkTreeNodeContainer = ChunkTreeNodeContainer();
 	states.chunkTreeNodeContainer.init();
 	states.renderingChunkLoaded = false;
@@ -121,13 +121,13 @@ void Application::initializeAppState()
 	states.renderingChunk = NULL;
 	states.chunkDataCount = 0;
 
-	// ¸Þ½ÃÁö ÀÌº¥Æ® Ã³¸®¿ë º¯¼ö ÃÊ±âÈ­
+	// ë©”ì‹œì§€ ì´ë²¤íŠ¸ ì²˜ë¦¬ìš© ë³€ìˆ˜ ì´ˆê¸°í™”
 	resizeWidth = 0;
 	resizeHeight = 0;
 }
 
 
-// ¿¡·¯ ¼¼ÆÃ ÇÔ¼ö
+// ì—ëŸ¬ ì„¸íŒ… í•¨ìˆ˜
 void Application::triggerError(const char* errTitle, const char* errMsg, bool closeAllModal = false)
 {
 	states.isError = true;
@@ -135,7 +135,7 @@ void Application::triggerError(const char* errTitle, const char* errMsg, bool cl
 	memcpy(states.lastErrorTitle, errTitle, min(strlen(errTitle), (MAX_ERROR_TITLE_LENGTH - 1)));
 	memset(states.lastErrorMsg, 0, MAX_ERROR_MSG_LENGTH);
 	memcpy(states.lastErrorMsg, errMsg, min(strlen(errMsg), (MAX_ERROR_MSG_LENGTH - 1)));
-	// closeAllModalÀÌ true¸é ÇöÀç ¿­¸° ¸ðµç modalÀ» ´Ýµµ·Ï Á¶Ä¡ÇÑ´Ù
+	// closeAllModalì´ trueë©´ í˜„ìž¬ ì—´ë¦° ëª¨ë“  modalì„ ë‹«ë„ë¡ ì¡°ì¹˜í•œë‹¤
 	if (closeAllModal) 
 	{
 		states.isOpenModalShow = false;
@@ -150,7 +150,7 @@ void Application::triggerError(const char* errTitle, const char* errMsg, bool cl
 
 
 
-// imgui_impl_win32.cpp ÆÄÀÏ¿¡ ¼±¾ðµÈ WndProc ÇÚµé·¯
+// imgui_impl_win32.cpp íŒŒì¼ì— ì„ ì–¸ëœ WndProc í•¸ë“¤ëŸ¬
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 LRESULT WINAPI Application::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -179,18 +179,18 @@ LRESULT WINAPI Application::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM l
 			break;
 		}
 		case WM_LBUTTONDOWN: {
-			// ¸¶¿ì½º ¿ÞÂÊ ¹öÆ° Å¬¸¯ ½Ã ÀÌµ¿ ½ÃÀÛ, µå·¡±×°¡ °¡´ÉÇÒ ¶§¸¸ Ã³¸®ÇÑ´Ù
+			// ë§ˆìš°ìŠ¤ ì™¼ìª½ ë²„íŠ¼ í´ë¦­ ì‹œ ì´ë™ ì‹œìž‘, ë“œëž˜ê·¸ê°€ ê°€ëŠ¥í•  ë•Œë§Œ ì²˜ë¦¬í•œë‹¤
 			if (wParam == MK_LBUTTON && getApp()->getStates()->isDraggable) 
 			{
 				isDragging = true;
-				// ¸¶¿ì½º Å¬¸¯ À§Ä¡ ±â·Ï
+				// ë§ˆìš°ìŠ¤ í´ë¦­ ìœ„ì¹˜ ê¸°ë¡
 				offsetX = GET_X_LPARAM(lParam);
 				offsetY = GET_Y_LPARAM(lParam);
 			}
 			break;
 		}
 		case WM_LBUTTONUP: {
-			// ¸¶¿ì½º ¿ÞÂÊ ¹öÆ° ¶¿ ¶§ ÀÌµ¿ Á¾·á, µå·¡±×°¡ °¡´ÉÇÒ ¶§¸¸ Ã³¸®ÇÑ´Ù
+			// ë§ˆìš°ìŠ¤ ì™¼ìª½ ë²„íŠ¼ ë—„ ë•Œ ì´ë™ ì¢…ë£Œ, ë“œëž˜ê·¸ê°€ ê°€ëŠ¥í•  ë•Œë§Œ ì²˜ë¦¬í•œë‹¤
 			if (getApp()->getStates()->isDraggable)
 			{
 				isDragging = false;
@@ -198,7 +198,7 @@ LRESULT WINAPI Application::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM l
 			break;
 		}
 		case WM_MOUSEMOVE: {
-			// ¸¶¿ì½º¸¦ ÀÌµ¿ÇÒ ¶§ Ã¢À» ÀÌµ¿ (ÇöÀç À§Ä¡ ±â¹ÝÀ¸·Î), µå·¡±×°¡ °¡´ÉÇÒ ¶§¸¸ Ã³¸®ÇÑ´Ù
+			// ë§ˆìš°ìŠ¤ë¥¼ ì´ë™í•  ë•Œ ì°½ì„ ì´ë™ (í˜„ìž¬ ìœ„ì¹˜ ê¸°ë°˜ìœ¼ë¡œ), ë“œëž˜ê·¸ê°€ ê°€ëŠ¥í•  ë•Œë§Œ ì²˜ë¦¬í•œë‹¤
 			if (getApp()->getStates()->isDraggable)
 			{
 				if (isDragging) 

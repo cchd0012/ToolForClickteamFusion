@@ -1,10 +1,10 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../../../../Common.h"
 
-// script·Î º¸´ø°Ô »ç½Ç 2.5+ object
-// script 2·Î º¸´ø°Ô »ç½Ç ±×³É objectÀÎµí
-// 2.5+´Â New ºÙ¿©¼­, ±×³ÉÀº Old ºÙ¿©¼­ ±¸ºĞÇØ¾ß°ÚÀ½
+// scriptë¡œ ë³´ë˜ê²Œ ì‚¬ì‹¤ 2.5+ object
+// script 2ë¡œ ë³´ë˜ê²Œ ì‚¬ì‹¤ ê·¸ëƒ¥ objectì¸ë“¯
+// 2.5+ëŠ” New ë¶™ì—¬ì„œ, ê·¸ëƒ¥ì€ Old ë¶™ì—¬ì„œ êµ¬ë¶„í•´ì•¼ê² ìŒ
 
 namespace CTT {
 

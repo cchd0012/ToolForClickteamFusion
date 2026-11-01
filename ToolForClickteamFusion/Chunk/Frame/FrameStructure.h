@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../Chunk.h"
 #include "../AppInfo/ShaderStructure.h"
@@ -10,7 +10,7 @@ namespace CTT {
 
 		using namespace CTT::CommonUtil;
 
-		// ÇÁ·¹ÀÓ Çì´õ
+		// í”„ë ˆì„ í—¤ë”
 		typedef struct _frame_header
 		{
 			UINT32 width;
@@ -19,7 +19,7 @@ namespace CTT {
 			UINT32 flag;
 		} FrameHeader;
 
-		// ÇÁ·¹ÀÓ ·¹ÀÌ¾î
+		// í”„ë ˆì„ ë ˆì´ì–´
 		typedef struct _frame_layer_info
 		{
 			UINT32 flag;
@@ -29,9 +29,9 @@ namespace CTT {
 			UINT32 BackgroudIndex;
 		} FrameLayerInfo;
 
-		// ÇÁ·¹ÀÓ ÀÌÆåÆ®
-		// effect °ªÀÌ 0º¸´Ù ÀÛ°Å³ª shaderIndex °ªÀÌ -1ÀÌ¸é ¼ÎÀÌ´õ°¡ ¾ø´Â °É·Î ÆÇ´ÜÇÑ´Ù
-		// shaderIndex °ªÀº °ğ ¼ÎÀÌ´õÀÇ ÀÎµ¦½º¸¦ °¡¸®Å²´Ù
+		// í”„ë ˆì„ ì´í™íŠ¸
+		// effect ê°’ì´ 0ë³´ë‹¤ ì‘ê±°ë‚˜ shaderIndex ê°’ì´ -1ì´ë©´ ì…°ì´ë”ê°€ ì—†ëŠ” ê±¸ë¡œ íŒë‹¨í•œë‹¤
+		// shaderIndex ê°’ì€ ê³§ ì…°ì´ë”ì˜ ì¸ë±ìŠ¤ë¥¼ ê°€ë¦¬í‚¨ë‹¤
 		typedef struct _frame_effect_info
 		{
 			INT16 effect;
@@ -40,7 +40,7 @@ namespace CTT {
 			INT32 shaderIndex;
 		} FrameEffectInfo;
 
-		// ÇÁ·¹ÀÓ ÀÌÆåÆ® ¸í·É¾î ´ÜÀ§?
+		// í”„ë ˆì„ ì´í™íŠ¸ ëª…ë ¹ì–´ ë‹¨ìœ„?
 		typedef struct _frame_effect_instruction
 		{
 			FrameEffectInfo info;
@@ -48,7 +48,7 @@ namespace CTT {
 			vector<ShaderArgument> shaderArguments;
 		} FrameEffectInstruction;
 
-		// ÇÁ·¹ÀÓ Â÷Áö °ø°£
+		// í”„ë ˆì„ ì°¨ì§€ ê³µê°„
 		typedef struct _frame_virtual_rect
 		{
 			UINT32 left;
@@ -57,7 +57,7 @@ namespace CTT {
 			UINT32 bottom;
 		} FrameVirtualRect;
 
-		// ÇÁ·¹ÀÓ ¾ÆÀÌÅÛ Á¤º¸?
+		// í”„ë ˆì„ ì•„ì´í…œ ì •ë³´?
 		typedef struct _frame_object_info
 		{
 			UINT16 handle;
@@ -70,11 +70,11 @@ namespace CTT {
 			UINT16 parentHandle;
 		} FrameObjectInfo;
 
-		// ÇÁ·¹ÀÓ ÀüÈ¯ Á¤º¸?
+		// í”„ë ˆì„ ì „í™˜ ì •ë³´?
 		typedef struct _frame_transition_info
 		{
-			// moduleType°ú nameÀº µ¥ÀÌÅÍ»óÀ¸·Î ansiÀÌ°í 4¹ÙÀÌÆ® °íÁ¤ÀÌÁö¸¸
-			// module_file_nameÀº unicodeÀÌ¸ç(ansi´Â ¾ÈÀĞ±â ¶§¹®) NULL·Î ³¡³­´Ù
+			// moduleTypeê³¼ nameì€ ë°ì´í„°ìƒìœ¼ë¡œ ansiì´ê³  4ë°”ì´íŠ¸ ê³ ì •ì´ì§€ë§Œ
+			// module_file_nameì€ unicodeì´ë©°(ansiëŠ” ì•ˆì½ê¸° ë•Œë¬¸) NULLë¡œ ëë‚œë‹¤
 			wstring moduleType;
 			wstring name;
 			UINT32 duration;

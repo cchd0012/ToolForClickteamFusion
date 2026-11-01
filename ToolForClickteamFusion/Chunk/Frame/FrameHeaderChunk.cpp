@@ -1,4 +1,4 @@
-#include "FrameHeaderChunk.h"
+ï»¿#include "FrameHeaderChunk.h"
 #include "../../Archive/Archive.h"
 #include "../../Util/CommonUtil.h"
 #include "../../ImGUI/Headers.h"
@@ -7,7 +7,7 @@ using namespace CTT::Chunk;
 using namespace CTT::Archive;
 using namespace CTT::CommonUtil;
 
-// ºñÆ® À§Ä¡º°·Î Æ÷ÇÔµÇ´Â Á¤º¸
+// ë¹„íŠ¸ ìœ„ì¹˜ë³„ë¡œ í¬í•¨ë˜ëŠ” ì •ë³´
 wstring frameFlagStr[] = {
 	L"DisplayTitle",
 	L"GrabDesktop",
@@ -58,7 +58,7 @@ FrameHeaderChunk::~FrameHeaderChunk()
 
 bool FrameHeaderChunk::loadFromOrgBuffer()
 {
-	// chunk µ¥ÀÌÅÍ: [FrameHeader]
+	// chunk ë°ì´í„°: [FrameHeader]
 	memcpy(&value, orgBuffer, sizeof(FrameHeader));
 	free(orgBuffer);
 	orgBuffer = NULL;
@@ -79,7 +79,7 @@ bool FrameHeaderChunk::saveIntoOrgBuffer()
 }
 
 
-// µ¥ÀÌÅÍ ·»´õ¸µ¿ë
+// ë°ì´í„° ë Œë”ë§ìš©
 void FrameHeaderChunk::renderData()
 {
 	stringstream oss;
@@ -98,14 +98,14 @@ void FrameHeaderChunk::renderData()
 	ImGui::Text(oss.str().c_str());
 	oss.str("");
 
-	// ÄÃ·¯ Ã¢Àº ³ªÅ¸³»µÇ ¼±ÅÃ ºÒ°¡´ÉÇÏµµ·Ï
+	// ì»¬ëŸ¬ ì°½ì€ ë‚˜íƒ€ë‚´ë˜ ì„ íƒ ë¶ˆê°€ëŠ¥í•˜ë„ë¡
 	ImGuiColorEditFlags colorEditFlags = ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel;
 	ImVec4 bgColor = ImVec4((float(value.bgColor.r) / 255.0f), (float(value.bgColor.g) / 255.0f), (float(value.bgColor.b) / 255.0f), (float(value.bgColor.a) / 255.0f));
-	// -- °°Àº ¶óÀÎ --
+	// -- ê°™ì€ ë¼ì¸ --
 	ImGui::SameLine();
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3.0f);
 	ImGui::ColorEdit4("MyColor##1", (float*)&bgColor, colorEditFlags);
-	// -- °°Àº ¶óÀÎ --
+	// -- ê°™ì€ ë¼ì¸ --
 	ImGui::SameLine(ImGui::CalcTextSize(u8"  bg_color:").x + 36.0f);
 	ImGui::Text(",");
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3.0f);

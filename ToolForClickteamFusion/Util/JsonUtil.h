@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../Common.h"
 #include <jsoncpp/json/json.h>
@@ -9,7 +9,7 @@ namespace CTT {
 
 		using namespace std;
 
-		// json µ¥ÀÌÅÍ´Â UTF-8, ÆÄÀÏ °æ·Î´Â GetAnsiStr·Î stringÀ¸·Î ¹Ù²Ü °ÍÀÌ °­Á¦µÊ
+		// json ë°ì´í„°ëŠ” UTF-8, íŒŒì¼ ê²½ë¡œëŠ” GetAnsiStrë¡œ stringìœ¼ë¡œ ë°”ê¿€ ê²ƒì´ ê°•ì œë¨
 		bool readFromJson(Json::Value& value, wstring& path);
 		bool writeIntoJson(Json::Value& value, wstring& path);
 

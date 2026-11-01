@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "../Common.h"
 #include "ChunkTreeNode.h"
 #include "../Archive/ArchiveConstant.h"
@@ -15,10 +15,10 @@ enum class ThreadState {
 	THREAD_FINISHED,
 };
 
-// ImGUIÀÇ Æ¯¼º»ó ¸ğµç char ¹è¿­Àº utf-8·Î ÀÎÄÚµùÇØ ÀúÀåÇÑ´Ù
+// ImGUIì˜ íŠ¹ì„±ìƒ ëª¨ë“  char ë°°ì—´ì€ utf-8ë¡œ ì¸ì½”ë”©í•´ ì €ì¥í•œë‹¤
 typedef struct _application_state {
 
-	// À©µµ¿ì »óÅÂ°ª
+	// ìœˆë„ìš° ìƒíƒœê°’
 	UINT32 windowWidth;
 	UINT32 windowHeight;
 	UINT32 menuHeight;
@@ -26,40 +26,40 @@ typedef struct _application_state {
 	UINT32 chunkListWindowWidth;
 	UINT32 buttonGap;
 
-	// À©µµ¿ì ¿ÀÇÂ »óÅÂ
+	// ìœˆë„ìš° ì˜¤í”ˆ ìƒíƒœ
 	bool isOpen;
 	bool isDirty;
 	bool isDraggable;
 
-	// ¿¡·¯ °ü·Ã »óÅÂ
+	// ì—ëŸ¬ ê´€ë ¨ ìƒíƒœ
 	bool isError;
 	char lastErrorTitle[MAX_ERROR_TITLE_LENGTH];
 	char lastErrorMsg[MAX_ERROR_MSG_LENGTH];
 
-	// open (¿­±â) °ü·Ã »óÅÂ°ª
+	// open (ì—´ê¸°) ê´€ë ¨ ìƒíƒœê°’
 	bool isOpenModalShow;
 	char openArchivePath[MAX_UTF8_PATH];
 
-	// ÀúÀå °ü·Ã »óÅÂ°ª
+	// ì €ì¥ ê´€ë ¨ ìƒíƒœê°’
 	bool isSaveModalShow;
 	ThreadState savingThreadState;
 	UINT32 totalSavingDataCount;
 	UINT32 currentSavingDataIndex;
 
-	// ÃßÃâ °ü·Ã »óÅÂ°ª
+	// ì¶”ì¶œ ê´€ë ¨ ìƒíƒœê°’
 	bool isExtractModalShow;
 	bool isPartExtractModalShow;
 	ThreadState extractingThreadState;
 
-	// ±³Ã¼ °ü·Ã »óÅÂ°ª
+	// êµì²´ ê´€ë ¨ ìƒíƒœê°’
 	bool isReplaceModalShow;
 	bool isPartReplaceModalShow;
 	ThreadState replacingThreadState;
 	UINT32 totalReplacingDataCount;
 	UINT32 currentReplacingDataIndex;
 
-	// ÃßÃâ/±³Ã¼ °øÅë »óÅÂ°ª (usingShader´Â ÃßÃâ¸¸ Àû¿ë)
-	// Text¿Í Script´Â, ¸¸ÀÏ °øÁ¸ÇÑ´Ù¸é Script°¡ ¿ì¼±½ÃµÇµµ·Ï Á¶Ä¡ÇØ¾ß ÇÒ °Í °°´Ù
+	// ì¶”ì¶œ/êµì²´ ê³µí†µ ìƒíƒœê°’ (usingShaderëŠ” ì¶”ì¶œë§Œ ì ìš©)
+	// Textì™€ ScriptëŠ”, ë§Œì¼ ê³µì¡´í•œë‹¤ë©´ Scriptê°€ ìš°ì„ ì‹œë˜ë„ë¡ ì¡°ì¹˜í•´ì•¼ í•  ê²ƒ ê°™ë‹¤
 	bool usingImage;
 	bool usingImageAndExtractNoneTransparent;
 	bool usingSound;
@@ -72,14 +72,14 @@ typedef struct _application_state {
 	UINT32 totalDataCount;
 	UINT32 currentDataIndex;
 
-	// ¾ÆÄ«ÀÌºê °ü·Ã »óÅÂ°ª
+	// ì•„ì¹´ì´ë¸Œ ê´€ë ¨ ìƒíƒœê°’
 	bool isArchiveOpened;
 	bool isArchiveGameNameEditing;
 	CTT::Archive::ArchiveType archiveType;
 	CTT::Archive::EngineType engineType;
 	char archiveGameName[MAX_GAME_NAME_LENGTH];
 
-	// Chunk °ü·Ã »óÅÂ°ª
+	// Chunk ê´€ë ¨ ìƒíƒœê°’
 	ChunkTreeNodeContainer chunkTreeNodeContainer;
 	bool renderingChunkLoaded;
 	bool isRenderingChunkAppInfo;

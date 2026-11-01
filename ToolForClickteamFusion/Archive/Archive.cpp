@@ -1,4 +1,4 @@
-#include "Archive.h"
+ï»¿#include "Archive.h"
 #include "Exe/ExeArchive.h"
 #include "Dat/DatArchive.h"
 #include "Ccn/CcnArchive.h"
@@ -22,21 +22,21 @@ using namespace CTT::JsonUtil;
 
 
 
-// ¿­·ÁÀÖ´Â ¾ÆÄ«ÀÌºê Å¬·¡½º Æ÷ÀÎÅÍ ¹İÈ¯ ÇÔ¼ö
+// ì—´ë ¤ìˆëŠ” ì•„ì¹´ì´ë¸Œ í´ë˜ìŠ¤ í¬ì¸í„° ë°˜í™˜ í•¨ìˆ˜
 CTT::Archive::Archive* CTT::Archive::getArchive()
 {
 	return getApp()->getArchive();
 }
 
-// app »óÅÂ Æ÷ÀÎÅÍ ¹İÈ¯ ÇÔ¼ö
+// app ìƒíƒœ í¬ì¸í„° ë°˜í™˜ í•¨ìˆ˜
 ApplicationState* CTT::Archive::getStates()
 {
 	return getApp()->getStates();
 }
 
 
-// ¿¡·¯ Æ®¸®°Å ÇÔ¼ö
-// closeAllModalÀÌ true¸é ÇöÀç ¿­¸° ¸ğµç modalÀ» ´İµµ·Ï Á¶Ä¡ÇÑ´Ù. default´Â false
+// ì—ëŸ¬ íŠ¸ë¦¬ê±° í•¨ìˆ˜
+// closeAllModalì´ trueë©´ í˜„ì¬ ì—´ë¦° ëª¨ë“  modalì„ ë‹«ë„ë¡ ì¡°ì¹˜í•œë‹¤. defaultëŠ” false
 void CTT::Archive::triggerError(const char* errTitle, const char* errMsg, bool closeAllModal)
 {
 	getApp()->triggerError(errTitle, errMsg, closeAllModal);
@@ -64,7 +64,7 @@ Archive::~Archive()
 }
 
 
-// ¾ÆÄ«ÀÌºê ¿ÜºÎ·ÎºÎÅÍ appNameÀ» ÀÔ·Â¹Ş¾Æ ¼¼ÆÃ
+// ì•„ì¹´ì´ë¸Œ ì™¸ë¶€ë¡œë¶€í„° appNameì„ ì…ë ¥ë°›ì•„ ì„¸íŒ…
 void Archive::setAppNameFromEditor(wstring appNameValue) 
 {
 	wcout << endl << infoPrefix << L"<<function>> " << __FUNCTIONW__ << L": processing..." << endl;
@@ -101,32 +101,32 @@ void Archive::setDataCount(vector<wstring>& extractingDataTypes)
 	DWORD dRead;
 	ChunkInfo chunkInfo;
 
-	// TTF ¿ÀÇÁ¼ÂÀ» °øÀ¯ÇÏ±â À§ÇÑ µ¥ÀÌÅÍ
+	// TTF ì˜¤í”„ì…‹ì„ ê³µìœ í•˜ê¸° ìœ„í•œ ë°ì´í„°
 	vector<UINT32> ttfOffsetList;
 
-	// ÃÊ±âÈ­ ¹× chunk ½ÃÀÛ À§Ä¡ ÁöÁ¤
+	// ì´ˆê¸°í™” ë° chunk ì‹œì‘ ìœ„ì¹˜ ì§€ì •
 	memset(&chunkInfo, 0, sizeof(ChunkInfo));
 	SetFilePointer(hArchive, chunkStartOffset, NULL, FILE_BEGIN);
 
-	// ÇöÀç ÃßÃâ µ¥ÀÌÅÍ ÀÎµ¦½º ÃÊ±âÈ­
+	// í˜„ì¬ ì¶”ì¶œ ë°ì´í„° ì¸ë±ìŠ¤ ì´ˆê¸°í™”
 	getStates()->totalDataCount = 0;
 	getStates()->currentDataIndex = 0;
 
-	// ¸¸ÀÏ exeÀÌ°í ¸ğµâ ±³Ã¼¿¡ Ã¼Å©°¡ µÇ¾îÀÖ´Ù¸é ¸ğµâµµ °³¼ö¿¡ Ãß°¡ÇÑ´Ù
+	// ë§Œì¼ exeì´ê³  ëª¨ë“ˆ êµì²´ì— ì²´í¬ê°€ ë˜ì–´ìˆë‹¤ë©´ ëª¨ë“ˆë„ ê°œìˆ˜ì— ì¶”ê°€í•œë‹¤
 	if ((archiveType == ArchiveType::ARCHIVE_EXE) && (contains(extractingDataTypes, L"module"))) {
 		ExeArchive* exeArcPtr = reinterpret_cast<ExeArchive*>(this);
 		getStates()->totalDataCount += (UINT32)exeArcPtr->getModules().size();
 	}
 
-	// ÃßÃâÇÒ ÀüÃ¼ µ¥ÀÌÅÍ ¼ö Ä«¿îÆ®
+	// ì¶”ì¶œí•  ì „ì²´ ë°ì´í„° ìˆ˜ ì¹´ìš´íŠ¸
 	while (1) {
 
-		// chunk¸¦ ÀĞ¾îµéÀÏ ¶§¸¦ ´ëºñÇØ À§Ä¡ ¹é¾÷ ÇÊ¿ä
+		// chunkë¥¼ ì½ì–´ë“¤ì¼ ë•Œë¥¼ ëŒ€ë¹„í•´ ìœ„ì¹˜ ë°±ì—… í•„ìš”
 		UINT32 backupOffset = SetFilePointer(hArchive, 0, NULL, FILE_CURRENT);
 		ReadFile(hArchive, &chunkInfo, sizeof(ChunkInfo), &dRead, NULL);
 		SetFilePointer(hArchive, backupOffset, NULL, FILE_BEGIN);
 
-		// ÀĞ¾î¿Â ±æÀÌ°¡ 0ÀÌ¶ó¸é ±×³É ³ª°£´Ù
+		// ì½ì–´ì˜¨ ê¸¸ì´ê°€ 0ì´ë¼ë©´ ê·¸ëƒ¥ ë‚˜ê°„ë‹¤
 		if (dRead != sizeof(ChunkInfo)) {
 			break;
 		}
@@ -232,7 +232,7 @@ void Archive::setDataCount(vector<wstring>& extractingDataTypes)
 				break;
 			}
 
-			// Frame (ÀÌº¥Æ® ÅØ½ºÆ®)
+			// Frame (ì´ë²¤íŠ¸ í…ìŠ¤íŠ¸)
 			case ChunkType::CHUNK_FRAME:
 			{
 				if (contains(extractingDataTypes, L"text")) {
@@ -264,32 +264,32 @@ bool Archive::setApplicationInfo()
 	DWORD dRead;
 	ChunkInfo chunkInfo;
 
-	// ÃÊ±âÈ­ ¹× chunk ½ÃÀÛ À§Ä¡ ÁöÁ¤
+	// ì´ˆê¸°í™” ë° chunk ì‹œì‘ ìœ„ì¹˜ ì§€ì •
 	memset(&chunkInfo, 0, sizeof(ChunkInfo));
 	SetFilePointer(hArchive, chunkStartOffset, NULL, FILE_BEGIN);
 
-	// chunk Æ®¸® ÄÁÅ×ÀÌ³Êµµ ÃÊ±âÈ­
+	// chunk íŠ¸ë¦¬ ì»¨í…Œì´ë„ˆë„ ì´ˆê¸°í™”
 	getStates()->chunkTreeNodeContainer.clear();
 
-	// engine ¹öÀü ¼¼ÆÃ
+	// engine ë²„ì „ ì„¸íŒ…
 	while (1) {
 
-		// chunk¸¦ ÀĞ¾îµéÀÏ ¶§¸¦ ´ëºñÇØ À§Ä¡ ¹é¾÷ ÇÊ¿ä
+		// chunkë¥¼ ì½ì–´ë“¤ì¼ ë•Œë¥¼ ëŒ€ë¹„í•´ ìœ„ì¹˜ ë°±ì—… í•„ìš”
 		UINT32 backupOffset = SetFilePointer(hArchive, 0, NULL, FILE_CURRENT);
 
-		// ´õ ÀÌ»ó ÀĞÁö ¸øÇÏ¸é ³ª°¡±â
+		// ë” ì´ìƒ ì½ì§€ ëª»í•˜ë©´ ë‚˜ê°€ê¸°
 		ReadFile(hArchive, &chunkInfo, sizeof(ChunkInfo), &dRead, NULL);
 		if (dRead != sizeof(ChunkInfo)) {
 			break;
 		}
 
-		// Á¤º¸ Ãß°¡
+		// ì •ë³´ ì¶”ê°€
 		ChunkTreeNode* node = new ChunkTreeNode();
 		node->setValue(chunkInfo);
 		node->setOffset(backupOffset);
 		getStates()->chunkTreeNodeContainer.appendChildToCurrentNode(node);
 
-		// 2.5+ Object chunk ¿©ºÎ¿¡ µû¶ó engine ¹öÀü º¯°æ, ³ëµå ¼¼ÆÃÀ» À§ÇØ ÀÏ´ÜÀº ±×³É ³Ñ±è
+		// 2.5+ Object chunk ì—¬ë¶€ì— ë”°ë¼ engine ë²„ì „ ë³€ê²½, ë…¸ë“œ ì„¸íŒ…ì„ ìœ„í•´ ì¼ë‹¨ì€ ê·¸ëƒ¥ ë„˜ê¹€
 		if ((chunkInfo.type == ChunkType::CHUNK_2_5_PLUS_OBJECT_HEADERS)
 			|| (chunkInfo.type == ChunkType::CHUNK_2_5_PLUS_OBJECT_NAMES)
 			|| (chunkInfo.type == ChunkType::CHUNK_2_5_PLUS_OBJECT_SHADERS)
@@ -299,13 +299,13 @@ bool Archive::setApplicationInfo()
 			// break;
 		}
 
-		// Frame Chunk¸é ¾îÂ¿ ¼ö ¾øÀÌ ÇÑ¹ø ÀĞ¾îµé¿©Áà¾ß ÇÑ´Ù
+		// Frame Chunkë©´ ì–´ì©” ìˆ˜ ì—†ì´ í•œë²ˆ ì½ì–´ë“¤ì—¬ì¤˜ì•¼ í•œë‹¤
 		if (chunkInfo.type == ChunkType::CHUNK_FRAME)
 		{
 			FrameChunk chunk;
 			SetFilePointer(hArchive, backupOffset, NULL, FILE_BEGIN);
 			if (!chunk.readChunkTreeInfoFromArchive(hArchive)) {
-				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": frame chunk Á¤º¸¸¦ ÀĞ¾îµéÀÌÁö ¸øÇß½À´Ï´Ù." << endl;
+				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": frame chunk ì •ë³´ë¥¼ ì½ì–´ë“¤ì´ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 				return false;
 			}
 			SetFilePointer(hArchive, backupOffset, NULL, FILE_BEGIN);
@@ -316,29 +316,29 @@ bool Archive::setApplicationInfo()
 
 	}
 
-	// ¾ÆÄ«ÀÌºê/¿£Áø ¹öÀü±îÁö ¼¼ÆÃ ÈÄ ´Ù½Ã µ¹±â
-	// ¿©±â±îÁö ¿À¸é chunk´Â ´Ù µ¹ ¼ö ÀÖ´Ù
+	// ì•„ì¹´ì´ë¸Œ/ì—”ì§„ ë²„ì „ê¹Œì§€ ì„¸íŒ… í›„ ë‹¤ì‹œ ëŒê¸°
+	// ì—¬ê¸°ê¹Œì§€ ì˜¤ë©´ chunkëŠ” ë‹¤ ëŒ ìˆ˜ ìˆë‹¤
 	SetFilePointer(hArchive, chunkStartOffset, NULL, FILE_BEGIN);
 
 	while (1) {
 
-		// chunk¸¦ ÀĞ¾îµéÀÏ ¶§¸¦ ´ëºñÇØ À§Ä¡ ¹é¾÷ ÇÊ¿ä
+		// chunkë¥¼ ì½ì–´ë“¤ì¼ ë•Œë¥¼ ëŒ€ë¹„í•´ ìœ„ì¹˜ ë°±ì—… í•„ìš”
 		UINT32 backupOffset = SetFilePointer(hArchive, 0, NULL, FILE_CURRENT);
 
-		// ´õ ÀÌ»ó ÀĞÁö ¸øÇÏ¸é ³ª°¡±â
+		// ë” ì´ìƒ ì½ì§€ ëª»í•˜ë©´ ë‚˜ê°€ê¸°
 		ReadFile(hArchive, &chunkInfo, sizeof(ChunkInfo), &dRead, NULL);
 		if (dRead != sizeof(ChunkInfo)) {
 			break;
 		}
 
-		// app¿¡ °ü·ÃµÈ Á¤º¸µéÀº ÀĞ¾îµéÀÌ°í, ±×·¸Áö ¾Ê´Ù¸é ±×³É ³Ñ±ä´Ù
+		// appì— ê´€ë ¨ëœ ì •ë³´ë“¤ì€ ì½ì–´ë“¤ì´ê³ , ê·¸ë ‡ì§€ ì•Šë‹¤ë©´ ê·¸ëƒ¥ ë„˜ê¸´ë‹¤
 		switch (chunkInfo.type)
 		{
 			case ChunkType::CHUNK_APP_NAME:
 			{
 				SetFilePointer(hArchive, backupOffset, NULL, FILE_BEGIN);
 				if (!appName.readFromArchive(hArchive)) {
-					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Application NameÀ» ÀĞ¾îµéÀÌÁö ¸øÇß½À´Ï´Ù." << endl;
+					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Application Nameì„ ì½ì–´ë“¤ì´ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 					return false;
 				}
 				break;
@@ -347,17 +347,17 @@ bool Archive::setApplicationInfo()
 			{
 				SetFilePointer(hArchive, backupOffset, NULL, FILE_BEGIN);
 				if (!editorFileName.readFromArchive(hArchive)) {
-					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Editor FileNameÀ» ÀĞ¾îµéÀÌÁö ¸øÇß½À´Ï´Ù." << endl;
+					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Editor FileNameì„ ì½ì–´ë“¤ì´ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 					return false;
 				}
 				break;
 			}
 			case ChunkType::CHUNK_COPYRIGHT:
 			{
-				// copyrightÀÇ value°¡ ºó°ªÀÌ¸é ¾ÖÃÊ¿¡ archive ÀÚÃ¼¿¡ ¾ø´Â °ÍÀ¸·Î °£ÁÖÇÑ´Ù
+				// copyrightì˜ valueê°€ ë¹ˆê°’ì´ë©´ ì• ì´ˆì— archive ìì²´ì— ì—†ëŠ” ê²ƒìœ¼ë¡œ ê°„ì£¼í•œë‹¤
 				SetFilePointer(hArchive, backupOffset, NULL, FILE_BEGIN);
 				if (!copyright.readFromArchive(hArchive)) {
-					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Copyright¸¦ ÀĞ¾îµéÀÌÁö ¸øÇß½À´Ï´Ù." << endl;
+					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Copyrightë¥¼ ì½ì–´ë“¤ì´ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 					return false;
 				}
 				break;
@@ -366,7 +366,7 @@ bool Archive::setApplicationInfo()
 			{
 				SetFilePointer(hArchive, backupOffset, NULL, FILE_BEGIN);
 				if (!appHeader.readFromArchive(hArchive)) {
-					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Application Header¸¦ ÀĞ¾îµéÀÌÁö ¸øÇß½À´Ï´Ù." << endl;
+					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Application Headerë¥¼ ì½ì–´ë“¤ì´ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 					return false;
 				}
 				break;
@@ -375,7 +375,7 @@ bool Archive::setApplicationInfo()
 			{
 				SetFilePointer(hArchive, backupOffset, NULL, FILE_BEGIN);
 				if (!productVersionInfo.readFromArchive(hArchive)) {
-					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Product Version Á¤º¸¸¦ ÀĞ¾îµéÀÌÁö ¸øÇß½À´Ï´Ù." << endl;
+					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Product Version ì •ë³´ë¥¼ ì½ì–´ë“¤ì´ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 					return false;
 				}
 				break;
@@ -384,7 +384,7 @@ bool Archive::setApplicationInfo()
 			{
 				SetFilePointer(hArchive, backupOffset, NULL, FILE_BEGIN);
 				if (!productBuildVersionInfo.readFromArchive(hArchive)) {
-					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Product Build Version Á¤º¸¸¦ ÀĞ¾îµéÀÌÁö ¸øÇß½À´Ï´Ù." << endl;
+					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Product Build Version ì •ë³´ë¥¼ ì½ì–´ë“¤ì´ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 					return false;
 				}
 				break;
@@ -393,7 +393,7 @@ bool Archive::setApplicationInfo()
 			{
 				SetFilePointer(hArchive, backupOffset, NULL, FILE_BEGIN);
 				if (!appLocaleId.readFromArchive(hArchive)) {
-					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Application Locale Id¸¦ ÀĞ¾îµéÀÌÁö ¸øÇß½À´Ï´Ù." << endl;
+					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Application Locale Idë¥¼ ì½ì–´ë“¤ì´ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 					return false;
 				}
 				break;
@@ -402,7 +402,7 @@ bool Archive::setApplicationInfo()
 			{
 				SetFilePointer(hArchive, backupOffset, NULL, FILE_BEGIN);
 				if (!appCodepage.readFromArchive(hArchive)) {
-					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Application Codepage¸¦ ÀĞ¾îµéÀÌÁö ¸øÇß½À´Ï´Ù." << endl;
+					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Application Codepageë¥¼ ì½ì–´ë“¤ì´ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 					return false;
 				}
 				break;
@@ -411,7 +411,7 @@ bool Archive::setApplicationInfo()
 			{
 				SetFilePointer(hArchive, backupOffset, NULL, FILE_BEGIN);
 				if (!protection.readFromArchive(hArchive)) {
-					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Protection °ªÀ» ÀĞ¾îµéÀÌÁö ¸øÇß½À´Ï´Ù." << endl;
+					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Protection ê°’ì„ ì½ì–´ë“¤ì´ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 					return false;
 				}
 				break;
@@ -420,7 +420,7 @@ bool Archive::setApplicationInfo()
 			{
 				SetFilePointer(hArchive, backupOffset, NULL, FILE_BEGIN);
 				if (!binaryFileData.readFromArchive(hArchive)) {
-					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Binary Data¸¦ ÀĞ¾îµéÀÌÁö ¸øÇß½À´Ï´Ù." << endl;
+					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Binary Dataë¥¼ ì½ì–´ë“¤ì´ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 					return false;
 				}
 				break;
@@ -429,7 +429,7 @@ bool Archive::setApplicationInfo()
 			{
 				SetFilePointer(hArchive, backupOffset, NULL, FILE_BEGIN);
 				if (!shaderList.readFromArchive(hArchive)) {
-					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Shader ¸®½ºÆ®¸¦ ÀĞ¾îµéÀÌÁö ¸øÇß½À´Ï´Ù." << endl;
+					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Shader ë¦¬ìŠ¤íŠ¸ë¥¼ ì½ì–´ë“¤ì´ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 					return false;
 				}
 				break;
@@ -456,7 +456,7 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 	DWORD dRead;
 	ChunkInfo chunkInfo;
 
-	// ¸¸ÀÏ exeÀÌ°í ¸ğµâ ±³Ã¼¿¡ Ã¼Å©°¡ µÇ¾îÀÖ´Ù¸é ExeArchive·Î ¹Ù²Û´ÙÀ½ ¸ğµâ ÃßÃâÀ» ¼öÇàÇÑ´Ù
+	// ë§Œì¼ exeì´ê³  ëª¨ë“ˆ êµì²´ì— ì²´í¬ê°€ ë˜ì–´ìˆë‹¤ë©´ ExeArchiveë¡œ ë°”ê¾¼ë‹¤ìŒ ëª¨ë“ˆ ì¶”ì¶œì„ ìˆ˜í–‰í•œë‹¤
 	if ((archiveType == ArchiveType::ARCHIVE_EXE) && (contains(extractingDataTypes, L"module"))) {
 
 		wcout << L"--------------------------------------" << endl;
@@ -472,25 +472,25 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 
 	}
 
-	// TTF ¿ÀÇÁ¼ÂÀ» °øÀ¯ÇÏ±â À§ÇÑ µ¥ÀÌÅÍ
+	// TTF ì˜¤í”„ì…‹ì„ ê³µìœ í•˜ê¸° ìœ„í•œ ë°ì´í„°
 	vector<UINT32> ttfOffsetList;
 
-	// ÇÁ·¹ÀÓ ÀÌº¥Æ® ÅØ½ºÆ®¸¦ ¸ğÀ¸±â À§ÇÑ º¯¼ö
+	// í”„ë ˆì„ ì´ë²¤íŠ¸ í…ìŠ¤íŠ¸ë¥¼ ëª¨ìœ¼ê¸° ìœ„í•œ ë³€ìˆ˜
 	UINT32 frameIndex = 0;
 	frameEventTextTable.clear();
 
-	// ÃÊ±âÈ­ ¹× chunk ½ÃÀÛ À§Ä¡ ÁöÁ¤
+	// ì´ˆê¸°í™” ë° chunk ì‹œì‘ ìœ„ì¹˜ ì§€ì •
 	memset(&chunkInfo, 0, sizeof(ChunkInfo));
 	SetFilePointer(hArchive, chunkStartOffset, NULL, FILE_BEGIN);
 
 	while (1) {
 
-		// chunk¸¦ ÀĞ¾îµéÀÏ ¶§¸¦ ´ëºñÇØ À§Ä¡ ¹é¾÷ ÇÊ¿ä
+		// chunkë¥¼ ì½ì–´ë“¤ì¼ ë•Œë¥¼ ëŒ€ë¹„í•´ ìœ„ì¹˜ ë°±ì—… í•„ìš”
 		UINT32 backupOffset = SetFilePointer(hArchive, 0, NULL, FILE_CURRENT);
 		ReadFile(hArchive, &chunkInfo, sizeof(ChunkInfo), &dRead, NULL);
 		SetFilePointer(hArchive, backupOffset, NULL, FILE_BEGIN);
 
-		// ÀĞ¾î¿Â ±æÀÌ°¡ 0ÀÌ¶ó¸é ±×³É ³ª°£´Ù
+		// ì½ì–´ì˜¨ ê¸¸ì´ê°€ 0ì´ë¼ë©´ ê·¸ëƒ¥ ë‚˜ê°„ë‹¤
 		if (dRead != sizeof(ChunkInfo)) {
 			break;
 		}
@@ -504,14 +504,14 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 					wcout << L"--------------------------------------" << endl;
 					wcout << infoPrefix << L"ChunkType: " << uppercase << hex << getNameUni(chunkInfo.type) << L" extracting..." << endl;
 					if (!binaryFileData.readFromArchive(hArchive)) {
-						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ¹ÙÀÌ³Ê¸® µ¥ÀÌÅÍ¸¦ ÀĞÁö ¸øÇß½À´Ï´Ù." << endl;
-						triggerError(__FUNCTION__, u8"¹ÙÀÌ³Ê¸® µ¥ÀÌÅÍ¸¦ ÀĞÁö ¸øÇß½À´Ï´Ù");
+						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ë°”ì´ë„ˆë¦¬ ë°ì´í„°ë¥¼ ì½ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
+						triggerError(__FUNCTION__, u8"ë°”ì´ë„ˆë¦¬ ë°ì´í„°ë¥¼ ì½ì§€ ëª»í–ˆìŠµë‹ˆë‹¤");
 						return false;
 					}
 					wstring exportDirPath = getExtentionRemovedPath(archivePath) + L"/binaries";
 					if (!binaryFileData.exportData(exportDirPath)) {
-						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ¹ÙÀÌ³Ê¸® µ¥ÀÌÅÍ¸¦ ÃßÃâÇÏÁö ¸øÇß½À´Ï´Ù." << endl;
-						triggerError(__FUNCTION__, u8"¹ÙÀÌ³Ê¸® µ¥ÀÌÅÍ¸¦ ÃßÃâÇÏÁö ¸øÇß½À´Ï´Ù");
+						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ë°”ì´ë„ˆë¦¬ ë°ì´í„°ë¥¼ ì¶”ì¶œí•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
+						triggerError(__FUNCTION__, u8"ë°”ì´ë„ˆë¦¬ ë°ì´í„°ë¥¼ ì¶”ì¶œí•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤");
 						return false;
 					}
 					wcout << infoPrefix << L"ChunkType: " << uppercase << hex << getNameUni(chunkInfo.type) << L" extracting complete!" << endl;
@@ -523,21 +523,21 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 				break;
 			}
 
-			// AppShader (ÃßÃâ¸¸ °¡´É)
+			// AppShader (ì¶”ì¶œë§Œ ê°€ëŠ¥)
 			case ChunkType::CHUNK_SHADER_LIST:
 			{
 				if (contains(extractingDataTypes, L"appShader")) {
 					wcout << L"--------------------------------------" << endl;
 					wcout << infoPrefix << L"ChunkType: " << uppercase << hex << getNameUni(chunkInfo.type) << L" extracting..." << endl;
 					if (!shaderList.readFromArchive(hArchive)) {
-						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Shader µ¥ÀÌÅÍ¸¦ ÀĞÁö ¸øÇß½À´Ï´Ù." << endl;
-						triggerError(__FUNCTION__, u8"Shader µ¥ÀÌÅÍ¸¦ ÀĞÁö ¸øÇß½À´Ï´Ù");
+						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Shader ë°ì´í„°ë¥¼ ì½ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
+						triggerError(__FUNCTION__, u8"Shader ë°ì´í„°ë¥¼ ì½ì§€ ëª»í–ˆìŠµë‹ˆë‹¤");
 						return false;
 					}
 					wstring exportDirPath = getExtentionRemovedPath(archivePath) + L"/shaders";
 					if (!shaderList.exportData(exportDirPath)) {
-						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Shader µ¥ÀÌÅÍ¸¦ ÃßÃâÇÏÁö ¸øÇß½À´Ï´Ù." << endl;
-						triggerError(__FUNCTION__, u8"Shader µ¥ÀÌÅÍ¸¦ ÃßÃâÇÏÁö ¸øÇß½À´Ï´Ù");
+						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Shader ë°ì´í„°ë¥¼ ì¶”ì¶œí•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
+						triggerError(__FUNCTION__, u8"Shader ë°ì´í„°ë¥¼ ì¶”ì¶œí•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤");
 						return false;
 					}
 					wcout << infoPrefix << L"ChunkType: " << uppercase << hex << getNameUni(chunkInfo.type) << L" extracting complete!" << endl;
@@ -557,15 +557,15 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 					wcout << infoPrefix << L"ChunkType: " << uppercase << hex << getNameUni(chunkInfo.type) << L" extracting..." << endl;
 					ImageDataChunk* chunk = new ImageDataChunk();
 					if (!chunk->readFromArchive(hArchive)) {
-						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Image µ¥ÀÌÅÍ¸¦ ÀĞÁö ¸øÇß½À´Ï´Ù." << endl;
-						triggerError(__FUNCTION__, u8"Image µ¥ÀÌÅÍ¸¦ ÀĞÁö ¸øÇß½À´Ï´Ù");
+						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Image ë°ì´í„°ë¥¼ ì½ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
+						triggerError(__FUNCTION__, u8"Image ë°ì´í„°ë¥¼ ì½ì§€ ëª»í–ˆìŠµë‹ˆë‹¤");
 						delete chunk;
 						return false;
 					}
 					wstring exportDirPath = getExtentionRemovedPath(archivePath) + L"/image";
 					if (!chunk->exportData(exportDirPath)) {
-						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Image µ¥ÀÌÅÍ¸¦ ÃßÃâÇÏÁö ¸øÇß½À´Ï´Ù." << endl;
-						triggerError(__FUNCTION__, u8"Image µ¥ÀÌÅÍ¸¦ ÃßÃâÇÏÁö ¸øÇß½À´Ï´Ù");
+						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Image ë°ì´í„°ë¥¼ ì¶”ì¶œí•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
+						triggerError(__FUNCTION__, u8"Image ë°ì´í„°ë¥¼ ì¶”ì¶œí•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤");
 						delete chunk;
 						return false;
 					}
@@ -587,15 +587,15 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 					wcout << infoPrefix << L"ChunkType: " << uppercase << hex << getNameUni(chunkInfo.type) << L" extracting..." << endl;
 					SoundDataChunk* chunk = new SoundDataChunk();
 					if (!chunk->readFromArchive(hArchive)) {
-						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Sound µ¥ÀÌÅÍ¸¦ ÀĞÁö ¸øÇß½À´Ï´Ù." << endl;
-						triggerError(__FUNCTION__, u8"Sound µ¥ÀÌÅÍ¸¦ ÀĞÁö ¸øÇß½À´Ï´Ù");
+						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Sound ë°ì´í„°ë¥¼ ì½ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
+						triggerError(__FUNCTION__, u8"Sound ë°ì´í„°ë¥¼ ì½ì§€ ëª»í–ˆìŠµë‹ˆë‹¤");
 						delete chunk;
 						return false;
 					}
 					wstring exportDirPath = getExtentionRemovedPath(archivePath) + L"/sound";
 					if (!chunk->exportData(exportDirPath)) {
-						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Sound µ¥ÀÌÅÍ¸¦ ÃßÃâÇÏÁö ¸øÇß½À´Ï´Ù." << endl;
-						triggerError(__FUNCTION__, u8"Sound µ¥ÀÌÅÍ¸¦ ÃßÃâÇÏÁö ¸øÇß½À´Ï´Ù");
+						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Sound ë°ì´í„°ë¥¼ ì¶”ì¶œí•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
+						triggerError(__FUNCTION__, u8"Sound ë°ì´í„°ë¥¼ ì¶”ì¶œí•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤");
 						delete chunk;
 						return false;
 					}
@@ -617,16 +617,16 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 					wcout << infoPrefix << L"ChunkType: " << uppercase << hex << getNameUni(chunkInfo.type) << L" extracting..." << endl;
 					ObjectDataChunk* chunk = new ObjectDataChunk();
 					if (!chunk->readFromArchive(hArchive)) {
-						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Object µ¥ÀÌÅÍ¸¦ ÀĞÁö ¸øÇß½À´Ï´Ù." << endl;
-						triggerError(__FUNCTION__, u8"Object µ¥ÀÌÅÍ¸¦ ÀĞÁö ¸øÇß½À´Ï´Ù");
+						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Object ë°ì´í„°ë¥¼ ì½ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
+						triggerError(__FUNCTION__, u8"Object ë°ì´í„°ë¥¼ ì½ì§€ ëª»í–ˆìŠµë‹ˆë‹¤");
 						delete chunk;
 						return false;
 					}
 					wstring exportDirPath = getExtentionRemovedPath(archivePath) + L"/object";
-					// "object-full" ÀÌ¶ó´Â ¹®ÀÚ¿­ÀÌ µé¾î¿À¸é ÀüºÎ ÃßÃâÇÑ´Ù
+					// "object-full" ì´ë¼ëŠ” ë¬¸ìì—´ì´ ë“¤ì–´ì˜¤ë©´ ì „ë¶€ ì¶”ì¶œí•œë‹¤
 					if (!chunk->exportData(exportDirPath, contains(extractingDataTypes, L"object-full"))) {
-						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Object µ¥ÀÌÅÍ¸¦ ÃßÃâÇÏÁö ¸øÇß½À´Ï´Ù." << endl;
-						triggerError(__FUNCTION__, u8"Object µ¥ÀÌÅÍ¸¦ ÃßÃâÇÏÁö ¸øÇß½À´Ï´Ù");
+						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Object ë°ì´í„°ë¥¼ ì¶”ì¶œí•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
+						triggerError(__FUNCTION__, u8"Object ë°ì´í„°ë¥¼ ì¶”ì¶œí•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤");
 						delete chunk;
 						return false;
 					}
@@ -648,19 +648,19 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 					wcout << infoPrefix << L"ChunkType: " << uppercase << hex << getNameUni(chunkInfo.type) << L" extracting..." << endl;
 					TrueTypeFontDataChunk* chunk = new TrueTypeFontDataChunk();
 					if (!chunk->readFromArchive(hArchive)) {
-						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": TrueType Font µ¥ÀÌÅÍ¸¦ ÀĞÁö ¸øÇß½À´Ï´Ù." << endl;
-						triggerError(__FUNCTION__, u8"TrueType Font µ¥ÀÌÅÍ¸¦ ÀĞÁö ¸øÇß½À´Ï´Ù");
+						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": TrueType Font ë°ì´í„°ë¥¼ ì½ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
+						triggerError(__FUNCTION__, u8"TrueType Font ë°ì´í„°ë¥¼ ì½ì§€ ëª»í–ˆìŠµë‹ˆë‹¤");
 						delete chunk;
 						return false;
 					}
 					wstring exportDirPath = getExtentionRemovedPath(archivePath) + L"/font/ttf";
 					if (!chunk->exportData(exportDirPath)) {
-						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": TrueType Font µ¥ÀÌÅÍ¸¦ ÃßÃâÇÏÁö ¸øÇß½À´Ï´Ù." << endl;
-						triggerError(__FUNCTION__, u8"TrueType Font µ¥ÀÌÅÍ¸¦ ÃßÃâÇÏÁö ¸øÇß½À´Ï´Ù");
+						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": TrueType Font ë°ì´í„°ë¥¼ ì¶”ì¶œí•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
+						triggerError(__FUNCTION__, u8"TrueType Font ë°ì´í„°ë¥¼ ì¶”ì¶œí•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤");
 						delete chunk;
 						return false;
 					}
-					// ¿ÀÇÁ¼Â °øÀ¯ ÀÌÈÄ ¸±¸®Áî
+					// ì˜¤í”„ì…‹ ê³µìœ  ì´í›„ ë¦´ë¦¬ì¦ˆ
 					ttfOffsetList = chunk->getOffsetList();
 					delete chunk;
 					wcout << infoPrefix << L"ChunkType: " << uppercase << hex << getNameUni(chunkInfo.type) << L" extracting complete!" << endl;
@@ -677,18 +677,18 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 					wcout << L"--------------------------------------" << endl;
 					wcout << infoPrefix << L"ChunkType: " << uppercase << hex << getNameUni(chunkInfo.type) << L" extracting..." << endl;
 					TrueTypeFontInfoDataChunk* chunk = new TrueTypeFontInfoDataChunk();
-					// ¹Ì¸® ¿ÀÇÁ¼Â ¼¼ÆÃ ÈÄ ÁøÇà
+					// ë¯¸ë¦¬ ì˜¤í”„ì…‹ ì„¸íŒ… í›„ ì§„í–‰
 					chunk->setOffsetList(ttfOffsetList);
 					if (!chunk->readFromArchive(hArchive)) {
-						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": TrueType Font Á¤º¸¸¦ ÀĞÁö ¸øÇß½À´Ï´Ù." << endl;
-						triggerError(__FUNCTION__, u8"TrueType Font Á¤º¸¸¦ ÀĞÁö ¸øÇß½À´Ï´Ù");
+						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": TrueType Font ì •ë³´ë¥¼ ì½ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
+						triggerError(__FUNCTION__, u8"TrueType Font ì •ë³´ë¥¼ ì½ì§€ ëª»í–ˆìŠµë‹ˆë‹¤");
 						delete chunk;
 						return false;
 					}
 					wstring exportJsonPath = getExtentionRemovedPath(archivePath) + L"/font/ttf/info.json";
 					if (!chunk->exportJson(exportJsonPath)) {
-						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": TrueType Font Á¤º¸¸¦ ÃßÃâÇÏÁö ¸øÇß½À´Ï´Ù." << endl;
-						triggerError(__FUNCTION__, u8"TrueType Font Á¤º¸¸¦ ÃßÃâÇÏÁö ¸øÇß½À´Ï´Ù");
+						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": TrueType Font ì •ë³´ë¥¼ ì¶”ì¶œí•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
+						triggerError(__FUNCTION__, u8"TrueType Font ì •ë³´ë¥¼ ì¶”ì¶œí•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤");
 						delete chunk;
 						return false;
 					}
@@ -710,15 +710,15 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 					wcout << infoPrefix << L"ChunkType: " << uppercase << hex << getNameUni(chunkInfo.type) << L" extracting..." << endl;
 					LogFontDataChunk* chunk = new LogFontDataChunk();
 					if (!chunk->readFromArchive(hArchive)) {
-						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": LogFont µ¥ÀÌÅÍ¸¦ ÀĞÁö ¸øÇß½À´Ï´Ù." << endl;
-						triggerError(__FUNCTION__, u8"LogFont µ¥ÀÌÅÍ¸¦ ÀĞÁö ¸øÇß½À´Ï´Ù");
+						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": LogFont ë°ì´í„°ë¥¼ ì½ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
+						triggerError(__FUNCTION__, u8"LogFont ë°ì´í„°ë¥¼ ì½ì§€ ëª»í–ˆìŠµë‹ˆë‹¤");
 						delete chunk;
 						return false;
 					}
 					wstring exportJsonPath = getExtentionRemovedPath(archivePath) + L"/font/logFontInfo.json";
 					if (!chunk->exportJson(exportJsonPath)) {
-						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": LogFont µ¥ÀÌÅÍ¸¦ ÃßÃâÇÏÁö ¸øÇß½À´Ï´Ù." << endl;
-						triggerError(__FUNCTION__, u8"LogFont µ¥ÀÌÅÍ¸¦ ÃßÃâÇÏÁö ¸øÇß½À´Ï´Ù");
+						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": LogFont ë°ì´í„°ë¥¼ ì¶”ì¶œí•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
+						triggerError(__FUNCTION__, u8"LogFont ë°ì´í„°ë¥¼ ì¶”ì¶œí•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤");
 						delete chunk;
 						return false;
 					}
@@ -732,19 +732,19 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 				break;
 			}
 
-			// Frame (ÀÌº¥Æ® ÅØ½ºÆ®)
+			// Frame (ì´ë²¤íŠ¸ í…ìŠ¤íŠ¸)
 			case ChunkType::CHUNK_FRAME:
 			{
 				if (contains(extractingDataTypes, L"text")) {
 					FrameChunk chunk;
 					if (!chunk.readFromArchive(hArchive)) {
-						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Frame µ¥ÀÌÅÍ¸¦ ÀĞ¾îµéÀÌÁö ¸øÇß½À´Ï´Ù." << endl;
-						triggerError(__FUNCTION__, u8"Frame µ¥ÀÌÅÍ¸¦ ÀĞ¾îµéÀÌÁö ¸øÇß½À´Ï´Ù");
+						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Frame ë°ì´í„°ë¥¼ ì½ì–´ë“¤ì´ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
+						triggerError(__FUNCTION__, u8"Frame ë°ì´í„°ë¥¼ ì½ì–´ë“¤ì´ì§€ ëª»í–ˆìŠµë‹ˆë‹¤");
 						return false;
 					}
 					if (!chunk.extractEventText(frameIndex, frameEventTextTable)) {
-						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Frame ÀÌº¥Æ® ÅØ½ºÆ®¸¦ ÃßÃâÇÏÁö ¸øÇß½À´Ï´Ù." << endl;
-						triggerError(__FUNCTION__, u8"Frame ÀÌº¥Æ® ÅØ½ºÆ®¸¦ ÃßÃâÇÏÁö ¸øÇß½À´Ï´Ù");
+						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Frame ì´ë²¤íŠ¸ í…ìŠ¤íŠ¸ë¥¼ ì¶”ì¶œí•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
+						triggerError(__FUNCTION__, u8"Frame ì´ë²¤íŠ¸ í…ìŠ¤íŠ¸ë¥¼ ì¶”ì¶œí•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤");
 						return false;
 					}
 					frameIndex++;
@@ -767,18 +767,18 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 
 	}
 
-	// ¸¸ÀÏ °³¼ö¸¦ ´Ù ¼¼¾îµµ ÇÕÀÌ 0ÀÌ¶ó¸é ±×³É 1/1·Î ¸ÂÃá´Ù
-	// ¸ğ¾Æ µĞ ÇÁ·¹ÀÓ ÀÌº¥Æ® ÅØ½ºÆ®¸¦ JSON À¸·Î ÀúÀåÇÑ´Ù
+	// ë§Œì¼ ê°œìˆ˜ë¥¼ ë‹¤ ì„¸ì–´ë„ í•©ì´ 0ì´ë¼ë©´ ê·¸ëƒ¥ 1/1ë¡œ ë§ì¶˜ë‹¤
+	// ëª¨ì•„ ë‘” í”„ë ˆì„ ì´ë²¤íŠ¸ í…ìŠ¤íŠ¸ë¥¼ JSON ìœ¼ë¡œ ì €ì¥í•œë‹¤
 	if (contains(extractingDataTypes, L"text") && (frameEventTextTable.getEntryCount() > 0)) {
 		Json::Value textValue;
 		frameEventTextTable.exportJson(textValue);
 		wstring exportJsonPath = getExtentionRemovedPath(archivePath) + L"/text/frameEventText.json";
 		if (!writeIntoJson(textValue, exportJsonPath)) {
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Frame ÀÌº¥Æ® ÅØ½ºÆ®¸¦ json À¸·Î ÀúÀåÇÏÁö ¸øÇß½À´Ï´Ù." << endl;
-			triggerError(__FUNCTION__, u8"Frame ÀÌº¥Æ® ÅØ½ºÆ®¸¦ json À¸·Î ÀúÀåÇÏÁö ¸øÇß½À´Ï´Ù");
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Frame ì´ë²¤íŠ¸ í…ìŠ¤íŠ¸ë¥¼ json ìœ¼ë¡œ ì €ì¥í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
+			triggerError(__FUNCTION__, u8"Frame ì´ë²¤íŠ¸ í…ìŠ¤íŠ¸ë¥¼ json ìœ¼ë¡œ ì €ì¥í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤");
 			return false;
 		}
-		wcout << infoPrefix << L"Frame ÀÌº¥Æ® ÅØ½ºÆ® " << dec << frameEventTextTable.getEntryCount() << L"°³¸¦ ÃßÃâÇß½À´Ï´Ù." << endl;
+		wcout << infoPrefix << L"Frame ì´ë²¤íŠ¸ í…ìŠ¤íŠ¸ " << dec << frameEventTextTable.getEntryCount() << L"ê°œë¥¼ ì¶”ì¶œí–ˆìŠµë‹ˆë‹¤." << endl;
 	}
 
 	if (getStates()->totalDataCount == 0) {
@@ -800,41 +800,41 @@ bool Archive::rewriteNewArchive(vector<wstring>& replacingDataTypes)
 
 	DWORD dRead, dWrite;
 
-	// "frame" °³¼ö º¯°æ½Ã¿¡´Â ³»ºÎÀûÀ¸·Î blobs¸¦ º¯°æÇÏ°í ¾ÏÈ£È­ Å×ÀÌºíÀ» ÃÊ±âÈ­ÇØ¾ß°ÚÁö¸¸...
-	// ¾îÂ÷ÇÇ frame °³¼ö°¡ ¹Ù²ğ °Í °°Áø ¾ÊÀ¸´Ï±î ½Å°æÀº ¾È ½áµµ µÉ°Í °°´Ù
+	// "frame" ê°œìˆ˜ ë³€ê²½ì‹œì—ëŠ” ë‚´ë¶€ì ìœ¼ë¡œ blobsë¥¼ ë³€ê²½í•˜ê³  ì•”í˜¸í™” í…Œì´ë¸”ì„ ì´ˆê¸°í™”í•´ì•¼ê² ì§€ë§Œ...
+	// ì–´ì°¨í”¼ frame ê°œìˆ˜ê°€ ë°”ë€” ê²ƒ ê°™ì§„ ì•Šìœ¼ë‹ˆê¹Œ ì‹ ê²½ì€ ì•ˆ ì¨ë„ ë ê²ƒ ê°™ë‹¤
 
-	// »õ ÆÄÀÏ ÇÚµé ¿­±â
+	// ìƒˆ íŒŒì¼ í•¸ë“¤ ì—´ê¸°
 	wstring newArchivePath = getExtentionRemovedPath(archivePath) + L"_new." + getExtention(archivePath);
 	_wremove(newArchivePath.c_str());
 	HANDLE hNewArchive = CreateFileW(newArchivePath.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hNewArchive == INVALID_HANDLE_VALUE) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(newArchivePath) << L": ¾ÆÄ«ÀÌºê ÆÄÀÏÀ» ¿­Áö ¸øÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(newArchivePath) << L": ì•„ì¹´ì´ë¸Œ íŒŒì¼ì„ ì—´ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 		string newArchivePathAnsi = getAnsiStr(newArchivePath, CodePage::CP_UTF_8);
-		triggerError(u8"¾ÆÄ«ÀÌºê ÀúÀå", newArchivePathAnsi.c_str(), true);
+		triggerError(u8"ì•„ì¹´ì´ë¸Œ ì €ì¥", newArchivePathAnsi.c_str(), true);
 		return false;
 	}
 
-	// ¾ÏÈ£È­ Å×ÀÌºí ÃÊ±âÈ­
+	// ì•”í˜¸í™” í…Œì´ë¸” ì´ˆê¸°í™”
 	initializeEncryptionTable();
 
-	// ÇÁ·¹ÀÓ ÀÌº¥Æ® ÅØ½ºÆ® ¹ø¿ª Ç¥´Â Ã³À½ ÇÊ¿äÇÒ ¶§ ´Ù½Ã ÀĞ¾î µéÀÎ´Ù
+	// í”„ë ˆì„ ì´ë²¤íŠ¸ í…ìŠ¤íŠ¸ ë²ˆì—­ í‘œëŠ” ì²˜ìŒ í•„ìš”í•  ë•Œ ë‹¤ì‹œ ì½ì–´ ë“¤ì¸ë‹¤
 	frameEventTextTable.clear();
 
-	// chunkStartOffset : ÇöÀç ¾ÆÄ«ÀÌºê µ¥ÀÌÅÍ¿¡¼­ chunk°¡ ½ÃÀÛÇÏ´Â À§Ä¡
+	// chunkStartOffset : í˜„ì¬ ì•„ì¹´ì´ë¸Œ ë°ì´í„°ì—ì„œ chunkê°€ ì‹œì‘í•˜ëŠ” ìœ„ì¹˜
 
 	if ((archiveType == ArchiveType::ARCHIVE_EXE) && (contains(replacingDataTypes, L"module"))) {
-		// ¸¸ÀÏ exeÀÌ°í ¸ğµâ ±³Ã¼¿¡ Ã¼Å©°¡ µÇ¾îÀÖ´Ù¸é ExeArchive ÇÚµé·Î ¹Ù²Û´ÙÀ½ ¸ğµâ ±³Ã¼¸¦ ¼öÇàÇØ¾ß ÇÑ´Ù
+		// ë§Œì¼ exeì´ê³  ëª¨ë“ˆ êµì²´ì— ì²´í¬ê°€ ë˜ì–´ìˆë‹¤ë©´ ExeArchive í•¸ë“¤ë¡œ ë°”ê¾¼ë‹¤ìŒ ëª¨ë“ˆ êµì²´ë¥¼ ìˆ˜í–‰í•´ì•¼ í•œë‹¤
 		ExeArchive* exeArcPtr = reinterpret_cast<ExeArchive*>(this);
 		if (!exeArcPtr->importModules()) {
 			return false;
 		}
-		// ¸ğµâ µ¥ÀÌÅÍ ¹× ¹éÇì´õ¸¦ ±â·ÏÇØ¾ß »õ·Î ¾ÆÄ«ÀÌºê¸¦ ¸¸µé ÁØºñ°¡ µÈ´Ù
+		// ëª¨ë“ˆ ë°ì´í„° ë° ë°±í—¤ë”ë¥¼ ê¸°ë¡í•´ì•¼ ìƒˆë¡œ ì•„ì¹´ì´ë¸Œë¥¼ ë§Œë“¤ ì¤€ë¹„ê°€ ëœë‹¤
 		if (!exeArcPtr->writeModulesIntoArchive(hNewArchive)) {
 			return false;
 		}
 	}
 	else {
-		// chunkStartOffset ÀÌÀü±îÁö ÀĞ¾îµé¿´´Ù°¡ »õ ÇÚµé¿¡ ±â·Ï
+		// chunkStartOffset ì´ì „ê¹Œì§€ ì½ì–´ë“¤ì˜€ë‹¤ê°€ ìƒˆ í•¸ë“¤ì— ê¸°ë¡
 		SetFilePointer(hArchive, 0, NULL, FILE_BEGIN);
 		UINT32 tmpBeforeChunkSize = chunkStartOffset;
 		BYTE* tmpBeforeChunkBuffer = (BYTE*)malloc(tmpBeforeChunkSize);
@@ -843,14 +843,14 @@ bool Archive::rewriteNewArchive(vector<wstring>& replacingDataTypes)
 		free(tmpBeforeChunkBuffer);
 	}
 
-	// ¸ğµç chunk¸¦ ´Ù½Ã ±â·Ï
+	// ëª¨ë“  chunkë¥¼ ë‹¤ì‹œ ê¸°ë¡
 	if (!rewriteAllChunk(hNewArchive, replacingDataTypes)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(newArchivePath) << L": Application µ¥ÀÌÅÍ º¯°æÀ» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(newArchivePath) << L": Application ë°ì´í„° ë³€ê²½ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		CloseHandle(hNewArchive);
 		return false;
 	}
 
-	// Á¤¸®
+	// ì •ë¦¬
 	CloseHandle(hNewArchive);
 
 	wcout << infoPrefix << L"<<function>> " << __FUNCTIONW__ << L": complete!" << endl;
@@ -864,42 +864,42 @@ bool Archive::rewriteAllChunk(HANDLE hNewArchive, vector<wstring>& replacingData
 	DWORD dRead;
 	ChunkInfo chunkInfo;
 
-	// TTF ¿ÀÇÁ¼ÂÀ» °øÀ¯ÇÏ±â À§ÇÑ µ¥ÀÌÅÍ
+	// TTF ì˜¤í”„ì…‹ì„ ê³µìœ í•˜ê¸° ìœ„í•œ ë°ì´í„°
 	vector<UINT32> ttfOffsetList;
 
-	// ¸¶¹«¸® chunk
+	// ë§ˆë¬´ë¦¬ chunk
 	ChunkInfo endChunk;
 	memset(&endChunk, 0, sizeof(ChunkInfo));
 	endChunk.type = ChunkType::CHUNK_END;
 
-	// ÃÊ±âÈ­ ¹× chunk ½ÃÀÛ À§Ä¡ ÁöÁ¤. ¾çÂÊ HANDLE ¶È°°ÀÌ
+	// ì´ˆê¸°í™” ë° chunk ì‹œì‘ ìœ„ì¹˜ ì§€ì •. ì–‘ìª½ HANDLE ë˜‘ê°™ì´
 	memset(&chunkInfo, 0, sizeof(ChunkInfo));
 	SetFilePointer(hArchive, chunkStartOffset, NULL, FILE_BEGIN);
 	SetFilePointer(hNewArchive, chunkStartOffset, NULL, FILE_BEGIN);
 
-	// ÀÏ´Ü chunk ´ÜÀ§·Î ÀúÀåÀ» ¼öÇàÇÑ´Ù Ä¡°í ÁøÇà
+	// ì¼ë‹¨ chunk ë‹¨ìœ„ë¡œ ì €ì¥ì„ ìˆ˜í–‰í•œë‹¤ ì¹˜ê³  ì§„í–‰
 	getStates()->totalSavingDataCount = (UINT32)getStates()->chunkTreeNodeContainer.getRootNodePointer()->getChildren().size();
 	getStates()->currentSavingDataIndex = 0;
 
 	while (1) {
 
-		// chunk¸¦ ÀĞ¾îµéÀÏ ¶§¸¦ ´ëºñÇØ À§Ä¡ ¹é¾÷ ÇÊ¿ä
+		// chunkë¥¼ ì½ì–´ë“¤ì¼ ë•Œë¥¼ ëŒ€ë¹„í•´ ìœ„ì¹˜ ë°±ì—… í•„ìš”
 		UINT32 backupOffset = SetFilePointer(hArchive, 0, NULL, FILE_CURRENT);
 		ReadFile(hArchive, &chunkInfo, sizeof(ChunkInfo), &dRead, NULL);
 		SetFilePointer(hArchive, backupOffset, NULL, FILE_BEGIN);
 
-		// ÀĞ¾î¿Â ±æÀÌ°¡ 0ÀÌ¶ó¸é ±×³É ³ª°£´Ù
+		// ì½ì–´ì˜¨ ê¸¸ì´ê°€ 0ì´ë¼ë©´ ê·¸ëƒ¥ ë‚˜ê°„ë‹¤
 		if (dRead != sizeof(ChunkInfo)) {
 			break;
 		}
 
 		wcout << infoPrefix << L"ChunkType: " << uppercase << hex << getNameUni(chunkInfo.type) << L" reencrypting..." << endl;
 
-		// appName, editorFileName, copyright´Â ±âÁ¸ °ÍÀº ÀĞ±â´Â ÀĞµÇ, º¯°æÇÑ µ¥ÀÌÅÍ¸¦ ¹İ¿µÇØÁà¾ß ÇÑ´Ù
-		// frameÀº ¾ÈÂÊÀÌ chunk ¸®½ºÆ®·Î ºĞ¸®µÇ¾î ÀÖ¾î¼­ ¸¶Âù°¡Áö·Î Àç¾ÏÈ£ÇØ¾ß ÇÔ
-		// protection¿¡¼­´Â Ã¼Å©¼¶ °ª º¯°æ
-		// ÀÌ¿Ü¿¡´Â ±âº»ÀûÀ¸·Î UnknownChunk Ã³¸®ÇÏ¸ç, ±³Ã¼ÇÒ µ¥ÀÌÅÍ´Â readFromFile °°Àº °É·Î Ã³¸®ÇÏ¸é µÉ °Í °°À½
-		// ÆÄÀÏÀ» Ãß°¡ÇÏ´Â °Íµµ °¡´ÉÇÏ°Ô ¸¸µé¾î¾ß ÇÏ´Âµ¥...
+		// appName, editorFileName, copyrightëŠ” ê¸°ì¡´ ê²ƒì€ ì½ê¸°ëŠ” ì½ë˜, ë³€ê²½í•œ ë°ì´í„°ë¥¼ ë°˜ì˜í•´ì¤˜ì•¼ í•œë‹¤
+		// frameì€ ì•ˆìª½ì´ chunk ë¦¬ìŠ¤íŠ¸ë¡œ ë¶„ë¦¬ë˜ì–´ ìˆì–´ì„œ ë§ˆì°¬ê°€ì§€ë¡œ ì¬ì•”í˜¸í•´ì•¼ í•¨
+		// protectionì—ì„œëŠ” ì²´í¬ì„¬ ê°’ ë³€ê²½
+		// ì´ì™¸ì—ëŠ” ê¸°ë³¸ì ìœ¼ë¡œ UnknownChunk ì²˜ë¦¬í•˜ë©°, êµì²´í•  ë°ì´í„°ëŠ” readFromFile ê°™ì€ ê±¸ë¡œ ì²˜ë¦¬í•˜ë©´ ë  ê²ƒ ê°™ìŒ
+		// íŒŒì¼ì„ ì¶”ê°€í•˜ëŠ” ê²ƒë„ ê°€ëŠ¥í•˜ê²Œ ë§Œë“¤ì–´ì•¼ í•˜ëŠ”ë°...
 		switch (chunkInfo.type)
 		{
 			// AppInfo
@@ -908,7 +908,7 @@ bool Archive::rewriteAllChunk(HANDLE hNewArchive, vector<wstring>& replacingData
 				AppNameChunk tmpChunk;
 				tmpChunk.readFromArchive(hArchive);
 				if (!appName.writeIntoArchive(hNewArchive)) {
-					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ½Å±Ô App nameÀ» ±â·ÏÇÏÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ì‹ ê·œ App nameì„ ê¸°ë¡í•˜ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 					return false;
 				}
 				break;
@@ -918,7 +918,7 @@ bool Archive::rewriteAllChunk(HANDLE hNewArchive, vector<wstring>& replacingData
 				EditorFileNameChunk tmpChunk;
 				tmpChunk.readFromArchive(hArchive);
 				if (!editorFileName.writeIntoArchive(hNewArchive)) {
-					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ½Å±Ô editor filenameÀ» ±â·ÏÇÏÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ì‹ ê·œ editor filenameì„ ê¸°ë¡í•˜ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 					return false;
 				}
 				break;
@@ -928,7 +928,7 @@ bool Archive::rewriteAllChunk(HANDLE hNewArchive, vector<wstring>& replacingData
 				CopyrightChunk tmpChunk;
 				tmpChunk.readFromArchive(hArchive);
 				if (!copyright.writeIntoArchive(hNewArchive)) {
-					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ½Å±Ô copyright¸¦ ±â·ÏÇÏÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ì‹ ê·œ copyrightë¥¼ ê¸°ë¡í•˜ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 					return false;
 				}
 				break;
@@ -938,7 +938,7 @@ bool Archive::rewriteAllChunk(HANDLE hNewArchive, vector<wstring>& replacingData
 				AppHeaderChunk tmpChunk;
 				tmpChunk.readFromArchive(hArchive);
 				if (!appHeader.writeIntoArchive(hNewArchive)) {
-					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ½Å±Ô Application Header¸¦ ±â·ÏÇÏÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ì‹ ê·œ Application Headerë¥¼ ê¸°ë¡í•˜ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 					return false;
 				}
 				break;
@@ -948,7 +948,7 @@ bool Archive::rewriteAllChunk(HANDLE hNewArchive, vector<wstring>& replacingData
 				ProductVersionInfoChunk tmpChunk;
 				tmpChunk.readFromArchive(hArchive);
 				if (!productVersionInfo.writeIntoArchive(hNewArchive)) {
-					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ½Å±Ô Product Version Á¤º¸¸¦ ±â·ÏÇÏÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ì‹ ê·œ Product Version ì •ë³´ë¥¼ ê¸°ë¡í•˜ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 					return false;
 				}
 				break;
@@ -958,7 +958,7 @@ bool Archive::rewriteAllChunk(HANDLE hNewArchive, vector<wstring>& replacingData
 				ProductBuildVersionInfoChunk tmpChunk;
 				tmpChunk.readFromArchive(hArchive);
 				if (!productBuildVersionInfo.writeIntoArchive(hNewArchive)) {
-					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ½Å±Ô Product Build Version Á¤º¸¸¦ ±â·ÏÇÏÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ì‹ ê·œ Product Build Version ì •ë³´ë¥¼ ê¸°ë¡í•˜ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 					return false;
 				}
 				break;
@@ -968,7 +968,7 @@ bool Archive::rewriteAllChunk(HANDLE hNewArchive, vector<wstring>& replacingData
 				AppLocaleIdChunk tmpChunk;
 				tmpChunk.readFromArchive(hArchive);
 				if (!appLocaleId.writeIntoArchive(hNewArchive)) {
-					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ½Å±Ô Application Locale Id¸¦ ±â·ÏÇÏÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ì‹ ê·œ Application Locale Idë¥¼ ê¸°ë¡í•˜ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 					return false;
 				}
 				break;
@@ -978,7 +978,7 @@ bool Archive::rewriteAllChunk(HANDLE hNewArchive, vector<wstring>& replacingData
 				AppCodepageChunk tmpChunk;
 				tmpChunk.readFromArchive(hArchive);
 				if (!appCodepage.writeIntoArchive(hNewArchive)) {
-					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ½Å±Ô Application Codepage¸¦ ±â·ÏÇÏÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ì‹ ê·œ Application Codepageë¥¼ ê¸°ë¡í•˜ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 					return false;
 				}
 				break;
@@ -1000,7 +1000,7 @@ bool Archive::rewriteAllChunk(HANDLE hNewArchive, vector<wstring>& replacingData
 				break;
 			}
 
-			// *** ChunkType::CHUNK_SHADER_LIST´Â ÇÏÁö ¾Ê´Â´Ù ***
+			// *** ChunkType::CHUNK_SHADER_LISTëŠ” í•˜ì§€ ì•ŠëŠ”ë‹¤ ***
 
 			// Frame
 			case ChunkType::CHUNK_FRAME:
@@ -1018,7 +1018,7 @@ bool Archive::rewriteAllChunk(HANDLE hNewArchive, vector<wstring>& replacingData
 				break;
 			}
 
-			// AppInfo - Protection, ¾î¶² °æ¿ì¿¡¼­µç ¼öÇàÇØ¾ß ÇÔ
+			// AppInfo - Protection, ì–´ë–¤ ê²½ìš°ì—ì„œë“  ìˆ˜í–‰í•´ì•¼ í•¨
 			case ChunkType::CHUNK_PROTECTION:
 			{
 				if (!rewriteProtectionChunk(hNewArchive)) {
@@ -1027,7 +1027,7 @@ bool Archive::rewriteAllChunk(HANDLE hNewArchive, vector<wstring>& replacingData
 				break;
 			}
 
-			// Image -> ±âÁ¸ image Offset chunk ³Ñ±â°í »õ image Offset chunk±îÁö ¸¸µé¾î¼­ ±â·Ï
+			// Image -> ê¸°ì¡´ image Offset chunk ë„˜ê¸°ê³  ìƒˆ image Offset chunkê¹Œì§€ ë§Œë“¤ì–´ì„œ ê¸°ë¡
 			case ChunkType::CHUNK_IMAGE_DATA: {
 				if (contains(replacingDataTypes, L"image")) {
 					if (!rewriteImagesChunk(hNewArchive)) {
@@ -1042,7 +1042,7 @@ bool Archive::rewriteAllChunk(HANDLE hNewArchive, vector<wstring>& replacingData
 				break;
 			}
 
-			// Sound -> ±âÁ¸ sound Offset chunk ³Ñ±â°í »õ sound Offset chunk±îÁö ¸¸µé¾î¼­ ±â·Ï
+			// Sound -> ê¸°ì¡´ sound Offset chunk ë„˜ê¸°ê³  ìƒˆ sound Offset chunkê¹Œì§€ ë§Œë“¤ì–´ì„œ ê¸°ë¡
 			case ChunkType::CHUNK_SOUND_DATA: {
 				if (contains(replacingDataTypes, L"sound")) {
 					if (!rewriteSoundsChunk(hNewArchive)) {
@@ -1100,7 +1100,7 @@ bool Archive::rewriteAllChunk(HANDLE hNewArchive, vector<wstring>& replacingData
 				break;
 			}
 
-			// *** È®ÀÎ¿ë, È®ÀÎÀÌ µÇ¸é Áö¿ï°Í
+			// *** í™•ì¸ìš©, í™•ì¸ì´ ë˜ë©´ ì§€ìš¸ê²ƒ
 			case ChunkType::CHUNK_2_5_UNKNOWN_1:
 			case ChunkType::CHUNK_2_5_UNKNOWN_2:
 			{
@@ -1119,7 +1119,7 @@ bool Archive::rewriteAllChunk(HANDLE hNewArchive, vector<wstring>& replacingData
 				break;
 			}
 
-			// ÀÌ¿Ü ¸ğµç chunk, È¤Àº ±³Ã¼ ´ë»ó¿¡ Æ÷ÇÔµÇÁö ¾Ê´Â chunk
+			// ì´ì™¸ ëª¨ë“  chunk, í˜¹ì€ êµì²´ ëŒ€ìƒì— í¬í•¨ë˜ì§€ ì•ŠëŠ” chunk
 			default:
 			{
 				if (!rewriteUnknownChunk(hNewArchive)) {
@@ -1129,7 +1129,7 @@ bool Archive::rewriteAllChunk(HANDLE hNewArchive, vector<wstring>& replacingData
 			}
 		}
 
-		// ÇÁ·Î±×·¹½º ÀÎµ¦½º °»½Å
+		// í”„ë¡œê·¸ë ˆìŠ¤ ì¸ë±ìŠ¤ ê°±ì‹ 
 		getStates()->currentSavingDataIndex++;
 
 	}
@@ -1143,22 +1143,22 @@ bool Archive::rewriteBinaryFilesChunk(HANDLE hNewArchive)
 	wcout << L"--------------------------------------" << endl;
 	wcout << infoPrefix << L"Binary File Data Chunk rewriting processing..." << endl;
 
-	// Binary ÆÄÀÏ chunk ÀĞ¾îµéÀÌ±â
+	// Binary íŒŒì¼ chunk ì½ì–´ë“¤ì´ê¸°
 	if (!binaryFileData.readFromArchive(hArchive)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Binary File chunk¸¦ ÀĞ¾îµéÀÌÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Binary File chunkë¥¼ ì½ì–´ë“¤ì´ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
-	// ±³Ã¼ ÀÛ¾÷ ¼öÇà
+	// êµì²´ ì‘ì—… ìˆ˜í–‰
 	wstring importDirPath = getExtentionRemovedPath(archivePath) + L"/binaries";
 	if (!binaryFileData.importData(importDirPath)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Binary File µ¥ÀÌÅÍ ±³Ã¼¸¦ ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Binary File ë°ì´í„° êµì²´ë¥¼ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
-	// ±â·ÏÇÏ±â
+	// ê¸°ë¡í•˜ê¸°
 	if (!binaryFileData.writeIntoArchive(hNewArchive)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Binary File chunk¸¦ ±â·ÏÇÏÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Binary File chunkë¥¼ ê¸°ë¡í•˜ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
@@ -1177,43 +1177,43 @@ bool Archive::rewriteFrameChunk(HANDLE hNewArchive, vector<wstring>& replacingDa
 	wcout << infoPrefix << L"Frame Chunk rewriting processing..." << endl;
 
 	if (!chunk.readFromArchive(hArchive)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ±âÁ¸ frameÀ» ÀĞ¾îµéÀÌÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ê¸°ì¡´ frameì„ ì½ì–´ë“¤ì´ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
-	// *** text³Ä, script³Ä¿¡ µû¶ó ±³Ã¼ ·ÎÁ÷À» ´Ù¸£°Ô ÇØ¾ß ÇÑ´Ù
+	// *** textëƒ, scriptëƒì— ë”°ë¼ êµì²´ ë¡œì§ì„ ë‹¤ë¥´ê²Œ í•´ì•¼ í•œë‹¤
 
-	// ÇÁ·¹ÀÓ ÀÌº¥Æ® ÅØ½ºÆ® ±³Ã¼
+	// í”„ë ˆì„ ì´ë²¤íŠ¸ í…ìŠ¤íŠ¸ êµì²´
 	if (contains(replacingDataTypes, L"text")) {
 		if (!frameEventTextTable.isLoaded()) {
 			wstring importJsonPath = getExtentionRemovedPath(archivePath) + L"/text/frameEventText.json";
 			if (isFileOrDir(importJsonPath) != FSOType::FSO_FILE) {
-				wcout << infoPrefix << L"Frame ÀÌº¥Æ® ÅØ½ºÆ® json ÀÌ ¾ø¾î ÅØ½ºÆ® ±³Ã¼¸¦ °Ç³Ê¶İ´Ï´Ù: " << importJsonPath << endl;
+				wcout << infoPrefix << L"Frame ì´ë²¤íŠ¸ í…ìŠ¤íŠ¸ json ì´ ì—†ì–´ í…ìŠ¤íŠ¸ êµì²´ë¥¼ ê±´ë„ˆëœë‹ˆë‹¤: " << importJsonPath << endl;
 				frameEventTextTable.markLoaded();
 			}
 			else {
 				Json::Value textValue;
 				if (!readFromJson(textValue, importJsonPath) || !frameEventTextTable.importJson(textValue)) {
-					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Frame ÀÌº¥Æ® ÅØ½ºÆ® json À» ÀĞ¾îµéÀÌÁö ¸øÇß½À´Ï´Ù." << endl;
-					triggerError(__FUNCTION__, u8"Frame ÀÌº¥Æ® ÅØ½ºÆ® json À» ÀĞ¾îµéÀÌÁö ¸øÇß½À´Ï´Ù", true);
+					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Frame ì´ë²¤íŠ¸ í…ìŠ¤íŠ¸ json ì„ ì½ì–´ë“¤ì´ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
+					triggerError(__FUNCTION__, u8"Frame ì´ë²¤íŠ¸ í…ìŠ¤íŠ¸ json ì„ ì½ì–´ë“¤ì´ì§€ ëª»í–ˆìŠµë‹ˆë‹¤", true);
 					return false;
 				}
-				wcout << infoPrefix << L"Frame ÀÌº¥Æ® ÅØ½ºÆ® " << dec << frameEventTextTable.getEntryCount() << L"°³¸¦ ÀĞ¾îµé¿´½À´Ï´Ù." << endl;
+				wcout << infoPrefix << L"Frame ì´ë²¤íŠ¸ í…ìŠ¤íŠ¸ " << dec << frameEventTextTable.getEntryCount() << L"ê°œë¥¼ ì½ì–´ë“¤ì˜€ìŠµë‹ˆë‹¤." << endl;
 			}
 		}
 		UINT32 replacedCount = 0;
 		if (!chunk.replaceEventText(frameEventTextTable, replacedCount)) {
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Frame ÀÌº¥Æ® ÅØ½ºÆ®¸¦ ±³Ã¼ÇÏÁö ¸øÇß½À´Ï´Ù." << endl;
-			triggerError(__FUNCTION__, u8"Frame ÀÌº¥Æ® ÅØ½ºÆ®¸¦ ±³Ã¼ÇÏÁö ¸øÇß½À´Ï´Ù", true);
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Frame ì´ë²¤íŠ¸ í…ìŠ¤íŠ¸ë¥¼ êµì²´í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
+			triggerError(__FUNCTION__, u8"Frame ì´ë²¤íŠ¸ í…ìŠ¤íŠ¸ë¥¼ êµì²´í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤", true);
 			return false;
 		}
 		if (replacedCount > 0) {
-			wcout << infoPrefix << L"Frame ÀÌº¥Æ® ÅØ½ºÆ® " << dec << replacedCount << L"°³¸¦ ±³Ã¼Çß½À´Ï´Ù." << endl;
+			wcout << infoPrefix << L"Frame ì´ë²¤íŠ¸ í…ìŠ¤íŠ¸ " << dec << replacedCount << L"ê°œë¥¼ êµì²´í–ˆìŠµë‹ˆë‹¤." << endl;
 		}
 	}
 
 	if (!chunk.writeIntoArchive(hNewArchive)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ½Å±Ô frameÀ» ±â·ÏÇÏÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ì‹ ê·œ frameì„ ê¸°ë¡í•˜ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
@@ -1233,25 +1233,25 @@ bool Archive::rewriteProtectionChunk(HANDLE hNewArchive)
 	wcout << L"--------------------------------------" << endl;
 	wcout << infoPrefix << L"Protection Chunk rewriting processing..." << endl;
 
-	// Protection chunk ÀĞ¾îµéÀÌ±â
+	// Protection chunk ì½ì–´ë“¤ì´ê¸°
 	if (!chunk.readFromArchive(hArchive)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ±âÁ¸ protectionÀ» ÀĞ¾îµéÀÌÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ê¸°ì¡´ protectionì„ ì½ì–´ë“¤ì´ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
-	// ¿©±â¼­´Â protection chunk¸¦ ±â·ÏÇÏ±â ÀÌÀüÀÌ¹Ç·Î Ã¼Å©ÇÒ ÇÊ¿ä°¡ ¾ø´Ù
+	// ì—¬ê¸°ì„œëŠ” protection chunkë¥¼ ê¸°ë¡í•˜ê¸° ì´ì „ì´ë¯€ë¡œ ì²´í¬í•  í•„ìš”ê°€ ì—†ë‹¤
 	if (!caculateProtectionChecksum(hNewArchive, newChecksum, true)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ½Å±Ô protection¸¦ ±â·ÏÇÏÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ì‹ ê·œ protectionë¥¼ ê¸°ë¡í•˜ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
-	// ¿ø·¡ ±â·ÏÇÒ À§Ä¡·Î º¹±¸ ÈÄ °ªÀ» ¹Ù²Û´Ù
+	// ì›ë˜ ê¸°ë¡í•  ìœ„ì¹˜ë¡œ ë³µêµ¬ í›„ ê°’ì„ ë°”ê¾¼ë‹¤
 	SetFilePointer(hNewArchive, backupNewOffset, NULL, FILE_BEGIN);
 	chunk.setValue(newChecksum);
 
-	// ±â·ÏÇÏ±â
+	// ê¸°ë¡í•˜ê¸°
 	if (!chunk.writeIntoArchive(hNewArchive)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ½Å±Ô protection¸¦ ±â·ÏÇÏÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ì‹ ê·œ protectionë¥¼ ê¸°ë¡í•˜ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
@@ -1270,37 +1270,37 @@ bool Archive::rewriteImagesChunk(HANDLE hNewArchive)
 	wcout << L"--------------------------------------" << endl;
 	wcout << infoPrefix << L"Image/ImageOffset Chunk rewriting processing..." << endl;
 
-	// image chunk ÀĞ¾îµéÀÌ±â
+	// image chunk ì½ì–´ë“¤ì´ê¸°
 	if (!chunk.readFromArchive(hArchive)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Image Data chunk¸¦ ÀĞ¾îµéÀÌÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Image Data chunkë¥¼ ì½ì–´ë“¤ì´ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
-	// image offset chunk ÀĞ¾îµéÀÌ±â
+	// image offset chunk ì½ì–´ë“¤ì´ê¸°
 	if (!offsetChunk.readFromArchive(hArchive)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Image Offset chunk¸¦ ÀĞ¾îµéÀÌÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Image Offset chunkë¥¼ ì½ì–´ë“¤ì´ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
-	// ±³Ã¼ ÀÛ¾÷ ¼öÇà (ÀÌ¹ÌÁö°¡ Á¸ÀçÇÒ ¶§¸¸)
+	// êµì²´ ì‘ì—… ìˆ˜í–‰ (ì´ë¯¸ì§€ê°€ ì¡´ì¬í•  ë•Œë§Œ)
 	wstring importDirPath = getExtentionRemovedPath(archivePath) + L"/image";
 	if (!chunk.importData(importDirPath)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Image µ¥ÀÌÅÍ ±³Ã¼¸¦ ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Image ë°ì´í„° êµì²´ë¥¼ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
-	// chunk ±â·Ï°ú µ¿½Ã¿¡ offset array »ı¼º
+	// chunk ê¸°ë¡ê³¼ ë™ì‹œì— offset array ìƒì„±
 	if (!chunk.writeIntoArchive(hNewArchive)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Image Data chunk¸¦ ±â·ÏÇÏÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Image Data chunkë¥¼ ê¸°ë¡í•˜ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
-	// offset chunk¿¡ º¯°æÁ¡ ¹İ¿µ
+	// offset chunkì— ë³€ê²½ì  ë°˜ì˜
 	chunk.fillOffsets(offsetChunk);
 
-	// offset chunk ±â·ÏÇÏ±â
+	// offset chunk ê¸°ë¡í•˜ê¸°
 	if (!offsetChunk.writeIntoArchive(hNewArchive)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Image Offset chunk¸¦ ±â·ÏÇÏÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Image Offset chunkë¥¼ ê¸°ë¡í•˜ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
@@ -1319,37 +1319,37 @@ bool Archive::rewriteSoundsChunk(HANDLE hNewArchive)
 	wcout << L"--------------------------------------" << endl;
 	wcout << infoPrefix << L"Sound/SoundOffset Chunk rewriting processing..." << endl;
 
-	// sound chunk ÀĞ¾îµéÀÌ±â
+	// sound chunk ì½ì–´ë“¤ì´ê¸°
 	if (!chunk.readFromArchive(hArchive)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Sound Data chunk¸¦ ÀĞ¾îµéÀÌÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Sound Data chunkë¥¼ ì½ì–´ë“¤ì´ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
-	// sound offset chunk ÀĞ¾îµéÀÌ±â
+	// sound offset chunk ì½ì–´ë“¤ì´ê¸°
 	if (!offsetChunk.readFromArchive(hArchive)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Sound Offset chunk¸¦ ÀĞ¾îµéÀÌÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Sound Offset chunkë¥¼ ì½ì–´ë“¤ì´ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
-	// ±³Ã¼ ÀÛ¾÷ ¼öÇà (»ç¿îµå ÆÄÀÏÀÌ Á¸ÀçÇÒ ¶§¸¸)
+	// êµì²´ ì‘ì—… ìˆ˜í–‰ (ì‚¬ìš´ë“œ íŒŒì¼ì´ ì¡´ì¬í•  ë•Œë§Œ)
 	wstring importDirPath = getExtentionRemovedPath(archivePath) + L"/sound";
 	if (!chunk.importData(importDirPath)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Sound µ¥ÀÌÅÍ ±³Ã¼¸¦ ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Sound ë°ì´í„° êµì²´ë¥¼ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
-	// chunk ±â·Ï°ú µ¿½Ã¿¡ offset array »ı¼º
+	// chunk ê¸°ë¡ê³¼ ë™ì‹œì— offset array ìƒì„±
 	if (!chunk.writeIntoArchive(hNewArchive)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Sound Data chunk¸¦ ±â·ÏÇÏÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Sound Data chunkë¥¼ ê¸°ë¡í•˜ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
-	// offset chunk¿¡ º¯°æÁ¡ ¹İ¿µ
+	// offset chunkì— ë³€ê²½ì  ë°˜ì˜
 	chunk.fillOffsets(offsetChunk);
 
-	// offset chunk ±â·ÏÇÏ±â
+	// offset chunk ê¸°ë¡í•˜ê¸°
 	if (!offsetChunk.writeIntoArchive(hNewArchive)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Sound Offset chunk¸¦ ±â·ÏÇÏÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Sound Offset chunkë¥¼ ê¸°ë¡í•˜ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
@@ -1368,26 +1368,26 @@ bool Archive::rewriteTrueTypeFontsChunk(HANDLE hNewArchive, vector<UINT32>& ttfO
 	wcout << L"--------------------------------------" << endl;
 	wcout << infoPrefix << L"TrueType Font Data Chunk rewriting processing..." << endl;
 
-	// TrueType ÆùÆ® chunk ÀĞ¾îµéÀÌ±â
+	// TrueType í°íŠ¸ chunk ì½ì–´ë“¤ì´ê¸°
 	if (!chunk.readFromArchive(hArchive)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": TrueType ÆùÆ® chunk¸¦ ÀĞ¾îµéÀÌÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": TrueType í°íŠ¸ chunkë¥¼ ì½ì–´ë“¤ì´ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
-	// ±³Ã¼ ÀÛ¾÷ ¼öÇà
+	// êµì²´ ì‘ì—… ìˆ˜í–‰
 	wstring importDirPath = getExtentionRemovedPath(archivePath) + L"/font/ttf";
 	if (!chunk.importData(importDirPath)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": TrueType ÆùÆ® µ¥ÀÌÅÍ ±³Ã¼¸¦ ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": TrueType í°íŠ¸ ë°ì´í„° êµì²´ë¥¼ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
-	// ±â·ÏÇÏ±â
+	// ê¸°ë¡í•˜ê¸°
 	if (!chunk.writeIntoArchive(hNewArchive)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": TrueType ÆùÆ® chunk¸¦ ±â·ÏÇÏÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": TrueType í°íŠ¸ chunkë¥¼ ê¸°ë¡í•˜ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
-	// ¿ÀÇÁ¼Â ÃßÃâÇØµÎ±â
+	// ì˜¤í”„ì…‹ ì¶”ì¶œí•´ë‘ê¸°
 	ttfOffsetList.resize(chunk.getOffsetList().size());
 	memcpy(ttfOffsetList.data(), chunk.getOffsetList().data(), (sizeof(UINT32) * chunk.getOffsetList().size()));
 
@@ -1405,23 +1405,23 @@ bool Archive::rewriteTrueTypeFontInfosChunk(HANDLE hNewArchive, vector<UINT32>& 
 	wcout << L"--------------------------------------" << endl;
 	wcout << infoPrefix << L"TrueType Font Info Chunk rewriting processing..." << endl;
 
-	// TrueType ÆùÆ® Á¤º¸ chunk ÀĞ¾îµéÀÌ±â
+	// TrueType í°íŠ¸ ì •ë³´ chunk ì½ì–´ë“¤ì´ê¸°
 	if (!chunk.readFromArchive(hArchive)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": TrueType ÆùÆ® Á¤º¸ chunk¸¦ ÀĞ¾îµéÀÌÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": TrueType í°íŠ¸ ì •ë³´ chunkë¥¼ ì½ì–´ë“¤ì´ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
-	// offset ¸®½ºÆ® ¼±¹İ¿µ ÈÄ ±³Ã¼ ÀÛ¾÷ ¼öÇà
+	// offset ë¦¬ìŠ¤íŠ¸ ì„ ë°˜ì˜ í›„ êµì²´ ì‘ì—… ìˆ˜í–‰
 	wstring importJsonPath = getExtentionRemovedPath(archivePath) + L"/font/ttf/info.json";
 	chunk.setOffsetList(ttfOffsetList);
 	if (!chunk.importJson(importJsonPath)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": TrueType ÆùÆ® Á¤º¸ µ¥ÀÌÅÍ ±³Ã¼¸¦ ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": TrueType í°íŠ¸ ì •ë³´ ë°ì´í„° êµì²´ë¥¼ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
-	// ±â·ÏÇÏ±â
+	// ê¸°ë¡í•˜ê¸°
 	if (!chunk.writeIntoArchive(hNewArchive)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": TrueType ÆùÆ® Á¤º¸ chunk¸¦ ±â·ÏÇÏÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": TrueType í°íŠ¸ ì •ë³´ chunkë¥¼ ê¸°ë¡í•˜ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
@@ -1440,37 +1440,37 @@ bool Archive::rewriteLogFontsChunk(HANDLE hNewArchive)
 	wcout << L"--------------------------------------" << endl;
 	wcout << infoPrefix << L"LogFont/LogFontOffset Chunk rewriting processing..." << endl;
 
-	// LogFont chunk ÀĞ¾îµéÀÌ±â
+	// LogFont chunk ì½ì–´ë“¤ì´ê¸°
 	if (!chunk.readFromArchive(hArchive)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": LogFont Data chunk¸¦ ÀĞ¾îµéÀÌÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": LogFont Data chunkë¥¼ ì½ì–´ë“¤ì´ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
-	// LogFont offset chunk ÀĞ¾îµéÀÌ±â
+	// LogFont offset chunk ì½ì–´ë“¤ì´ê¸°
 	if (!offsetChunk.readFromArchive(hArchive)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": LogFont Offset chunk¸¦ ÀĞ¾îµéÀÌÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": LogFont Offset chunkë¥¼ ì½ì–´ë“¤ì´ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
-	// ±³Ã¼ ÀÛ¾÷ ¼öÇà (json ÆÄÀÏÀÌ Á¸ÀçÇÒ ¶§¸¸)
+	// êµì²´ ì‘ì—… ìˆ˜í–‰ (json íŒŒì¼ì´ ì¡´ì¬í•  ë•Œë§Œ)
 	wstring importJsonPath = getExtentionRemovedPath(archivePath) + L"/font/logFontInfo.json";
 	if (!chunk.importJson(importJsonPath)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": LogFont µ¥ÀÌÅÍ ±³Ã¼¸¦ ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": LogFont ë°ì´í„° êµì²´ë¥¼ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
-	// chunk ±â·Ï°ú µ¿½Ã¿¡ offset array »ı¼º
+	// chunk ê¸°ë¡ê³¼ ë™ì‹œì— offset array ìƒì„±
 	if (!chunk.writeIntoArchive(hNewArchive)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": LogFont Data chunk¸¦ ±â·ÏÇÏÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": LogFont Data chunkë¥¼ ê¸°ë¡í•˜ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
-	// offset chunk¿¡ º¯°æÁ¡ ¹İ¿µ
+	// offset chunkì— ë³€ê²½ì  ë°˜ì˜
 	chunk.fillOffsets(offsetChunk);
 
-	// offset chunk ±â·ÏÇÏ±â
+	// offset chunk ê¸°ë¡í•˜ê¸°
 	if (!offsetChunk.writeIntoArchive(hNewArchive)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": LogFont Offset chunk¸¦ ±â·ÏÇÏÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": LogFont Offset chunkë¥¼ ê¸°ë¡í•˜ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
@@ -1485,11 +1485,11 @@ bool Archive::rewriteUnknownChunk(HANDLE hNewArchive)
 {
 	UnknownChunk chunk;
 	if (!chunk.readFromArchive(hArchive)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ±âÁ¸ chunk¸¦ ÀĞ¾îµéÀÌÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ê¸°ì¡´ chunkë¥¼ ì½ì–´ë“¤ì´ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 	if (!chunk.writeIntoArchive(hNewArchive)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ½Å±Ô chunk¸¦ ±â·ÏÇÏÁö ¸øÇØ º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ì‹ ê·œ chunkë¥¼ ê¸°ë¡í•˜ì§€ ëª»í•´ ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 	return true;
@@ -1509,17 +1509,17 @@ bool Archive::caculateProtectionChecksum(HANDLE hTargetArchive, UINT32& protecti
 	UINT32 appTargetFileNameChunkOffset = 0;
 	UINT32 protectionChunkOffset = 0;
 
-	// ÃÊ±âÈ­ ¹× chunk ½ÃÀÛ À§Ä¡ ÁöÁ¤
-	// ¾îÂ÷ÇÇ °°Àº baseÀÎ ¾ÆÄ«ÀÌºê¸¦ ¼±ÅÃÇÒÅ×´Ï chunkStartOffset°ú productBuildVersionµµ °°À» °ÍÀÌ´Ù
+	// ì´ˆê¸°í™” ë° chunk ì‹œì‘ ìœ„ì¹˜ ì§€ì •
+	// ì–´ì°¨í”¼ ê°™ì€ baseì¸ ì•„ì¹´ì´ë¸Œë¥¼ ì„ íƒí• í…Œë‹ˆ chunkStartOffsetê³¼ productBuildVersionë„ ê°™ì„ ê²ƒì´ë‹¤
 	memset(&chunkInfo, 0, sizeof(ChunkInfo));
 	SetFilePointer(hTargetArchive, chunkStartOffset, NULL, FILE_BEGIN);
 
 	wcout << infoPrefix << L"Calculating new checksum..." << endl;
 
-	// CHUNK_APP_TARGET_FILENAME, CHUNK_PROTECTION À§Ä¡ ÆÄ¾Ç
+	// CHUNK_APP_TARGET_FILENAME, CHUNK_PROTECTION ìœ„ì¹˜ íŒŒì•…
 	while (1) {
 
-		// ´Ù ÀĞÁö ¸øÇÏ¸é ºüÁ®³ª°¡±â, °ªÀ» Ã¼Å©ÇÒ ÇÊ¿ä°¡ ¾øÀ» ¶§¸¦ ´ëºñÇØ¼­ ¹Ì¸® ¼¼ÆÃ
+		// ë‹¤ ì½ì§€ ëª»í•˜ë©´ ë¹ ì ¸ë‚˜ê°€ê¸°, ê°’ì„ ì²´í¬í•  í•„ìš”ê°€ ì—†ì„ ë•Œë¥¼ ëŒ€ë¹„í•´ì„œ ë¯¸ë¦¬ ì„¸íŒ…
 		UINT32 backupOffset = SetFilePointer(hTargetArchive, 0, NULL, FILE_CURRENT);
 		ReadFile(hTargetArchive, &chunkInfo, sizeof(ChunkInfo), &dRead, NULL);
 		if (dRead != sizeof(ChunkInfo)) {
@@ -1527,7 +1527,7 @@ bool Archive::caculateProtectionChecksum(HANDLE hTargetArchive, UINT32& protecti
 			break;
 		}
 
-		// protection chunk¶óµµ ³ª°£´Ù
+		// protection chunkë¼ë„ ë‚˜ê°„ë‹¤
 		if (chunkInfo.type == ChunkType::CHUNK_APP_TARGET_FILENAME) {
 			appTargetFileNameChunkOffset = backupOffset;
 			isAppTargetFileNameChunkExists = true;
@@ -1542,8 +1542,8 @@ bool Archive::caculateProtectionChecksum(HANDLE hTargetArchive, UINT32& protecti
 
 	}
 
-	// protection chunk¸¦ Ã¼Å©ÇÒ ÇÊ¿ä°¡ ¾ø´Ù¸é, Áï ÀÌ¹Ì protection chunk ÀÌÀü±îÁö ±â·ÏÇÑ »óÅÂ¿¡¼­ È£ÃâÇÑ °Å¶ó¸é
-	// isProtectionChunkExists´Â ÂüÀÌ°í, protectionChunkOffsetÀº ÇöÀç hTargetArchiveÀÇ À§Ä¡°¡ µÈ´Ù
+	// protection chunkë¥¼ ì²´í¬í•  í•„ìš”ê°€ ì—†ë‹¤ë©´, ì¦‰ ì´ë¯¸ protection chunk ì´ì „ê¹Œì§€ ê¸°ë¡í•œ ìƒíƒœì—ì„œ í˜¸ì¶œí•œ ê±°ë¼ë©´
+	// isProtectionChunkExistsëŠ” ì°¸ì´ê³ , protectionChunkOffsetì€ í˜„ì¬ hTargetArchiveì˜ ìœ„ì¹˜ê°€ ëœë‹¤
 	if (notNeedToCheckProtectionChunk) {
 		isProtectionChunkExists = true;
 	}

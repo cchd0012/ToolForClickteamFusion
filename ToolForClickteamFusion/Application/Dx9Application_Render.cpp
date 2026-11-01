@@ -1,4 +1,4 @@
-#include "Dx9Application.h"
+ï»¿#include "Dx9Application.h"
 #include "../ImGUI/Headers.h"
 #include "../Chunk/Image/Headers.h"
 #include "../Chunk/Sound/Headers.h"
@@ -8,7 +8,7 @@ using namespace CTT::Archive;
 using namespace CTT::Chunk;
 
 
-// ÇÊ¿äÇÑ UI ·»´õ¸µ ÇÔ¼ö
+// í•„ìš”í•œ UI ë Œë”ë§ í•¨ìˆ˜
 void Dx9Application::render()
 {
 	//ImGui::ShowDemoWindow();
@@ -17,7 +17,7 @@ void Dx9Application::render()
 	IM_ASSERT(ImGui::GetCurrentContext() != NULL && "Missing Dear ImGui context. Refer to examples app!");
 	IMGUI_CHECKVERSION();
 
-	// x¹öÆ° ´©¸¦¶§ Ã¢ ´İ±â, dirty Ã¼Å©
+	// xë²„íŠ¼ ëˆ„ë¥¼ë•Œ ì°½ ë‹«ê¸°, dirty ì²´í¬
 	if (!states.isOpen) {
 		if (states.isDirty) {
 			renderDirtyCloseModal();
@@ -27,22 +27,22 @@ void Dx9Application::render()
 		}
 	}
 
-	// ¸Ş´º ÅÇ ·»´õ¸µ
+	// ë©”ë‰´ íƒ­ ë Œë”ë§
 	renderMenuTab();
 
-	// (¾ÆÄ«ÀÌºê¸¦ ¿­¾úÀ» ¶§) ¾ÆÄ«ÀÌºê Á¤º¸, Chunk ¸®½ºÆ® À©µµ¿ì ·»´õ¸µ
+	// (ì•„ì¹´ì´ë¸Œë¥¼ ì—´ì—ˆì„ ë•Œ) ì•„ì¹´ì´ë¸Œ ì •ë³´, Chunk ë¦¬ìŠ¤íŠ¸ ìœˆë„ìš° ë Œë”ë§
 	if (states.isArchiveOpened) {
 		renderArchiveInfoWindow();
 		renderArchiveChunkListWindow();
 		renderArchiveEachChunkInfoWindow();
 	}
 
-	// ¿¡·¯°¡ ÀÖ´Ù¸é ¿¡·¯ ¸Ş½ÃÁö ¹Ú½º ·»´õ¸µ
+	// ì—ëŸ¬ê°€ ìˆë‹¤ë©´ ì—ëŸ¬ ë©”ì‹œì§€ ë°•ìŠ¤ ë Œë”ë§
 	if (states.isError) {
 		renderErrorModal();
 	}
 	else {
-		// ¾ÆÄ«ÀÌºê ¿­±â ¸ğ´Ş ·»´õ¸µ, dirty Ã¼Å©
+		// ì•„ì¹´ì´ë¸Œ ì—´ê¸° ëª¨ë‹¬ ë Œë”ë§, dirty ì²´í¬
 		if (states.isOpenModalShow) {
 			if (states.isDirty) {
 				renderDirtyArchiveOpenModal();
@@ -51,23 +51,23 @@ void Dx9Application::render()
 				renderArchiveOpenModal();
 			}
 		}
-		// ¾ÆÄ«ÀÌºê ÀúÀå ¸ğ´Ş ·»´õ¸µ
+		// ì•„ì¹´ì´ë¸Œ ì €ì¥ ëª¨ë‹¬ ë Œë”ë§
 		if (states.isSaveModalShow) {
 			renderArchiveSaveModal();
 		}
-		// ¾ÆÄ«ÀÌºê ÀüÃ¼ ÃßÃâ ¸ğ´Ş ·»´õ¸µ
+		// ì•„ì¹´ì´ë¸Œ ì „ì²´ ì¶”ì¶œ ëª¨ë‹¬ ë Œë”ë§
 		if (states.isExtractModalShow) {
 			renderArchiveExtractModal();
 		}
-		// ¾ÆÄ«ÀÌºê ºÎºĞ ÃßÃâ ¸ğ´Ş ·»´õ¸µ
+		// ì•„ì¹´ì´ë¸Œ ë¶€ë¶„ ì¶”ì¶œ ëª¨ë‹¬ ë Œë”ë§
 		if (states.isPartExtractModalShow) {
 			renderArchivePartExtractModal();
 		}
-		// ¾ÆÄ«ÀÌºê ÀüÃ¼ ±³Ã¼ ¸ğ´Ş ·»´õ¸µ
+		// ì•„ì¹´ì´ë¸Œ ì „ì²´ êµì²´ ëª¨ë‹¬ ë Œë”ë§
 		if (states.isReplaceModalShow) {
 			renderArchiveReplaceModal();
 		}
-		// ¾ÆÄ«ÀÌºê ºÎºĞ ±³Ã¼ ¸ğ´Ş ·»´õ¸µ
+		// ì•„ì¹´ì´ë¸Œ ë¶€ë¶„ êµì²´ ëª¨ë‹¬ ë Œë”ë§
 		if (states.isPartReplaceModalShow) {
 			renderArchivePartReplaceModal();
 		}
@@ -78,15 +78,15 @@ void Dx9Application::render()
 
 
 
-// ------------------- BEGIN [¸Ş´º] ---------------------
+// ------------------- BEGIN [ë©”ë‰´] ---------------------
 
 
-// ¸Ş´º ÅÇÀ» ·»´õ¸µÇÏ´Â ÇÔ¼ö
+// ë©”ë‰´ íƒ­ì„ ë Œë”ë§í•˜ëŠ” í•¨ìˆ˜
 void Dx9Application::renderMenuTab()
 {
 	ImGuiWindowFlags menuFlags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize;
 
-	// ¸Ş´º´Â ÃÖ»ó´Ü¿¡ À§Ä¡
+	// ë©”ë‰´ëŠ” ìµœìƒë‹¨ì— ìœ„ì¹˜
 	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
 	ImGui::SetNextWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x, (float)states.menuHeight), ImGuiCond_Always);
 
@@ -98,61 +98,61 @@ void Dx9Application::renderMenuTab()
     if (ImGui::BeginMenuBar())
     {
 
-		// ÇöÀç ¸¶¿ì½º À§Ä¡ °¨Áö -> draggable º¯¼ö Ã¼Å©¿ë, ¼ø°£ÀûÀ¸·Î ¿µ¿ªÀ» ¹ş¾î³¯ °æ¿ì´Â draggableÀÌ ¾ÈµÇ´Â °æ¿ì°¡ ÀÖ¾î¼­ ±×°Ç Á¦¿ÜÇÔ
+		// í˜„ì¬ ë§ˆìš°ìŠ¤ ìœ„ì¹˜ ê°ì§€ -> draggable ë³€ìˆ˜ ì²´í¬ìš©, ìˆœê°„ì ìœ¼ë¡œ ì˜ì—­ì„ ë²—ì–´ë‚  ê²½ìš°ëŠ” draggableì´ ì•ˆë˜ëŠ” ê²½ìš°ê°€ ìˆì–´ì„œ ê·¸ê±´ ì œì™¸í•¨
 		ImGuiIO& io = ImGui::GetIO();
 		ImVec2 mousePos = io.MousePos; 
 		states.isDraggable = (mousePos.y <= states.menuHeight);
 
-		// ¾ÆÄ«ÀÌºê
-        if (ImGui::BeginMenu(u8"¾ÆÄ«ÀÌºê"))
+		// ì•„ì¹´ì´ë¸Œ
+        if (ImGui::BeginMenu(u8"ì•„ì¹´ì´ë¸Œ"))
         {
-			// ¿­±â
-			if (ImGui::MenuItem(u8"¿­±â")) {
+			// ì—´ê¸°
+			if (ImGui::MenuItem(u8"ì—´ê¸°")) {
 				states.isOpenModalShow = true;
 			}
 			if (ImGui::IsItemHovered()) {
-				ImGui::SetTooltip(u8"ClickteamFusion ¾ÆÄ«ÀÌºê ÆÄÀÏÀ» ¿±´Ï´Ù");
+				ImGui::SetTooltip(u8"ClickteamFusion ì•„ì¹´ì´ë¸Œ íŒŒì¼ì„ ì—½ë‹ˆë‹¤");
 			}
-			// ÀúÀå [¾ÆÄ«ÀÌºê¸¦ ¿­Áö ¾Ê°Å³ª dirty »óÅÂ°¡ ¾Æ´Ï¶ó¸é ºñÈ°¼ºÈ­]
+			// ì €ì¥ [ì•„ì¹´ì´ë¸Œë¥¼ ì—´ì§€ ì•Šê±°ë‚˜ dirty ìƒíƒœê°€ ì•„ë‹ˆë¼ë©´ ë¹„í™œì„±í™”]
 			if (!states.isArchiveOpened || !states.isDirty) {
 				ImGui::BeginDisabled(true);
 			}
-			if (ImGui::MenuItem(u8"ÀúÀå")) {
+			if (ImGui::MenuItem(u8"ì €ì¥")) {
 				states.isSaveModalShow = true;
 				states.totalSavingDataCount = 0;
 				states.currentSavingDataIndex = 0;
 			}
 			if (ImGui::IsItemHovered()) {
-				ImGui::SetTooltip(u8"'~_new' °¡ ºÙÀº »õ ¾ÆÄ«ÀÌºê ÆÄÀÏ·Î ÀúÀåÇÕ´Ï´Ù");
+				ImGui::SetTooltip(u8"'~_new' ê°€ ë¶™ì€ ìƒˆ ì•„ì¹´ì´ë¸Œ íŒŒì¼ë¡œ ì €ì¥í•©ë‹ˆë‹¤");
 			}
-			// [¾ÆÄ«ÀÌºê¸¦ ¿­Áö ¾Ê°Å³ª dirty »óÅÂ°¡ ¾Æ´Ï¶ó¸é ºñÈ°¼ºÈ­]
+			// [ì•„ì¹´ì´ë¸Œë¥¼ ì—´ì§€ ì•Šê±°ë‚˜ dirty ìƒíƒœê°€ ì•„ë‹ˆë¼ë©´ ë¹„í™œì„±í™”]
 			if (!states.isArchiveOpened || !states.isDirty) {
 				ImGui::EndDisabled();
 			}
 			ImGui::EndMenu();
         }
-		// ÃßÃâ
-		if (ImGui::BeginMenu(u8"ÃßÃâ"))
+		// ì¶”ì¶œ
+		if (ImGui::BeginMenu(u8"ì¶”ì¶œ"))
 		{
-			// [¾ÆÄ«ÀÌºê¸¦ ¿­Áö ¾Ê¾Ò´Ù¸é ºñÈ°¼ºÈ­]
+			// [ì•„ì¹´ì´ë¸Œë¥¼ ì—´ì§€ ì•Šì•˜ë‹¤ë©´ ë¹„í™œì„±í™”]
 			if (!states.isArchiveOpened) {
 				ImGui::BeginDisabled(true);
 			}
-			// ÀüÃ¼ ÃßÃâ
-			if (ImGui::MenuItem(u8"ÀüÃ¼ ÃßÃâ")) {
+			// ì „ì²´ ì¶”ì¶œ
+			if (ImGui::MenuItem(u8"ì „ì²´ ì¶”ì¶œ")) {
 				states.isExtractModalShow = true;
 				states.totalDataCount = 0;
 				states.currentDataIndex = 0;
 			}
 			if (ImGui::IsItemHovered()) {
-				ImGui::SetTooltip(u8"ÃßÃâ °¡´ÉÇÑ ¸ğµç Chunk µ¥ÀÌÅÍ¸¦\n¾ÆÄ«ÀÌºê¿Í °°Àº ÀÌ¸§À» °¡Áø Æú´õ¿¡ ÃßÃâÇÕ´Ï´Ù");
+				ImGui::SetTooltip(u8"ì¶”ì¶œ ê°€ëŠ¥í•œ ëª¨ë“  Chunk ë°ì´í„°ë¥¼\nì•„ì¹´ì´ë¸Œì™€ ê°™ì€ ì´ë¦„ì„ ê°€ì§„ í´ë”ì— ì¶”ì¶œí•©ë‹ˆë‹¤");
 			}
-			// ÁöÁ¤ÇÑ À¯Çü Chunk¸¸ ÃßÃâ
-			if (ImGui::MenuItem(u8"ÁöÁ¤ÇÑ À¯Çü Chunk¸¸ ÃßÃâ")) {
+			// ì§€ì •í•œ ìœ í˜• Chunkë§Œ ì¶”ì¶œ
+			if (ImGui::MenuItem(u8"ì§€ì •í•œ ìœ í˜• Chunkë§Œ ì¶”ì¶œ")) {
 				states.isPartExtractModalShow = true;
 				states.totalDataCount = 0;
 				states.currentDataIndex = 0;
-				// ±âº»ÀûÀ¸·Î ÀüºÎ ÃßÃâÇÏ´Â °ÍÀ¸·Î Ã¼Å©ÇØµÒ (Åõ¸íÀº ±âº»ÀûÀ¸·Î x)
+				// ê¸°ë³¸ì ìœ¼ë¡œ ì „ë¶€ ì¶”ì¶œí•˜ëŠ” ê²ƒìœ¼ë¡œ ì²´í¬í•´ë‘  (íˆ¬ëª…ì€ ê¸°ë³¸ì ìœ¼ë¡œ x)
 				states.usingImage = true;
 				states.usingImageAndExtractNoneTransparent = false;
 				states.usingSound = true;
@@ -164,36 +164,36 @@ void Dx9Application::renderMenuTab()
 				states.usingScript = true;
 			}
 			if (ImGui::IsItemHovered()) {
-				ImGui::SetTooltip(u8"ÁöÁ¤ÇÑ Å¸ÀÔÀÇ Chunk µ¥ÀÌÅÍ¸¸\n¾ÆÄ«ÀÌºê¿Í °°Àº À§Ä¡¿¡ °°Àº ÀÌ¸§À» °¡Áø\nÆú´õ¿¡ ÃßÃâÇÕ´Ï´Ù");
+				ImGui::SetTooltip(u8"ì§€ì •í•œ íƒ€ì…ì˜ Chunk ë°ì´í„°ë§Œ\nì•„ì¹´ì´ë¸Œì™€ ê°™ì€ ìœ„ì¹˜ì— ê°™ì€ ì´ë¦„ì„ ê°€ì§„\ní´ë”ì— ì¶”ì¶œí•©ë‹ˆë‹¤");
 			}
-			// [¾ÆÄ«ÀÌºê¸¦ ¿­Áö ¾Ê¾Ò´Ù¸é ºñÈ°¼ºÈ­]
+			// [ì•„ì¹´ì´ë¸Œë¥¼ ì—´ì§€ ì•Šì•˜ë‹¤ë©´ ë¹„í™œì„±í™”]
 			if (!states.isArchiveOpened) {
 				ImGui::EndDisabled();
 			}
 			ImGui::EndMenu();
 		}
-		// ±³Ã¼
-		if (ImGui::BeginMenu(u8"±³Ã¼"))
+		// êµì²´
+		if (ImGui::BeginMenu(u8"êµì²´"))
 		{
-			// [¾ÆÄ«ÀÌºê¸¦ ¿­Áö ¾Ê¾Ò´Ù¸é ºñÈ°¼ºÈ­]
+			// [ì•„ì¹´ì´ë¸Œë¥¼ ì—´ì§€ ì•Šì•˜ë‹¤ë©´ ë¹„í™œì„±í™”]
 			if (!states.isArchiveOpened) {
 				ImGui::BeginDisabled(true);
 			}
-			// ÀüÃ¼ ±³Ã¼
-			if (ImGui::MenuItem(u8"ÀüÃ¼ ±³Ã¼")) {
+			// ì „ì²´ êµì²´
+			if (ImGui::MenuItem(u8"ì „ì²´ êµì²´")) {
 				states.isReplaceModalShow = true;
 				states.totalDataCount = 0;
 				states.currentDataIndex = 0;
 			}
 			if (ImGui::IsItemHovered()) {
-				ImGui::SetTooltip(u8"¾ÆÄ«ÀÌºê¿Í °°Àº À§Ä¡¿¡ °°Àº ÀÌ¸§À» °¡Áø Æú´õ¿¡\nÃßÃâµÇ¾î ÀÖ´Â ¸ğµç Chunk µ¥ÀÌÅÍ¸¦ ±³Ã¼ÇÏ¿©\n'~_new' °¡ ºÙÀº »õ ¾ÆÄ«ÀÌºê ÆÄÀÏ·Î ÀúÀåÇÕ´Ï´Ù\n(ÀÌ °úÁ¤¿¡¼­ º¯°æµÈ ¾ÆÄ«ÀÌºê Á¤º¸µµ ÀÚµ¿À¸·Î ÀúÀåµË´Ï´Ù)");
+				ImGui::SetTooltip(u8"ì•„ì¹´ì´ë¸Œì™€ ê°™ì€ ìœ„ì¹˜ì— ê°™ì€ ì´ë¦„ì„ ê°€ì§„ í´ë”ì—\nì¶”ì¶œë˜ì–´ ìˆëŠ” ëª¨ë“  Chunk ë°ì´í„°ë¥¼ êµì²´í•˜ì—¬\n'~_new' ê°€ ë¶™ì€ ìƒˆ ì•„ì¹´ì´ë¸Œ íŒŒì¼ë¡œ ì €ì¥í•©ë‹ˆë‹¤\n(ì´ ê³¼ì •ì—ì„œ ë³€ê²½ëœ ì•„ì¹´ì´ë¸Œ ì •ë³´ë„ ìë™ìœ¼ë¡œ ì €ì¥ë©ë‹ˆë‹¤)");
 			}
-			// ÁöÁ¤ÇÑ À¯Çü Chunk¸¸ ±³Ã¼
-			if (ImGui::MenuItem(u8"ÁöÁ¤ÇÑ À¯Çü Chunk¸¸ ±³Ã¼")) {
+			// ì§€ì •í•œ ìœ í˜• Chunkë§Œ êµì²´
+			if (ImGui::MenuItem(u8"ì§€ì •í•œ ìœ í˜• Chunkë§Œ êµì²´")) {
 				states.isPartReplaceModalShow = true;
 				states.totalDataCount = 0;
 				states.currentDataIndex = 0;
-				// ±âº»ÀûÀ¸·Î ÀüºÎ ±³Ã¼ÇÏ´Â °ÍÀ¸·Î Ã¼Å©ÇØµÒ (Åõ¸íÀº ±âº»ÀûÀ¸·Î x, usingShader´Â ¿¹¿Ü)
+				// ê¸°ë³¸ì ìœ¼ë¡œ ì „ë¶€ êµì²´í•˜ëŠ” ê²ƒìœ¼ë¡œ ì²´í¬í•´ë‘  (íˆ¬ëª…ì€ ê¸°ë³¸ì ìœ¼ë¡œ x, usingShaderëŠ” ì˜ˆì™¸)
 				states.usingImage = true;
 				states.usingImageAndExtractNoneTransparent = false;
 				states.usingSound = true;
@@ -205,19 +205,19 @@ void Dx9Application::renderMenuTab()
 				states.usingScript = true;
 			}
 			if (ImGui::IsItemHovered()) {
-				ImGui::SetTooltip(u8"¾ÆÄ«ÀÌºê¿Í °°Àº À§Ä¡¿¡ °°Àº ÀÌ¸§À» °¡Áø Æú´õ¿¡\nÃßÃâµÇ¾î ÀÖ´Â µ¥ÀÌÅÍ Áß ÁöÁ¤ÇÑ Å¸ÀÔÀÇ Chunk µ¥ÀÌÅÍ¸¦ ±³Ã¼ÇÏ¿©\n'~_new' °¡ ºÙÀº »õ ¾ÆÄ«ÀÌºê ÆÄÀÏ·Î ÀúÀåÇÕ´Ï´Ù\n(ÀÌ °úÁ¤¿¡¼­ º¯°æµÈ ¾ÆÄ«ÀÌºê Á¤º¸µµ ÀÚµ¿À¸·Î ÀúÀåµË´Ï´Ù)");
+				ImGui::SetTooltip(u8"ì•„ì¹´ì´ë¸Œì™€ ê°™ì€ ìœ„ì¹˜ì— ê°™ì€ ì´ë¦„ì„ ê°€ì§„ í´ë”ì—\nì¶”ì¶œë˜ì–´ ìˆëŠ” ë°ì´í„° ì¤‘ ì§€ì •í•œ íƒ€ì…ì˜ Chunk ë°ì´í„°ë¥¼ êµì²´í•˜ì—¬\n'~_new' ê°€ ë¶™ì€ ìƒˆ ì•„ì¹´ì´ë¸Œ íŒŒì¼ë¡œ ì €ì¥í•©ë‹ˆë‹¤\n(ì´ ê³¼ì •ì—ì„œ ë³€ê²½ëœ ì•„ì¹´ì´ë¸Œ ì •ë³´ë„ ìë™ìœ¼ë¡œ ì €ì¥ë©ë‹ˆë‹¤)");
 			}
-			// [¾ÆÄ«ÀÌºê¸¦ ¿­Áö ¾Ê¾Ò´Ù¸é ºñÈ°¼ºÈ­]
+			// [ì•„ì¹´ì´ë¸Œë¥¼ ì—´ì§€ ì•Šì•˜ë‹¤ë©´ ë¹„í™œì„±í™”]
 			if (!states.isArchiveOpened) {
 				ImGui::EndDisabled();
 			}
 			ImGui::EndMenu();
 		}
-		// ±âÅ¸
-		if (ImGui::BeginMenu(u8"±âÅ¸"))
+		// ê¸°íƒ€
+		if (ImGui::BeginMenu(u8"ê¸°íƒ€"))
 		{
-			// Á¤º¸
-			if (ImGui::MenuItem(u8"Á¤º¸")) {
+			// ì •ë³´
+			if (ImGui::MenuItem(u8"ì •ë³´")) {
 			}
 			ImGui::EndMenu();
 		}
@@ -228,45 +228,45 @@ void Dx9Application::renderMenuTab()
 }
 
 
-// ------------------- END [¸Ş´º] ---------------------
+// ------------------- END [ë©”ë‰´] ---------------------
 
 
 
 
-// ------------------- BEGIN [¸ğ´Ş] ---------------------
+// ------------------- BEGIN [ëª¨ë‹¬] ---------------------
 
 
-// ÇÁ·Î±×·¥ ´İ±â ¸ğ´Ş (ÀúÀåÀÌ ´ú µÈ »óÅÂ¿¡¼­ È£Ãâ)
+// í”„ë¡œê·¸ë¨ ë‹«ê¸° ëª¨ë‹¬ (ì €ì¥ì´ ëœ ëœ ìƒíƒœì—ì„œ í˜¸ì¶œ)
 void Dx9Application::renderDirtyCloseModal()
 {
 	ImGuiWindowFlags modalFlags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove;
 
-	// ³Êºñ ¼³Á¤. ³ôÀÌ´Â 0.0f·Î ÇÏ¸é ±×³É ÀÚµ¿ ¼³Á¤µÈ´Ù
+	// ë„ˆë¹„ ì„¤ì •. ë†’ì´ëŠ” 0.0fë¡œ í•˜ë©´ ê·¸ëƒ¥ ìë™ ì„¤ì •ëœë‹¤
 	ImGui::SetNextWindowSize(ImVec2(400.0f, 0.0f), ImGuiCond_Always);
 
-	ImGui::OpenPopup(u8"Á¾·á");
-	if (ImGui::BeginPopupModal(u8"Á¾·á", NULL, modalFlags)) {
+	ImGui::OpenPopup(u8"ì¢…ë£Œ");
+	if (ImGui::BeginPopupModal(u8"ì¢…ë£Œ", NULL, modalFlags)) {
 
-		// ¿¡·¯ ÅØ½ºÆ® ¼¼ÆÃ
-		ImGui::Text(u8"¾ÆÁ÷ ÀúÀåµÇÁö ¾ÊÀº ¼öÁ¤ ³»¿ëÀÌ ÀÖ½À´Ï´Ù.\nÀÌ´ë·Î Á¾·áÇÏ°Ú½À´Ï±î?");
+		// ì—ëŸ¬ í…ìŠ¤íŠ¸ ì„¸íŒ…
+		ImGui::Text(u8"ì•„ì§ ì €ì¥ë˜ì§€ ì•Šì€ ìˆ˜ì • ë‚´ìš©ì´ ìˆìŠµë‹ˆë‹¤.\nì´ëŒ€ë¡œ ì¢…ë£Œí•˜ê² ìŠµë‹ˆê¹Œ?");
 
 		float modalWidth = ImGui::GetContentRegionAvail().x;
-		float buttonsWidth = ImGui::CalcTextSize(u8"Á¾·á").x + ImGui::CalcTextSize(u8"Ãë¼Ò").x + ((ImGui::GetStyle().FramePadding.x * 2) + states.buttonGap);
+		float buttonsWidth = ImGui::CalcTextSize(u8"ì¢…ë£Œ").x + ImGui::CalcTextSize(u8"ì·¨ì†Œ").x + ((ImGui::GetStyle().FramePadding.x * 2) + states.buttonGap);
 
-		// È®ÀÎ ¹öÆ° (¿À¸¥ÂÊ Á¤·Ä)
+		// í™•ì¸ ë²„íŠ¼ (ì˜¤ë¥¸ìª½ ì •ë ¬)
 		ImGui::SetCursorPosX(modalWidth - buttonsWidth);
-		if (ImGui::Button(u8"Á¾·á"))
+		if (ImGui::Button(u8"ì¢…ë£Œ"))
 		{
-			// ±×³É ³¡³½´Ù°í ½ÅÈ£¸¦ º¸³½´Ù
+			// ê·¸ëƒ¥ ëë‚¸ë‹¤ê³  ì‹ í˜¸ë¥¼ ë³´ë‚¸ë‹¤
 			ImGui::CloseCurrentPopup();
 			PostQuitMessage(0);
 		}
-		// --- °°Àº ¶óÀÎ ---
+		// --- ê°™ì€ ë¼ì¸ ---
 		ImGui::SameLine();
-		// Ãë¼Ò ¹öÆ° (¿À¸¥ÂÊ Á¤·Ä)
-		if (ImGui::Button(u8"Ãë¼Ò"))
+		// ì·¨ì†Œ ë²„íŠ¼ (ì˜¤ë¥¸ìª½ ì •ë ¬)
+		if (ImGui::Button(u8"ì·¨ì†Œ"))
 		{
-			// closeµÇ·Á´ø »óÅÂ¸¦ µÇµ¹¸°´Ù
+			// closeë˜ë ¤ë˜ ìƒíƒœë¥¼ ë˜ëŒë¦°ë‹¤
 			ImGui::CloseCurrentPopup();
 			states.isOpen = true;
 		}
@@ -276,37 +276,37 @@ void Dx9Application::renderDirtyCloseModal()
 }
 
 
-// ¾ÆÄ«ÀÌºê ¿­±â ¸ğ´Ş (ÀúÀåÀÌ ´ú µÈ »óÅÂ¿¡¼­ È£Ãâ)
+// ì•„ì¹´ì´ë¸Œ ì—´ê¸° ëª¨ë‹¬ (ì €ì¥ì´ ëœ ëœ ìƒíƒœì—ì„œ í˜¸ì¶œ)
 void Dx9Application::renderDirtyArchiveOpenModal()
 {
 	ImGuiWindowFlags modalFlags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove;
 
-	// ³Êºñ ¼³Á¤. ³ôÀÌ´Â 0.0f·Î ÇÏ¸é ±×³É ÀÚµ¿ ¼³Á¤µÈ´Ù
+	// ë„ˆë¹„ ì„¤ì •. ë†’ì´ëŠ” 0.0fë¡œ í•˜ë©´ ê·¸ëƒ¥ ìë™ ì„¤ì •ëœë‹¤
 	ImGui::SetNextWindowSize(ImVec2(400.0f, 0.0f), ImGuiCond_Always);
 
-	ImGui::OpenPopup(u8"¿­±â");
-	if (ImGui::BeginPopupModal(u8"¿­±â", NULL, modalFlags)) {
+	ImGui::OpenPopup(u8"ì—´ê¸°");
+	if (ImGui::BeginPopupModal(u8"ì—´ê¸°", NULL, modalFlags)) {
 
-		// ¿¡·¯ ÅØ½ºÆ® ¼¼ÆÃ
-		ImGui::Text(u8"¾ÆÁ÷ ÀúÀåµÇÁö ¾ÊÀº ¼öÁ¤ ³»¿ëÀÌ ÀÖ½À´Ï´Ù.\nÀÌ´ë·Î ¾ÆÄ«ÀÌºê¸¦ ¿­°Ú½À´Ï±î?");
+		// ì—ëŸ¬ í…ìŠ¤íŠ¸ ì„¸íŒ…
+		ImGui::Text(u8"ì•„ì§ ì €ì¥ë˜ì§€ ì•Šì€ ìˆ˜ì • ë‚´ìš©ì´ ìˆìŠµë‹ˆë‹¤.\nì´ëŒ€ë¡œ ì•„ì¹´ì´ë¸Œë¥¼ ì—´ê² ìŠµë‹ˆê¹Œ?");
 
 		float modalWidth = ImGui::GetContentRegionAvail().x;
-		float buttonsWidth = ImGui::CalcTextSize(u8"¿­±â").x + ImGui::CalcTextSize(u8"Ãë¼Ò").x + ((ImGui::GetStyle().FramePadding.x * 2) + states.buttonGap);
+		float buttonsWidth = ImGui::CalcTextSize(u8"ì—´ê¸°").x + ImGui::CalcTextSize(u8"ì·¨ì†Œ").x + ((ImGui::GetStyle().FramePadding.x * 2) + states.buttonGap);
 
-		// ¿­±â ¹öÆ° (¿À¸¥ÂÊ Á¤·Ä)
+		// ì—´ê¸° ë²„íŠ¼ (ì˜¤ë¥¸ìª½ ì •ë ¬)
 		ImGui::SetCursorPosX(modalWidth - buttonsWidth);
-		if (ImGui::Button(u8"¿­±â"))
+		if (ImGui::Button(u8"ì—´ê¸°"))
 		{
-			// ¿­°Ú´Ù°í ¼¼ÆÃÇÑ ÈÄ dirty¸¦ ÇØÁ¦ÇÑ´Ù
+			// ì—´ê² ë‹¤ê³  ì„¸íŒ…í•œ í›„ dirtyë¥¼ í•´ì œí•œë‹¤
 			ImGui::CloseCurrentPopup();
 			states.isDirty = false;
 		}
-		// --- °°Àº ¶óÀÎ ---
+		// --- ê°™ì€ ë¼ì¸ ---
 		ImGui::SameLine();
-		// Ãë¼Ò ¹öÆ° (¿À¸¥ÂÊ Á¤·Ä)
-		if (ImGui::Button(u8"Ãë¼Ò"))
+		// ì·¨ì†Œ ë²„íŠ¼ (ì˜¤ë¥¸ìª½ ì •ë ¬)
+		if (ImGui::Button(u8"ì·¨ì†Œ"))
 		{
-			// ¿­·Á´ø ÇàÀ§¸¦ Ãë¼Ò½ÃÅ²´Ù
+			// ì—´ë ¤ë˜ í–‰ìœ„ë¥¼ ì·¨ì†Œì‹œí‚¨ë‹¤
 			ImGui::CloseCurrentPopup();
 			states.isOpenModalShow = false;
 		}
@@ -316,26 +316,26 @@ void Dx9Application::renderDirtyArchiveOpenModal()
 }
 
 
-// ¿¡·¯ ¸ğ´Ş
+// ì—ëŸ¬ ëª¨ë‹¬
 void Dx9Application::renderErrorModal()
 {
 	ImGuiWindowFlags modalFlags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove;
 
-	// ³Êºñ ¼³Á¤. ³ôÀÌ´Â 0.0f·Î ÇÏ¸é ±×³É ÀÚµ¿ ¼³Á¤µÈ´Ù
+	// ë„ˆë¹„ ì„¤ì •. ë†’ì´ëŠ” 0.0fë¡œ í•˜ë©´ ê·¸ëƒ¥ ìë™ ì„¤ì •ëœë‹¤
 	ImGui::SetNextWindowSize(ImVec2(400.0f, 0.0f), ImGuiCond_Always);
 
 	ImGui::OpenPopup(states.lastErrorTitle);
 	if (ImGui::BeginPopupModal(states.lastErrorTitle, NULL, modalFlags)) {
 
-		// ¿¡·¯ ÅØ½ºÆ® ¼¼ÆÃ
+		// ì—ëŸ¬ í…ìŠ¤íŠ¸ ì„¸íŒ…
 		ImGui::Text(states.lastErrorMsg);
 
 		float modalWidth = ImGui::GetContentRegionAvail().x;
-		float buttonsWidth = ImGui::CalcTextSize(u8"È®ÀÎ").x;
+		float buttonsWidth = ImGui::CalcTextSize(u8"í™•ì¸").x;
 
-		// È®ÀÎ ¹öÆ° (¿À¸¥ÂÊ Á¤·Ä)
+		// í™•ì¸ ë²„íŠ¼ (ì˜¤ë¥¸ìª½ ì •ë ¬)
 		ImGui::SetCursorPosX(modalWidth - buttonsWidth);
-		if (ImGui::Button(u8"È®ÀÎ"))
+		if (ImGui::Button(u8"í™•ì¸"))
 		{
 			ImGui::CloseCurrentPopup();
 			states.isError = false;
@@ -346,73 +346,73 @@ void Dx9Application::renderErrorModal()
 }
 
 
-// ¾ÆÄ«ÀÌºê ¿­±â ¸ğ´Ş
+// ì•„ì¹´ì´ë¸Œ ì—´ê¸° ëª¨ë‹¬
 void Dx9Application::renderArchiveOpenModal()
 {
 	ImGuiWindowFlags modalFlags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove;
 
-	ImGui::OpenPopup(u8"¾ÆÄ«ÀÌºê ¿­±â");
-	if (ImGui::BeginPopupModal(u8"¾ÆÄ«ÀÌºê ¿­±â", NULL, modalFlags)) {
+	ImGui::OpenPopup(u8"ì•„ì¹´ì´ë¸Œ ì—´ê¸°");
+	if (ImGui::BeginPopupModal(u8"ì•„ì¹´ì´ë¸Œ ì—´ê¸°", NULL, modalFlags)) {
 
-		// ÆÄÀÏ ¼±ÅÃ ¹öÆ°
-		if (ImGui::Button(u8"ÆÄÀÏ ¼±ÅÃ")) {
-			// ÆÄÀÏ ¼±ÅÃ ´ÙÀÌ¾ó·Î±×
+		// íŒŒì¼ ì„ íƒ ë²„íŠ¼
+		if (ImGui::Button(u8"íŒŒì¼ ì„ íƒ")) {
+			// íŒŒì¼ ì„ íƒ ë‹¤ì´ì–¼ë¡œê·¸
 			IGFD::FileDialogConfig config;
 			config.path = ".";
 			ImGui::SetNextWindowPos(ImVec2(20.0f, 40.0f), ImGuiCond_Always);
 			ImGui::SetNextWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x - 40.0f, ImGui::GetIO().DisplaySize.y - 80.0f), ImGuiCond_Always);
-			ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", u8"ClickteamFusion ¾ÆÄ«ÀÌºê ÆÄÀÏÀ» ¼±ÅÃÇÏ¼¼¿ä", ".exe,.dat,.ccn", config);
+			ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", u8"ClickteamFusion ì•„ì¹´ì´ë¸Œ íŒŒì¼ì„ ì„ íƒí•˜ì„¸ìš”", ".exe,.dat,.ccn", config);
 		}
-		// --- °°Àº ¶óÀÎ ---
+		// --- ê°™ì€ ë¼ì¸ ---
 		ImGui::SameLine(140.0f, 0.0f);
-		// ¼±ÅÃÇÑ ÆÄÀÏ °æ·Î (readonly)
+		// ì„ íƒí•œ íŒŒì¼ ê²½ë¡œ (readonly)
 		ImGui::SetNextItemWidth(560.0f);
 		ImGui::InputText("##ArchivePath", states.openArchivePath, IM_ARRAYSIZE(states.openArchivePath), ImGuiInputTextFlags_ReadOnly);
 		if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey", ImGuiWindowFlags_NoResize)) {
 			if (ImGuiFileDialog::Instance()->IsOk()) {
-				// ImGuiFileDialog::Instance()->GetFilePathName() : ÆÄÀÏ Àı´ë°æ·Î
-				// ImGuiFileDialog::Instance()->GetFilePath() : ÆÄÀÏÀÌ À§Ä¡ÇÑ Æú´õ Àı´ë°æ·Î
+				// ImGuiFileDialog::Instance()->GetFilePathName() : íŒŒì¼ ì ˆëŒ€ê²½ë¡œ
+				// ImGuiFileDialog::Instance()->GetFilePath() : íŒŒì¼ì´ ìœ„ì¹˜í•œ í´ë” ì ˆëŒ€ê²½ë¡œ
 				string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
 				memset(states.openArchivePath, 0, MAX_UTF8_PATH);
 				memcpy(states.openArchivePath, filePathName.c_str(), strlen(filePathName.c_str()));
 			}
-			// ´İ±â
+			// ë‹«ê¸°
 			ImGuiFileDialog::Instance()->Close();
 		}
 
-		// ±¸ºĞ¼±
+		// êµ¬ë¶„ì„ 
 		ImGui::Separator();
 
 		float modalWidth = ImGui::GetContentRegionAvail().x;
-		float buttonsWidth = ImGui::CalcTextSize(u8"¿­±â").x + ImGui::CalcTextSize(u8"´İ±â").x + ((ImGui::GetStyle().FramePadding.x * 2) + states.buttonGap);
+		float buttonsWidth = ImGui::CalcTextSize(u8"ì—´ê¸°").x + ImGui::CalcTextSize(u8"ë‹«ê¸°").x + ((ImGui::GetStyle().FramePadding.x * 2) + states.buttonGap);
 
-		// ¿­±â (¿À¸¥ÂÊ Á¤·Ä)
+		// ì—´ê¸° (ì˜¤ë¥¸ìª½ ì •ë ¬)
 		ImGui::SetCursorPosX(modalWidth - buttonsWidth);
-		// [°æ·Î°¡ ¾øÀ¸¸é ¿­±â ¹öÆ° ºñÈ°¼ºÈ­]
+		// [ê²½ë¡œê°€ ì—†ìœ¼ë©´ ì—´ê¸° ë²„íŠ¼ ë¹„í™œì„±í™”]
 		if (strlen(states.openArchivePath) == 0) {
 			ImGui::BeginDisabled(true);
 		}
-		if (ImGui::Button(u8"¿­±â")) {
-			// ±âÁ¸¿¡ ·»´õ¸µÇÏ´ø ³ëµåµµ ¼±ÅÃÀ» ÇØÁ¦ÇØ¾ß ¾µµ¥¾øÀÌ ·»´õ¸µÇÏÁö ¾Ê´Â´Ù
+		if (ImGui::Button(u8"ì—´ê¸°")) {
+			// ê¸°ì¡´ì— ë Œë”ë§í•˜ë˜ ë…¸ë“œë„ ì„ íƒì„ í•´ì œí•´ì•¼ ì“¸ë°ì—†ì´ ë Œë”ë§í•˜ì§€ ì•ŠëŠ”ë‹¤
 			states.chunkTreeNodeContainer.clear();
 			states.isRenderingChunkAppInfo = false;
 			states.renderingChunk = NULL;
-			// ** ¾ÆÄ«ÀÌºê ÆÄÀÏ ¿­±â **
+			// ** ì•„ì¹´ì´ë¸Œ íŒŒì¼ ì—´ê¸° **
 			states.isArchiveOpened = openArchive();
 			if (states.isArchiveOpened) {
 				states.isOpenModalShow = false;
 				ImGui::CloseCurrentPopup();
 			}
 		}
-		// [°æ·Î°¡ ¾øÀ» ½Ã ¿­±â ¹öÆ° ºñÈ°¼ºÈ­]
+		// [ê²½ë¡œê°€ ì—†ì„ ì‹œ ì—´ê¸° ë²„íŠ¼ ë¹„í™œì„±í™”]
 		if (strlen(states.openArchivePath) == 0) {
 			ImGui::EndDisabled();
 		}
-		// --- °°Àº ¶óÀÎ ---
+		// --- ê°™ì€ ë¼ì¸ ---
 		ImGui::SameLine();
-		// ´İ±â (¿À¸¥ÂÊ Á¤·Ä)
-		ImGui::SetCursorPosX(modalWidth - ImGui::CalcTextSize(u8"´İ±â").x);
-		if (ImGui::Button(u8"´İ±â")) {
+		// ë‹«ê¸° (ì˜¤ë¥¸ìª½ ì •ë ¬)
+		ImGui::SetCursorPosX(modalWidth - ImGui::CalcTextSize(u8"ë‹«ê¸°").x);
+		if (ImGui::Button(u8"ë‹«ê¸°")) {
 			states.isOpenModalShow = false;
 			ImGui::CloseCurrentPopup();
 		}
@@ -423,39 +423,39 @@ void Dx9Application::renderArchiveOpenModal()
 }
 
 
-// ÀúÀå¿ë ½º·¹µå
+// ì €ì¥ìš© ìŠ¤ë ˆë“œ
 DWORD savingThreadFunction(PVOID pParam)
 {
-	// ´Ü¼ø ÀúÀå ÀÛ¾÷ ¼öÇà
+	// ë‹¨ìˆœ ì €ì¥ ì‘ì—… ìˆ˜í–‰
 	vector<wstring> list;
 	getApp()->getArchive()->rewriteNewArchive(list);
-	// ÀúÀå Á¾·á ¼¼ÆÃ
+	// ì €ì¥ ì¢…ë£Œ ì„¸íŒ…
 	getApp()->getStates()->savingThreadState = ThreadState::THREAD_FINISHED;
 	return 0;
 }
 
-// ¾ÆÄ«ÀÌºê ÀúÀå ¸ğ´Ş
+// ì•„ì¹´ì´ë¸Œ ì €ì¥ ëª¨ë‹¬
 void Dx9Application::renderArchiveSaveModal()
 {
 	ImGuiWindowFlags modalFlags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove;
 
-	ImGui::OpenPopup(u8"¾ÆÄ«ÀÌºê ÀúÀå");
-	if (ImGui::BeginPopupModal(u8"¾ÆÄ«ÀÌºê ÀúÀå", NULL, modalFlags)) {
+	ImGui::OpenPopup(u8"ì•„ì¹´ì´ë¸Œ ì €ì¥");
+	if (ImGui::BeginPopupModal(u8"ì•„ì¹´ì´ë¸Œ ì €ì¥", NULL, modalFlags)) {
 
-		// ÀúÀå ½º·¹µå ½ÇÇà (Ã³À½ ÇÑ¹ø¸¸)
+		// ì €ì¥ ìŠ¤ë ˆë“œ ì‹¤í–‰ (ì²˜ìŒ í•œë²ˆë§Œ)
 		if (states.savingThreadState == ThreadState::THREAD_READY) {
 			states.savingThreadState = ThreadState::THREAD_EXECUTING;
 			CreateThread(NULL, 0, savingThreadFunction, NULL, 0, NULL);
 		}
 
-		// ÇÁ·Î±×·¹½º ¹Ù ¼¼ÆÃ
+		// í”„ë¡œê·¸ë ˆìŠ¤ ë°” ì„¸íŒ…
 		float savingProgress = 0.0f;
 		if (states.totalSavingDataCount != 0) {
 			savingProgress = (float)states.currentSavingDataIndex / (float)states.totalSavingDataCount;
 		}
 		ImGui::ProgressBar(savingProgress, ImVec2(0.0f, 0.0f));
 
-		// ÀúÀåÀÌ ³¡³µÀ¸¸é »óÅÂ ÃÊ±âÈ­ ÈÄ ÀÌ ¸ğ´ŞÀÌ ²¨Áöµµ·Ï ¼¼ÆÃÇÏ¸ç, dirty »óÅÂµµ ÇØÁ¦ÇÑ´Ù
+		// ì €ì¥ì´ ëë‚¬ìœ¼ë©´ ìƒíƒœ ì´ˆê¸°í™” í›„ ì´ ëª¨ë‹¬ì´ êº¼ì§€ë„ë¡ ì„¸íŒ…í•˜ë©°, dirty ìƒíƒœë„ í•´ì œí•œë‹¤
 		if (states.savingThreadState == ThreadState::THREAD_FINISHED) {
 			states.isSaveModalShow = false;
 			states.savingThreadState = ThreadState::THREAD_READY;
@@ -471,10 +471,10 @@ void Dx9Application::renderArchiveSaveModal()
 }
 
 
-// ÃßÃâ¿ë ½º·¹µå
+// ì¶”ì¶œìš© ìŠ¤ë ˆë“œ
 DWORD extractingThreadFunction(PVOID pParam)
 {
-	// ÃßÃâ °¡´ÉÇÑ ¸®½ºÆ® È®º¸
+	// ì¶”ì¶œ ê°€ëŠ¥í•œ ë¦¬ìŠ¤íŠ¸ í™•ë³´
 	vector<wstring> extractingTypes;
 	if (getApp()->getStates()->usingImage) {
 		extractingTypes.push_back(L"image");
@@ -500,24 +500,24 @@ DWORD extractingThreadFunction(PVOID pParam)
 	if (getApp()->getStates()->usingScript) {
 		extractingTypes.push_back(L"script");
 	}
-	// ÀüÃ¼ °³¼ö ¼¼ÆÃ
+	// ì „ì²´ ê°œìˆ˜ ì„¸íŒ…
 	getApp()->getArchive()->setDataCount(extractingTypes);
-	// ÃßÃâ ÀÛ¾÷ ¼öÇà
+	// ì¶”ì¶œ ì‘ì—… ìˆ˜í–‰
 	getApp()->getArchive()->exportFromArchive(extractingTypes);
-	// ÃßÃâ Á¾·á ¼¼ÆÃ
+	// ì¶”ì¶œ ì¢…ë£Œ ì„¸íŒ…
 	getApp()->getStates()->extractingThreadState = ThreadState::THREAD_FINISHED;
 	return 0;
 }
 
-// ¾ÆÄ«ÀÌºê ÃßÃâ ¸ğ´Ş
+// ì•„ì¹´ì´ë¸Œ ì¶”ì¶œ ëª¨ë‹¬
 void Dx9Application::renderArchiveExtractModal()
 {
 	ImGuiWindowFlags modalFlags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove;
 
-	ImGui::OpenPopup(u8"µ¥ÀÌÅÍ ÃßÃâ");
-	if (ImGui::BeginPopupModal(u8"µ¥ÀÌÅÍ ÃßÃâ", NULL, modalFlags)) {
+	ImGui::OpenPopup(u8"ë°ì´í„° ì¶”ì¶œ");
+	if (ImGui::BeginPopupModal(u8"ë°ì´í„° ì¶”ì¶œ", NULL, modalFlags)) {
 
-		// ÃßÃâ ½º·¹µå ½ÇÇà (Ã³À½ ÇÑ¹ø¸¸, Åõ¸íÀº ±âº»ÀûÀ¸·Î x), ÀüÃ¼¸¦ ÃßÃâÇÏ¹Ç·Î ÇöÀç °¡´ÉÇÑ ¸ğµç Å¸ÀÔÀ» ³Ö¾îÁØ´Ù
+		// ì¶”ì¶œ ìŠ¤ë ˆë“œ ì‹¤í–‰ (ì²˜ìŒ í•œë²ˆë§Œ, íˆ¬ëª…ì€ ê¸°ë³¸ì ìœ¼ë¡œ x), ì „ì²´ë¥¼ ì¶”ì¶œí•˜ë¯€ë¡œ í˜„ì¬ ê°€ëŠ¥í•œ ëª¨ë“  íƒ€ì…ì„ ë„£ì–´ì¤€ë‹¤
 		if (states.extractingThreadState == ThreadState::THREAD_READY) {
 			states.extractingThreadState = ThreadState::THREAD_EXECUTING;
 			states.usingImage = true;
@@ -532,14 +532,14 @@ void Dx9Application::renderArchiveExtractModal()
 			CreateThread(NULL, 0, extractingThreadFunction, NULL, 0, NULL);
 		}
 
-		// ÇÁ·Î±×·¹½º ¹Ù ¼¼ÆÃ
+		// í”„ë¡œê·¸ë ˆìŠ¤ ë°” ì„¸íŒ…
 		float extractingProgress = 0.0f;
 		if (states.totalDataCount != 0) {
 			extractingProgress = (float)states.currentDataIndex / (float)states.totalDataCount;
 		}
 		ImGui::ProgressBar(extractingProgress, ImVec2(0.0f, 0.0f));
 
-		// ÃßÃâÀÌ ³¡³µÀ¸¸é »óÅÂ ÃÊ±âÈ­ ÈÄ ÀÌ ¸ğ´ŞÀÌ ²¨Áöµµ·Ï ¼¼ÆÃÇÑ´Ù
+		// ì¶”ì¶œì´ ëë‚¬ìœ¼ë©´ ìƒíƒœ ì´ˆê¸°í™” í›„ ì´ ëª¨ë‹¬ì´ êº¼ì§€ë„ë¡ ì„¸íŒ…í•œë‹¤
 		if (states.extractingThreadState == ThreadState::THREAD_FINISHED) {
 			states.isExtractModalShow = false;
 			states.extractingThreadState = ThreadState::THREAD_READY;
@@ -553,84 +553,84 @@ void Dx9Application::renderArchiveExtractModal()
 	}
 }
 
-// ¾ÆÄ«ÀÌºê ºÎºĞ ÃßÃâ ¸ğ´Ş
+// ì•„ì¹´ì´ë¸Œ ë¶€ë¶„ ì¶”ì¶œ ëª¨ë‹¬
 void Dx9Application::renderArchivePartExtractModal()
 {
 	ImGuiWindowFlags modalFlags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove;
 
-	ImGui::OpenPopup(u8"µ¥ÀÌÅÍ ºÎºĞ ÃßÃâ");
-	if (ImGui::BeginPopupModal(u8"µ¥ÀÌÅÍ ºÎºĞ ÃßÃâ", NULL, modalFlags)) {
+	ImGui::OpenPopup(u8"ë°ì´í„° ë¶€ë¶„ ì¶”ì¶œ");
+	if (ImGui::BeginPopupModal(u8"ë°ì´í„° ë¶€ë¶„ ì¶”ì¶œ", NULL, modalFlags)) {
 
-		// ÃßÃâ °¡´É ¸ñ·Ï ³ª¿­
-		ImGui::SeparatorText(u8"ÃßÃâ Å¸ÀÔ");
+		// ì¶”ì¶œ ê°€ëŠ¥ ëª©ë¡ ë‚˜ì—´
+		ImGui::SeparatorText(u8"ì¶”ì¶œ íƒ€ì…");
 
-		// [ÃßÃâ ÁßÀÌ¸é ¹öÆ° ºñÈ°¼ºÈ­]
+		// [ì¶”ì¶œ ì¤‘ì´ë©´ ë²„íŠ¼ ë¹„í™œì„±í™”]
 		if (states.extractingThreadState == ThreadState::THREAD_EXECUTING) {
 			ImGui::BeginDisabled(true);
 		}
-		ImGui::Checkbox(u8"ÀÌ¹ÌÁö", &states.usingImage);
+		ImGui::Checkbox(u8"ì´ë¯¸ì§€", &states.usingImage);
 		if (states.usingImage) {
-			ImGui::Checkbox(u8" - ÃßÃâ½Ã alpha°ªÀ» 255·Î °íÁ¤", &states.usingImageAndExtractNoneTransparent);
+			ImGui::Checkbox(u8" - ì¶”ì¶œì‹œ alphaê°’ì„ 255ë¡œ ê³ ì •", &states.usingImageAndExtractNoneTransparent);
 		}
-		ImGui::Checkbox(u8"»ç¿îµå", &states.usingSound);
-		ImGui::Checkbox(u8"ÆùÆ®", &states.usingFont);
-		// exeÀÏ °æ¿ì ¸ğµâ ÃßÃâ Ãß°¡
+		ImGui::Checkbox(u8"ì‚¬ìš´ë“œ", &states.usingSound);
+		ImGui::Checkbox(u8"í°íŠ¸", &states.usingFont);
+		// exeì¼ ê²½ìš° ëª¨ë“ˆ ì¶”ì¶œ ì¶”ê°€
 		if (archive->getArchiveType() == ArchiveType::ARCHIVE_EXE) {
-			ImGui::Checkbox(u8"¸ğµâ", &states.usingModule);
+			ImGui::Checkbox(u8"ëª¨ë“ˆ", &states.usingModule);
 		}
-		ImGui::Checkbox(u8"¼ÎÀÌ´õ (ÃßÃâ¸¸ °¡´É)", &states.usingShader);
-		ImGui::Checkbox(u8"±âÅ¸ Blob µ¥ÀÌÅÍ", &states.usingBinaryData);
-		ImGui::Checkbox(u8"ÅØ½ºÆ®", &states.usingText);
-		ImGui::Checkbox(u8"½ºÅ©¸³Æ®", &states.usingScript);
-		// [ÃßÃâ ÁßÀÌ¸é ¹öÆ° ºñÈ°¼ºÈ­]
+		ImGui::Checkbox(u8"ì…°ì´ë” (ì¶”ì¶œë§Œ ê°€ëŠ¥)", &states.usingShader);
+		ImGui::Checkbox(u8"ê¸°íƒ€ Blob ë°ì´í„°", &states.usingBinaryData);
+		ImGui::Checkbox(u8"í…ìŠ¤íŠ¸", &states.usingText);
+		ImGui::Checkbox(u8"ìŠ¤í¬ë¦½íŠ¸", &states.usingScript);
+		// [ì¶”ì¶œ ì¤‘ì´ë©´ ë²„íŠ¼ ë¹„í™œì„±í™”]
 		if (states.extractingThreadState == ThreadState::THREAD_EXECUTING) {
 			ImGui::EndDisabled();
 		}
 
-		// ÃßÃâ ÁøÇàµµ
-		ImGui::SeparatorText(u8"ÃßÃâ ÁøÇàµµ");
+		// ì¶”ì¶œ ì§„í–‰ë„
+		ImGui::SeparatorText(u8"ì¶”ì¶œ ì§„í–‰ë„");
 
-		// ÇÁ·Î±×·¹½º ¹Ù ¼¼ÆÃ
+		// í”„ë¡œê·¸ë ˆìŠ¤ ë°” ì„¸íŒ…
 		float extractingProgress = 0.0f;
 		if (states.totalDataCount != 0) {
 			extractingProgress = (float)states.currentDataIndex / (float)states.totalDataCount;
 		}
 		ImGui::ProgressBar(extractingProgress, ImVec2(0.0f, 0.0f));
 
-		// ÃßÃâÀÌ ³¡³µÀ¸¸é »óÅÂ ÃÊ±âÈ­¸¸ ÇØ ÁÖ°í, ÃßÃâ ¸ñ·ÏÀº ¼±ÅÃµÈ Ã¤·Î ³öµĞ´Ù
+		// ì¶”ì¶œì´ ëë‚¬ìœ¼ë©´ ìƒíƒœ ì´ˆê¸°í™”ë§Œ í•´ ì£¼ê³ , ì¶”ì¶œ ëª©ë¡ì€ ì„ íƒëœ ì±„ë¡œ ë†”ë‘”ë‹¤
 		if (states.extractingThreadState == ThreadState::THREAD_FINISHED) {
 			states.extractingThreadState = ThreadState::THREAD_READY;
 		}
 
-		// ±¸ºĞ¼±
+		// êµ¬ë¶„ì„ 
 		ImGui::Separator();
 
 		float modalWidth = ImGui::GetContentRegionAvail().x;
-		float buttonsWidth = ImGui::CalcTextSize(u8"ÃßÃâ").x + ImGui::CalcTextSize(u8"Ãë¼Ò").x + ((ImGui::GetStyle().FramePadding.x * 2) + states.buttonGap);
+		float buttonsWidth = ImGui::CalcTextSize(u8"ì¶”ì¶œ").x + ImGui::CalcTextSize(u8"ì·¨ì†Œ").x + ((ImGui::GetStyle().FramePadding.x * 2) + states.buttonGap);
 
 		static bool threadStateChange = false;
 
-		// ¾Æ¹«°Íµµ Ã¼Å©µÇÁö ¾Ê¾Ò´ÂÁö ¿©ºÎ
+		// ì•„ë¬´ê²ƒë„ ì²´í¬ë˜ì§€ ì•Šì•˜ëŠ”ì§€ ì—¬ë¶€
 		bool isNoneSelected = !states.usingImage && !states.usingSound && !states.usingFont && !states.usingShader && !states.usingBinaryData && !states.usingText && !states.usingScript;
 		if (archive->getArchiveType() == ArchiveType::ARCHIVE_EXE) {
 			isNoneSelected = isNoneSelected && !states.usingModule;
 		}
 
-		// [ÃßÃâ Áß / ¾Æ¹«°Íµµ Ã¼Å©µÇÁö ¾ÊÀ¸¸é ¹öÆ° ºñÈ°¼ºÈ­]
+		// [ì¶”ì¶œ ì¤‘ / ì•„ë¬´ê²ƒë„ ì²´í¬ë˜ì§€ ì•Šìœ¼ë©´ ë²„íŠ¼ ë¹„í™œì„±í™”]
 		if ((states.extractingThreadState == ThreadState::THREAD_EXECUTING) || isNoneSelected) {
 			ImGui::BeginDisabled(true);
 		}
-		// ÃßÃâ (¿À¸¥ÂÊ Á¤·Ä)
+		// ì¶”ì¶œ (ì˜¤ë¥¸ìª½ ì •ë ¬)
 		ImGui::SetCursorPosX(modalWidth - buttonsWidth);
-		if (ImGui::Button(u8"ÃßÃâ")) {
-			// ÃßÃâ ½º·¹µå ½ÇÇà (Ã³À½ ÇÑ¹ø¸¸)
+		if (ImGui::Button(u8"ì¶”ì¶œ")) {
+			// ì¶”ì¶œ ìŠ¤ë ˆë“œ ì‹¤í–‰ (ì²˜ìŒ í•œë²ˆë§Œ)
 			if (states.extractingThreadState == ThreadState::THREAD_READY) {
 				states.extractingThreadState = ThreadState::THREAD_EXECUTING;
 				threadStateChange = true;
 				CreateThread(NULL, 0, extractingThreadFunction, NULL, 0, NULL);
 			}
 		}
-		// [ÃßÃâ Áß / ¾Æ¹«°Íµµ Ã¼Å©µÇÁö ¾ÊÀ¸¸é ¹öÆ° ºñÈ°¼ºÈ­, »óÅÂ°¡ ¹Ù²ğ ¶§´Â BeginDisabled Ã³¸®°¡ ¾ÈµÅÀÖ±â ¶§¹®¿¡ EndDisabled Ã³¸®ÇÏ¸é ¿¡·¯³­´Ù]
+		// [ì¶”ì¶œ ì¤‘ / ì•„ë¬´ê²ƒë„ ì²´í¬ë˜ì§€ ì•Šìœ¼ë©´ ë²„íŠ¼ ë¹„í™œì„±í™”, ìƒíƒœê°€ ë°”ë€” ë•ŒëŠ” BeginDisabled ì²˜ë¦¬ê°€ ì•ˆë¼ìˆê¸° ë•Œë¬¸ì— EndDisabled ì²˜ë¦¬í•˜ë©´ ì—ëŸ¬ë‚œë‹¤]
 		if ((states.extractingThreadState == ThreadState::THREAD_EXECUTING) || isNoneSelected) {
 			if (threadStateChange) {
 				threadStateChange = false;
@@ -640,20 +640,20 @@ void Dx9Application::renderArchivePartExtractModal()
 			}
 		}
 
-		// --- °°Àº ¶óÀÎ ---
+		// --- ê°™ì€ ë¼ì¸ ---
 		ImGui::SameLine();
 
-		// [ÃßÃâ ÁßÀÌ¸é ¹öÆ° ºñÈ°¼ºÈ­]
+		// [ì¶”ì¶œ ì¤‘ì´ë©´ ë²„íŠ¼ ë¹„í™œì„±í™”]
 		if (states.extractingThreadState == ThreadState::THREAD_EXECUTING) {
 			ImGui::BeginDisabled(true);
 		}
-		// Ãë¼Ò (¿À¸¥ÂÊ Á¤·Ä, ÃßÃâ Áß¿¡ Ãë¼Ò ºÒ°¡´É)
-		ImGui::SetCursorPosX(modalWidth - ImGui::CalcTextSize(u8"Ãë¼Ò").x);
-		if (ImGui::Button(u8"Ãë¼Ò")) {
+		// ì·¨ì†Œ (ì˜¤ë¥¸ìª½ ì •ë ¬, ì¶”ì¶œ ì¤‘ì— ì·¨ì†Œ ë¶ˆê°€ëŠ¥)
+		ImGui::SetCursorPosX(modalWidth - ImGui::CalcTextSize(u8"ì·¨ì†Œ").x);
+		if (ImGui::Button(u8"ì·¨ì†Œ")) {
 			states.isPartExtractModalShow = false;
 			ImGui::CloseCurrentPopup();
 		}
-		// [ÃßÃâ ÁßÀÌ¸é ¹öÆ° ºñÈ°¼ºÈ­]
+		// [ì¶”ì¶œ ì¤‘ì´ë©´ ë²„íŠ¼ ë¹„í™œì„±í™”]
 		if (states.extractingThreadState == ThreadState::THREAD_EXECUTING) {
 			ImGui::EndDisabled();
 		}
@@ -664,10 +664,10 @@ void Dx9Application::renderArchivePartExtractModal()
 }
 
 
-// ±³Ã¼¿ë ½º·¹µå
+// êµì²´ìš© ìŠ¤ë ˆë“œ
 DWORD replacingThreadFunction(PVOID pParam)
 {
-	// ±³Ã¼ °¡´ÉÇÑ ¸®½ºÆ® È®º¸, appShader´Â Á¦¿Ü
+	// êµì²´ ê°€ëŠ¥í•œ ë¦¬ìŠ¤íŠ¸ í™•ë³´, appShaderëŠ” ì œì™¸
 	vector<wstring> replacingTypes;
 	if (getApp()->getStates()->usingImage) {
 		replacingTypes.push_back(L"image");
@@ -690,24 +690,24 @@ DWORD replacingThreadFunction(PVOID pParam)
 	if (getApp()->getStates()->usingScript) {
 		replacingTypes.push_back(L"script");
 	}
-	// ÀüÃ¼ ±³Ã¼ °³¼ö ¼¼ÆÃ
+	// ì „ì²´ êµì²´ ê°œìˆ˜ ì„¸íŒ…
 	getApp()->getArchive()->setDataCount(replacingTypes);
-	// ±³Ã¼ ÀÛ¾÷ ¼öÇà
+	// êµì²´ ì‘ì—… ìˆ˜í–‰
 	getApp()->getArchive()->rewriteNewArchive(replacingTypes);
-	// ±³Ã¼ Á¾·á ¼¼ÆÃ
+	// êµì²´ ì¢…ë£Œ ì„¸íŒ…
 	getApp()->getStates()->replacingThreadState = ThreadState::THREAD_FINISHED;
 	return 0;
 }
 
-// ¾ÆÄ«ÀÌºê ±³Ã¼ ¸ğ´Ş
+// ì•„ì¹´ì´ë¸Œ êµì²´ ëª¨ë‹¬
 void Dx9Application::renderArchiveReplaceModal()
 {
 	ImGuiWindowFlags modalFlags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove;
 
-	ImGui::OpenPopup(u8"µ¥ÀÌÅÍ ±³Ã¼");
-	if (ImGui::BeginPopupModal(u8"µ¥ÀÌÅÍ ±³Ã¼", NULL, modalFlags)) {
+	ImGui::OpenPopup(u8"ë°ì´í„° êµì²´");
+	if (ImGui::BeginPopupModal(u8"ë°ì´í„° êµì²´", NULL, modalFlags)) {
 
-		// ±³Ã¼ ½º·¹µå ½ÇÇà (Ã³À½ ÇÑ¹ø¸¸), ÀüÃ¼¸¦ ±³Ã¼ÇÏ¹Ç·Î ÇöÀç °¡´ÉÇÑ ¸ğµç Å¸ÀÔÀ» ³Ö¾îÁØ´Ù, shader Á¦¿Ü
+		// êµì²´ ìŠ¤ë ˆë“œ ì‹¤í–‰ (ì²˜ìŒ í•œë²ˆë§Œ), ì „ì²´ë¥¼ êµì²´í•˜ë¯€ë¡œ í˜„ì¬ ê°€ëŠ¥í•œ ëª¨ë“  íƒ€ì…ì„ ë„£ì–´ì¤€ë‹¤, shader ì œì™¸
 		if (states.replacingThreadState == ThreadState::THREAD_READY) {
 			states.replacingThreadState = ThreadState::THREAD_EXECUTING;
 			states.usingImage = true;
@@ -721,14 +721,14 @@ void Dx9Application::renderArchiveReplaceModal()
 			CreateThread(NULL, 0, replacingThreadFunction, NULL, 0, NULL);
 		}
 
-		// ÇÁ·Î±×·¹½º ¹Ù ¼¼ÆÃ
+		// í”„ë¡œê·¸ë ˆìŠ¤ ë°” ì„¸íŒ…
 		float replacingProgress = 0.0f;
 		if (states.totalDataCount != 0) {
 			replacingProgress = (float)states.currentDataIndex / (float)states.totalDataCount;
 		}
 		ImGui::ProgressBar(replacingProgress, ImVec2(0.0f, 0.0f));
 
-		// ±³Ã¼°¡ ³¡³µÀ¸¸é »óÅÂ ÃÊ±âÈ­ ÈÄ ÀÌ ¸ğ´ŞÀÌ ²¨Áöµµ·Ï ¼¼ÆÃÇÏ¸ç, dirty »óÅÂµµ ÇØÁ¦ÇÑ´Ù
+		// êµì²´ê°€ ëë‚¬ìœ¼ë©´ ìƒíƒœ ì´ˆê¸°í™” í›„ ì´ ëª¨ë‹¬ì´ êº¼ì§€ë„ë¡ ì„¸íŒ…í•˜ë©°, dirty ìƒíƒœë„ í•´ì œí•œë‹¤
 		if (states.replacingThreadState == ThreadState::THREAD_FINISHED) {
 			states.isReplaceModalShow = false;
 			states.replacingThreadState = ThreadState::THREAD_READY;
@@ -743,81 +743,81 @@ void Dx9Application::renderArchiveReplaceModal()
 	}
 }
 
-// ¾ÆÄ«ÀÌºê ºÎºĞ ±³Ã¼ ¸ğ´Ş
+// ì•„ì¹´ì´ë¸Œ ë¶€ë¶„ êµì²´ ëª¨ë‹¬
 void Dx9Application::renderArchivePartReplaceModal()
 {
 	ImGuiWindowFlags modalFlags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove;
 
-	ImGui::OpenPopup(u8"µ¥ÀÌÅÍ ºÎºĞ ±³Ã¼");
-	if (ImGui::BeginPopupModal(u8"µ¥ÀÌÅÍ ºÎºĞ ±³Ã¼", NULL, modalFlags)) {
+	ImGui::OpenPopup(u8"ë°ì´í„° ë¶€ë¶„ êµì²´");
+	if (ImGui::BeginPopupModal(u8"ë°ì´í„° ë¶€ë¶„ êµì²´", NULL, modalFlags)) {
 
-		// ±³Ã¼ °¡´É ¸ñ·Ï ³ª¿­, shader´Â Á¦¿Ü
-		ImGui::SeparatorText(u8"±³Ã¼ Å¸ÀÔ");
+		// êµì²´ ê°€ëŠ¥ ëª©ë¡ ë‚˜ì—´, shaderëŠ” ì œì™¸
+		ImGui::SeparatorText(u8"êµì²´ íƒ€ì…");
 
-		// [±³Ã¼ ÁßÀÌ¸é ¹öÆ° ºñÈ°¼ºÈ­]
+		// [êµì²´ ì¤‘ì´ë©´ ë²„íŠ¼ ë¹„í™œì„±í™”]
 		if (states.replacingThreadState == ThreadState::THREAD_EXECUTING) {
 			ImGui::BeginDisabled(true);
 		}
-		ImGui::Checkbox(u8"ÀÌ¹ÌÁö", &states.usingImage);
-		ImGui::Checkbox(u8"»ç¿îµå", &states.usingSound);
-		ImGui::Checkbox(u8"ÆùÆ®", &states.usingFont);
-		// exeÀÏ °æ¿ì ¸ğµâ ±³Ã¼ Ãß°¡
+		ImGui::Checkbox(u8"ì´ë¯¸ì§€", &states.usingImage);
+		ImGui::Checkbox(u8"ì‚¬ìš´ë“œ", &states.usingSound);
+		ImGui::Checkbox(u8"í°íŠ¸", &states.usingFont);
+		// exeì¼ ê²½ìš° ëª¨ë“ˆ êµì²´ ì¶”ê°€
 		if (archive->getArchiveType() == ArchiveType::ARCHIVE_EXE) {
-			ImGui::Checkbox(u8"¸ğµâ", &states.usingModule);
+			ImGui::Checkbox(u8"ëª¨ë“ˆ", &states.usingModule);
 		}
-		ImGui::Checkbox(u8"±âÅ¸ Blob µ¥ÀÌÅÍ", &states.usingBinaryData);
-		ImGui::Checkbox(u8"ÅØ½ºÆ®", &states.usingText);
-		ImGui::Checkbox(u8"½ºÅ©¸³Æ®", &states.usingScript);
-		// [±³Ã¼ ÁßÀÌ¸é ¹öÆ° ºñÈ°¼ºÈ­]
+		ImGui::Checkbox(u8"ê¸°íƒ€ Blob ë°ì´í„°", &states.usingBinaryData);
+		ImGui::Checkbox(u8"í…ìŠ¤íŠ¸", &states.usingText);
+		ImGui::Checkbox(u8"ìŠ¤í¬ë¦½íŠ¸", &states.usingScript);
+		// [êµì²´ ì¤‘ì´ë©´ ë²„íŠ¼ ë¹„í™œì„±í™”]
 		if (states.replacingThreadState == ThreadState::THREAD_EXECUTING) {
 			ImGui::EndDisabled();
 		}
 
-		// ÃßÃâ ÁøÇàµµ
-		ImGui::SeparatorText(u8"±³Ã¼ ÁøÇàµµ");
+		// ì¶”ì¶œ ì§„í–‰ë„
+		ImGui::SeparatorText(u8"êµì²´ ì§„í–‰ë„");
 
-		// ÇÁ·Î±×·¹½º ¹Ù ¼¼ÆÃ
+		// í”„ë¡œê·¸ë ˆìŠ¤ ë°” ì„¸íŒ…
 		float replacingProgress = 0.0f;
 		if (states.totalDataCount != 0) {
 			replacingProgress = (float)states.currentDataIndex / (float)states.totalDataCount;
 		}
 		ImGui::ProgressBar(replacingProgress, ImVec2(0.0f, 0.0f));
 
-		// ±³Ã¼°¡ ³¡³µÀ¸¸é »óÅÂ ÃÊ±âÈ­¸¸ ÇØ ÁÖ°í, ÃßÃâ ¸ñ·ÏÀº ¼±ÅÃµÈ Ã¤·Î ³öµÎ°í, dirty »óÅÂµµ ÇØÁ¦ÇÑ´Ù
+		// êµì²´ê°€ ëë‚¬ìœ¼ë©´ ìƒíƒœ ì´ˆê¸°í™”ë§Œ í•´ ì£¼ê³ , ì¶”ì¶œ ëª©ë¡ì€ ì„ íƒëœ ì±„ë¡œ ë†”ë‘ê³ , dirty ìƒíƒœë„ í•´ì œí•œë‹¤
 		if (states.replacingThreadState == ThreadState::THREAD_FINISHED) {
 			states.replacingThreadState = ThreadState::THREAD_READY;
 			states.isDirty = false;
 		}
 
-		// ±¸ºĞ¼±
+		// êµ¬ë¶„ì„ 
 		ImGui::Separator();
 
 		float modalWidth = ImGui::GetContentRegionAvail().x;
-		float buttonsWidth = ImGui::CalcTextSize(u8"±³Ã¼").x + ImGui::CalcTextSize(u8"Ãë¼Ò").x + ((ImGui::GetStyle().FramePadding.x * 2) + states.buttonGap);
+		float buttonsWidth = ImGui::CalcTextSize(u8"êµì²´").x + ImGui::CalcTextSize(u8"ì·¨ì†Œ").x + ((ImGui::GetStyle().FramePadding.x * 2) + states.buttonGap);
 
 		static bool threadStateChange = false;
 
-		// ¾Æ¹«°Íµµ Ã¼Å©µÇÁö ¾Ê¾Ò´ÂÁö ¿©ºÎ
+		// ì•„ë¬´ê²ƒë„ ì²´í¬ë˜ì§€ ì•Šì•˜ëŠ”ì§€ ì—¬ë¶€
 		bool isNoneSelected = !states.usingImage && !states.usingSound && !states.usingFont && !states.usingBinaryData && !states.usingText && !states.usingScript;
 		if (archive->getArchiveType() == ArchiveType::ARCHIVE_EXE) {
 			isNoneSelected = isNoneSelected && !states.usingModule;
 		}
 
-		// [±³Ã¼ Áß / ¾Æ¹«°Íµµ Ã¼Å©µÇÁö ¾ÊÀ¸¸é ¹öÆ° ºñÈ°¼ºÈ­]
+		// [êµì²´ ì¤‘ / ì•„ë¬´ê²ƒë„ ì²´í¬ë˜ì§€ ì•Šìœ¼ë©´ ë²„íŠ¼ ë¹„í™œì„±í™”]
 		if ((states.replacingThreadState == ThreadState::THREAD_EXECUTING) || isNoneSelected) {
 			ImGui::BeginDisabled(true);
 		}
-		// ±³Ã¼ (¿À¸¥ÂÊ Á¤·Ä)
+		// êµì²´ (ì˜¤ë¥¸ìª½ ì •ë ¬)
 		ImGui::SetCursorPosX(modalWidth - buttonsWidth);
-		if (ImGui::Button(u8"±³Ã¼")) {
-			// ±³Ã¼ ½º·¹µå ½ÇÇà (Ã³À½ ÇÑ¹ø¸¸)
+		if (ImGui::Button(u8"êµì²´")) {
+			// êµì²´ ìŠ¤ë ˆë“œ ì‹¤í–‰ (ì²˜ìŒ í•œë²ˆë§Œ)
 			if (states.replacingThreadState == ThreadState::THREAD_READY) {
 				states.replacingThreadState = ThreadState::THREAD_EXECUTING;
 				threadStateChange = true;
 				CreateThread(NULL, 0, replacingThreadFunction, NULL, 0, NULL);
 			}
 		}
-		// [±³Ã¼ Áß / ¾Æ¹«°Íµµ Ã¼Å©µÇÁö ¾ÊÀ¸¸é ¹öÆ° ºñÈ°¼ºÈ­, »óÅÂ°¡ ¹Ù²ğ ¶§´Â BeginDisabled Ã³¸®°¡ ¾ÈµÅÀÖ±â ¶§¹®¿¡ EndDisabled Ã³¸®ÇÏ¸é ¿¡·¯³­´Ù]
+		// [êµì²´ ì¤‘ / ì•„ë¬´ê²ƒë„ ì²´í¬ë˜ì§€ ì•Šìœ¼ë©´ ë²„íŠ¼ ë¹„í™œì„±í™”, ìƒíƒœê°€ ë°”ë€” ë•ŒëŠ” BeginDisabled ì²˜ë¦¬ê°€ ì•ˆë¼ìˆê¸° ë•Œë¬¸ì— EndDisabled ì²˜ë¦¬í•˜ë©´ ì—ëŸ¬ë‚œë‹¤]
 		if ((states.replacingThreadState == ThreadState::THREAD_EXECUTING) || isNoneSelected) {
 			if (threadStateChange) {
 				threadStateChange = false;
@@ -827,20 +827,20 @@ void Dx9Application::renderArchivePartReplaceModal()
 			}
 		}
 
-		// --- °°Àº ¶óÀÎ ---
+		// --- ê°™ì€ ë¼ì¸ ---
 		ImGui::SameLine();
 
-		// [±³Ã¼ ÁßÀÌ¸é ¹öÆ° ºñÈ°¼ºÈ­]
+		// [êµì²´ ì¤‘ì´ë©´ ë²„íŠ¼ ë¹„í™œì„±í™”]
 		if (states.replacingThreadState == ThreadState::THREAD_EXECUTING) {
 			ImGui::BeginDisabled(true);
 		}
-		// Ãë¼Ò (¿À¸¥ÂÊ Á¤·Ä, ÃßÃâ Áß¿¡ Ãë¼Ò ºÒ°¡´É)
-		ImGui::SetCursorPosX(modalWidth - ImGui::CalcTextSize(u8"Ãë¼Ò").x);
-		if (ImGui::Button(u8"Ãë¼Ò")) {
+		// ì·¨ì†Œ (ì˜¤ë¥¸ìª½ ì •ë ¬, ì¶”ì¶œ ì¤‘ì— ì·¨ì†Œ ë¶ˆê°€ëŠ¥)
+		ImGui::SetCursorPosX(modalWidth - ImGui::CalcTextSize(u8"ì·¨ì†Œ").x);
+		if (ImGui::Button(u8"ì·¨ì†Œ")) {
 			states.isPartReplaceModalShow = false;
 			ImGui::CloseCurrentPopup();
 		}
-		// [±³Ã¼ ÁßÀÌ¸é ¹öÆ° ºñÈ°¼ºÈ­]
+		// [êµì²´ ì¤‘ì´ë©´ ë²„íŠ¼ ë¹„í™œì„±í™”]
 		if (states.replacingThreadState == ThreadState::THREAD_EXECUTING) {
 			ImGui::EndDisabled();
 		}
@@ -851,20 +851,20 @@ void Dx9Application::renderArchivePartReplaceModal()
 }
 
 
-// ------------------- END [¸ğ´Ş] ---------------------
+// ------------------- END [ëª¨ë‹¬] ---------------------
 
 
 
 
-// ------------------- BEGIN [À©µµ¿ì] ---------------------
+// ------------------- BEGIN [ìœˆë„ìš°] ---------------------
 
 
-// ¾ÆÄ«ÀÌºê Á¤º¸ À©µµ¿ì
+// ì•„ì¹´ì´ë¸Œ ì •ë³´ ìœˆë„ìš°
 void Dx9Application::renderArchiveInfoWindow()
 {
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize;
 
-	// ¸Ş´º ¹Ù·Î ¹Ø¿¡ ÁöÁ¤
+	// ë©”ë‰´ ë°”ë¡œ ë°‘ì— ì§€ì •
 	float xPos = 0.0f;
 	float yPos = (float)states.menuHeight;
 	ImVec2 windowSize;
@@ -873,67 +873,67 @@ void Dx9Application::renderArchiveInfoWindow()
 	ImGui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiCond_Always);
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
 
-	// Å¸ÀÌÆ²¿¡ dirty ¹İ¿µ
-	string archiveInfoTitle = !states.isDirty ? u8"¾ÆÄ«ÀÌºê Á¤º¸" : u8"¾ÆÄ«ÀÌºê Á¤º¸(*)";
+	// íƒ€ì´í‹€ì— dirty ë°˜ì˜
+	string archiveInfoTitle = !states.isDirty ? u8"ì•„ì¹´ì´ë¸Œ ì •ë³´" : u8"ì•„ì¹´ì´ë¸Œ ì •ë³´(*)";
 	if (!ImGui::Begin(archiveInfoTitle.c_str(), NULL, windowFlags)) {
 		ImGui::End();
 		return;
 	}
 
-	// °ÔÀÓ¸í ¶óÀÎ (ÆíÁı ÀüÈ¯ ±â´É ±¸Çö, ÀÌ »çÀÌ¿¡ UTF-16 <> UTF-8 º¯È¯ ÇÊ¿ä)
-	ImGui::Text(u8"°ÔÀÓ¸í:");
-	// --- °°Àº ¶óÀÎ ---
+	// ê²Œì„ëª… ë¼ì¸ (í¸ì§‘ ì „í™˜ ê¸°ëŠ¥ êµ¬í˜„, ì´ ì‚¬ì´ì— UTF-16 <> UTF-8 ë³€í™˜ í•„ìš”)
+	ImGui::Text(u8"ê²Œì„ëª…:");
+	// --- ê°™ì€ ë¼ì¸ ---
 	ImGui::SameLine(140.0f, 0.0f);
 	if (!states.isArchiveGameNameEditing) {
-		// µğÆúÆ® ¸ğµå, ÆíÁı ¹öÆ°Àº yÃà ¿ÀÇÁ¼Â Á¶Á¤
+		// ë””í´íŠ¸ ëª¨ë“œ, í¸ì§‘ ë²„íŠ¼ì€ yì¶• ì˜¤í”„ì…‹ ì¡°ì •
 		string appNameAnsi = getAnsiStr(archive->getAppName(), CodePage::CP_UTF_8);
-		// ÅØ½ºÆ® ÆÄÆ®
+		// í…ìŠ¤íŠ¸ íŒŒíŠ¸
 		ImGui::Text(appNameAnsi.c_str());
-		// --- °°Àº ¶óÀÎ ---
+		// --- ê°™ì€ ë¼ì¸ ---
 		ImGui::SameLine(140.0f + ImGui::CalcTextSize(appNameAnsi.c_str()).x + states.buttonGap, 0.0f);
-		// ¹öÆ° ÆÄÆ®
+		// ë²„íŠ¼ íŒŒíŠ¸
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3.0f);
-		if (ImGui::Button(u8"ÆíÁı")) {
-			// ÀÌ¸§ º¹»ç ÈÄ ÆíÁı ¸ğµå·Î ÀüÈ¯
+		if (ImGui::Button(u8"í¸ì§‘")) {
+			// ì´ë¦„ ë³µì‚¬ í›„ í¸ì§‘ ëª¨ë“œë¡œ ì „í™˜
 			memset(states.archiveGameName, 0, MAX_GAME_NAME_LENGTH);
 			memcpy(states.archiveGameName, appNameAnsi.c_str(), min((MAX_GAME_NAME_LENGTH - 1), strlen(appNameAnsi.c_str())));
 			states.isArchiveGameNameEditing = true;
 		}
 	}
 	else {
-		// ÆíÁı ¸ğµå, ÀüÃ¼ÀûÀ¸·Î yÃà ¿ÀÇÁ¼Â Á¶Á¤
+		// í¸ì§‘ ëª¨ë“œ, ì „ì²´ì ìœ¼ë¡œ yì¶• ì˜¤í”„ì…‹ ì¡°ì •
 		string appNameAnsi = getAnsiStr(archive->getAppName(), CodePage::CP_UTF_8);
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3.0f);
-		// ÀÔ·Â ÆÄÆ®
+		// ì…ë ¥ íŒŒíŠ¸
 		ImGui::PushItemWidth(400.0f);
 		ImGui::InputText("##ArchiveGameName", states.archiveGameName, IM_ARRAYSIZE(states.archiveGameName));
 		ImGui::PopItemWidth();
-		// --- °°Àº ¶óÀÎ ---
+		// --- ê°™ì€ ë¼ì¸ ---
 		ImGui::SameLine(140.0f + 400.0f + states.buttonGap, 0.0f);
-		// ¹öÆ° ÆÄÆ®
+		// ë²„íŠ¼ íŒŒíŠ¸
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3.0f);
-		// È®ÀÎ ¹öÆ° È¤Àº ¿£ÅÍ Å°¸¦ ´©¸¦¶§ ÀüÈ¯ÇÑ´Ù
-		// [°ÔÀÓ ÀÌ¸§ ±æÀÌ°¡ ¾ø´Ù¸é ºñÈ°¼ºÈ­]
+		// í™•ì¸ ë²„íŠ¼ í˜¹ì€ ì—”í„° í‚¤ë¥¼ ëˆ„ë¥¼ë•Œ ì „í™˜í•œë‹¤
+		// [ê²Œì„ ì´ë¦„ ê¸¸ì´ê°€ ì—†ë‹¤ë©´ ë¹„í™œì„±í™”]
 		if (strlen(states.archiveGameName) == 0) {
 			ImGui::BeginDisabled(true);
 		}
-		if (ImGui::Button(u8"È®ÀÎ") || ImGui::IsKeyPressed(ImGuiKey_Enter)) {
-			// archiveÀÇ appName¿¡ ¹İ¿µ ÈÄ µğÆúÆ® ¸ğµå·Î ÀüÈ¯
-			// ÀÌ·¸°Ô µÇ¸é ¾ÆÁ÷ ÀúÀåÀÌ ¾ÈµÈ »óÅÂÀÌ¹Ç·Î isDirty ¸¦ true·Î ¼¼ÆÃÇÑ´Ù
+		if (ImGui::Button(u8"í™•ì¸") || ImGui::IsKeyPressed(ImGuiKey_Enter)) {
+			// archiveì˜ appNameì— ë°˜ì˜ í›„ ë””í´íŠ¸ ëª¨ë“œë¡œ ì „í™˜
+			// ì´ë ‡ê²Œ ë˜ë©´ ì•„ì§ ì €ì¥ì´ ì•ˆëœ ìƒíƒœì´ë¯€ë¡œ isDirty ë¥¼ trueë¡œ ì„¸íŒ…í•œë‹¤
 			wstring newAppName = getUniStr(states.archiveGameName, CodePage::CP_UTF_8);
 			archive->setAppNameFromEditor(newAppName);
 			states.isArchiveGameNameEditing = false;
 			states.isDirty = true;
 		}
-		// [°ÔÀÓ ÀÌ¸§ ±æÀÌ°¡ ¾ø´Ù¸é ºñÈ°¼ºÈ­]
+		// [ê²Œì„ ì´ë¦„ ê¸¸ì´ê°€ ì—†ë‹¤ë©´ ë¹„í™œì„±í™”]
 		if (strlen(states.archiveGameName) == 0) {
 			ImGui::EndDisabled();
 		}
 	}
 
-	// Å¬¸¯ÆÀ Ç»Àü ¹öÀü Á¤º¸ ¶óÀÎ
-	ImGui::Text(u8"¹öÀü:");
-	// --- °°Àº ¶óÀÎ ---
+	// í´ë¦­íŒ€ í“¨ì „ ë²„ì „ ì •ë³´ ë¼ì¸
+	ImGui::Text(u8"ë²„ì „:");
+	// --- ê°™ì€ ë¼ì¸ ---
 	ImGui::SameLine(140.0f, 0.0f);
 	switch (archive->getEngineType()) 
 	{
@@ -959,11 +959,11 @@ void Dx9Application::renderArchiveInfoWindow()
 		}
 	}
 
-	// ·ÎÄÉÀÏ Á¤º¸ ¶óÀÎ (Á¸ÀçÇÒ ¶§¸¸ ±¸Çö. ÇÑ±¹¾î ·ÎÄÉÀÏ·Î ¸ÂÃß´Â ±â´É ±¸Çö. yÃà ¿ÀÇÁ¼Â º¸Á¤)
+	// ë¡œì¼€ì¼ ì •ë³´ ë¼ì¸ (ì¡´ì¬í•  ë•Œë§Œ êµ¬í˜„. í•œêµ­ì–´ ë¡œì¼€ì¼ë¡œ ë§ì¶”ëŠ” ê¸°ëŠ¥ êµ¬í˜„. yì¶• ì˜¤í”„ì…‹ ë³´ì •)
 	if (archive->isAppLocaleIdRead()) {
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.0f);
-		ImGui::Text(u8"·ÎÄÉÀÏ:");
-		// --- °°Àº ¶óÀÎ ---
+		ImGui::Text(u8"ë¡œì¼€ì¼:");
+		// --- ê°™ì€ ë¼ì¸ ---
 		ImGui::SameLine(140.0f, 0.0f);
 		string localeStr = to_string(archive->getAppLocaleId()).c_str();
 		wchar_t localeStrBuffer[256];
@@ -975,20 +975,20 @@ void Dx9Application::renderArchiveInfoWindow()
 			oss.clear();
 		}
 		ImGui::Text(localeStr.c_str());
-		// --- °°Àº ¶óÀÎ ---
+		// --- ê°™ì€ ë¼ì¸ ---
 		ImGui::SameLine(140.0f + ImGui::CalcTextSize(localeStr.c_str()).x + states.buttonGap, 0.0f);
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3.0f);
-		if (ImGui::Button(u8"ÇÑ±¹¾î ·ÎÄÉÀÏ·Î º¯°æ")) {
-			// ÇÑ±¹¾î ·ÎÄÉÀÏ·Î º¯°æ ÈÄ dirty ¼¼ÆÃ
+		if (ImGui::Button(u8"í•œêµ­ì–´ ë¡œì¼€ì¼ë¡œ ë³€ê²½")) {
+			// í•œêµ­ì–´ ë¡œì¼€ì¼ë¡œ ë³€ê²½ í›„ dirty ì„¸íŒ…
 			archive->setAppLocaleIdFromEditor(1042);
 			states.isDirty = true;
 		}
 	}
 
-	// ÄÚµåÆäÀÌÁö Á¤º¸ ¶óÀÎ (Á¸ÀçÇÒ ¶§¸¸ ±¸Çö. ÇÑ±¹¾î ÄÚµåÆäÀÌÁö·Î ¸ÂÃß´Â ±â´É ±¸Çö. yÃà ¿ÀÇÁ¼Â º¸Á¤)
+	// ì½”ë“œí˜ì´ì§€ ì •ë³´ ë¼ì¸ (ì¡´ì¬í•  ë•Œë§Œ êµ¬í˜„. í•œêµ­ì–´ ì½”ë“œí˜ì´ì§€ë¡œ ë§ì¶”ëŠ” ê¸°ëŠ¥ êµ¬í˜„. yì¶• ì˜¤í”„ì…‹ ë³´ì •)
 	if (archive->isAppCodepageRead()) {
-		ImGui::Text(u8"ÄÚµåÆäÀÌÁö:");
-		// --- °°Àº ¶óÀÎ ---
+		ImGui::Text(u8"ì½”ë“œí˜ì´ì§€:");
+		// --- ê°™ì€ ë¼ì¸ ---
 		ImGui::SameLine(140.0f, 0.0f);
 		CPINFOEXW cpInfoEx;
 		string codePageStr = to_string(archive->getAppCodepage()).c_str();
@@ -996,11 +996,11 @@ void Dx9Application::renderArchiveInfoWindow()
 			codePageStr = getAnsiStr(cpInfoEx.CodePageName, CodePage::CP_UTF_8);
 		}
 		ImGui::Text(codePageStr.c_str());
-		// --- °°Àº ¶óÀÎ ---
+		// --- ê°™ì€ ë¼ì¸ ---
 		ImGui::SameLine(140.0f + ImGui::CalcTextSize(codePageStr.c_str()).x + states.buttonGap, 0.0f);
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3.0f);
-		if (ImGui::Button(u8"ÇÑ±¹¾î ÄÚµåÆäÀÌÁö·Î º¯°æ")) {
-			// ÇÑ±¹¾î ÄÚµåÆäÀÌÁö·Î º¯°æ ÈÄ dirty ¼¼ÆÃ
+		if (ImGui::Button(u8"í•œêµ­ì–´ ì½”ë“œí˜ì´ì§€ë¡œ ë³€ê²½")) {
+			// í•œêµ­ì–´ ì½”ë“œí˜ì´ì§€ë¡œ ë³€ê²½ í›„ dirty ì„¸íŒ…
 			archive->setAppCodepageFromEditor(949);
 			states.isDirty = true;
 		}
@@ -1013,19 +1013,19 @@ void Dx9Application::renderArchiveInfoWindow()
 
 void Dx9Application::renderTreeNodes(ChunkTreeNode *node, UINT32 depth, UINT32 index, bool isRoot)
 {
-	// --- ´ÙÀ½ ÁÙ, ´ÙÀ½ ÄÃ·³ ---
+	// --- ë‹¤ìŒ ì¤„, ë‹¤ìŒ ì»¬ëŸ¼ ---
 	ImGui::TableNextRow();
 	ImGui::TableNextColumn();
 	ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_SpanAllColumns | ImGuiTreeNodeFlags_OpenOnArrow;
 	ImGuiTreeNodeFlags leafNodeFlags = treeNodeFlags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet | ImGuiTreeNodeFlags_NoTreePushOnOpen;
 
-	// ·çÆ® ³ëµå´Â ±×³É ´Ù ¿­¸° »óÅÂ·Î ¼¼ÆÃ
+	// ë£¨íŠ¸ ë…¸ë“œëŠ” ê·¸ëƒ¥ ë‹¤ ì—´ë¦° ìƒíƒœë¡œ ì„¸íŒ…
 	if (isRoot) {
 		treeNodeFlags |= ImGuiTreeNodeFlags_DefaultOpen;
 		leafNodeFlags |= ImGuiTreeNodeFlags_DefaultOpen;
 	}
 
-	// ¼±ÅÃ¿©ºÎ¿¡ µû¸¥ ¼¼ÆÃ
+	// ì„ íƒì—¬ë¶€ì— ë”°ë¥¸ ì„¸íŒ…
 	if (node->selected()) {
 		treeNodeFlags |= ImGuiTreeNodeFlags_Selected;
 		leafNodeFlags |= ImGuiTreeNodeFlags_Selected;
@@ -1035,56 +1035,56 @@ void Dx9Application::renderTreeNodes(ChunkTreeNode *node, UINT32 depth, UINT32 i
 	string nameStr = isRoot ? "__root__" : "chunk " + to_string(index);
 	node->setIdStr(idStr);
 
-	// ÀÏ¹İ ³ëµå ¹× ÀÚ½Ä ³ëµå ¸®½ºÆ® ·»´õ
+	// ì¼ë°˜ ë…¸ë“œ ë° ìì‹ ë…¸ë“œ ë¦¬ìŠ¤íŠ¸ ë Œë”
 	if (node->getChildren().size() != 0) 
 	{
-		// ÀÌ¸§
+		// ì´ë¦„
 		bool open = ImGui::TreeNodeEx(idStr.c_str(), treeNodeFlags, nameStr.c_str());
-		// Å¬¸¯½Ã ÀÚ½Ä³ëµåµéµµ ºÎ¸ğÀÇ ¼±ÅÃ°á°ú¿¡ ¸ÂÃç¼­ ¼¼ÆÃ
+		// í´ë¦­ì‹œ ìì‹ë…¸ë“œë“¤ë„ ë¶€ëª¨ì˜ ì„ íƒê²°ê³¼ì— ë§ì¶°ì„œ ì„¸íŒ…
 		if (ImGui::IsItemClicked()) {
-			// ¼±ÅÃµÈ ³ëµå°¡ ¾ø°Å³ª Å¬¸¯ÇÑ ³ëµå°¡ ÇöÀç ¼±ÅÃµÈ ³ëµå°¡ ¾Æ´Ò ¶§¸¸ µ¿ÀÛÇÏµµ·Ï ¼¼ÆÃÇÑ´Ù
+			// ì„ íƒëœ ë…¸ë“œê°€ ì—†ê±°ë‚˜ í´ë¦­í•œ ë…¸ë“œê°€ í˜„ì¬ ì„ íƒëœ ë…¸ë“œê°€ ì•„ë‹ ë•Œë§Œ ë™ì‘í•˜ë„ë¡ ì„¸íŒ…í•œë‹¤
 			if ((states.chunkTreeNodeContainer.getSelectedNode() == NULL)
 				|| (node->getIdStr() != states.chunkTreeNodeContainer.getSelectedNode()->getIdStr())) {
-				// ·»´õ¸µ ÁßÀÌ´ø ³ëµå°¡ ÀÖ´Ù¸é ÇØÁ¦½ÃÅ²´Ù
-				// *** ºÎ¸ğ ³ëµå¿¡´Â ¾î¶»°Ô ¼¼ÆÃÇØ¾ß ÇÑ´Ù...
+				// ë Œë”ë§ ì¤‘ì´ë˜ ë…¸ë“œê°€ ìˆë‹¤ë©´ í•´ì œì‹œí‚¨ë‹¤
+				// *** ë¶€ëª¨ ë…¸ë“œì—ëŠ” ì–´ë–»ê²Œ ì„¸íŒ…í•´ì•¼ í•œë‹¤...
 				if (states.renderingChunk != NULL && !states.isRenderingChunkAppInfo) {
 					delete states.renderingChunk;
 					states.renderingChunk = NULL;
 				}
-				// ¼±ÅÃ ÀüÈ¯
+				// ì„ íƒ ì „í™˜
 				bool toggleSelect = !node->selected();
-				// ÇÏ³ª¸¸ ¼±ÅÃµÇµµ·Ï ¼¼ÆÃ
+				// í•˜ë‚˜ë§Œ ì„ íƒë˜ë„ë¡ ì„¸íŒ…
 				states.chunkTreeNodeContainer.getRootNodePointer()->setAllNodeSelected(false);
 				node->setSelected(toggleSelect);
 				if (toggleSelect) {
 					states.chunkTreeNodeContainer.setSelectedNode(node);
 					states.renderingChunkLoaded = false;
 				}
-				// ÀÚ½Ä³ëµåµéµµ ¶È°°ÀÌ ¼¼ÆÃ
+				// ìì‹ë…¸ë“œë“¤ë„ ë˜‘ê°™ì´ ì„¸íŒ…
 				for (size_t i = 0; i < node->getChildren().size(); i++) {
 					node->getChildren()[i]->setSelected(toggleSelect);
 				}
 			}
 		}
-		// --- ´ÙÀ½ ÄÃ·³ ---
+		// --- ë‹¤ìŒ ì»¬ëŸ¼ ---
 		ImGui::TableNextColumn();
-		// Å©±â
+		// í¬ê¸°
 		if (isRoot) {
 			ImGui::TextDisabled("--");
 		}
 		else {
 			ImGui::Text("%d", node->getValue().size);
 		}
-		// --- ´ÙÀ½ ÄÃ·³ ---
+		// --- ë‹¤ìŒ ì»¬ëŸ¼ ---
 		ImGui::TableNextColumn();
-		// Å¸ÀÔ
+		// íƒ€ì…
 		if (isRoot) {
 			ImGui::TextDisabled("--");
 		}
 		else {
 			ImGui::TextUnformatted(getNameAnsi(node->getValue().type));
 		}
-		// Æ®¸®¸¦ ¿¬ »óÅÂ¸é ·çÇÁ·Î ÀÚ½Ä³ëµå ·»´õ
+		// íŠ¸ë¦¬ë¥¼ ì—° ìƒíƒœë©´ ë£¨í”„ë¡œ ìì‹ë…¸ë“œ ë Œë”
 		if (open)
 		{
 			for (UINT32 i = 0; i < (UINT32)node->getChildren().size(); i++) {
@@ -1093,25 +1093,25 @@ void Dx9Application::renderTreeNodes(ChunkTreeNode *node, UINT32 depth, UINT32 i
 			ImGui::TreePop();
 		}
 	}
-	// ¸®ÇÁ ³ëµå ·»´õ
+	// ë¦¬í”„ ë…¸ë“œ ë Œë”
 	else 
 	{
-		// ÀÌ¸§
+		// ì´ë¦„
 		ImGui::TreeNodeEx(idStr.c_str(), leafNodeFlags, nameStr.c_str());
-		// Å¬¸¯½Ã ÀÚ½Ä³ëµå¸¸ ¼±ÅÃÀüÈ¯
+		// í´ë¦­ì‹œ ìì‹ë…¸ë“œë§Œ ì„ íƒì „í™˜
 		if (ImGui::IsItemClicked()) {
-			// ¼±ÅÃµÈ ³ëµå°¡ ¾ø°Å³ª Å¬¸¯ÇÑ ³ëµå°¡ ÇöÀç ¼±ÅÃµÈ ³ëµå°¡ ¾Æ´Ò ¶§¸¸ µ¿ÀÛÇÏµµ·Ï ¼¼ÆÃÇÑ´Ù
+			// ì„ íƒëœ ë…¸ë“œê°€ ì—†ê±°ë‚˜ í´ë¦­í•œ ë…¸ë“œê°€ í˜„ì¬ ì„ íƒëœ ë…¸ë“œê°€ ì•„ë‹ ë•Œë§Œ ë™ì‘í•˜ë„ë¡ ì„¸íŒ…í•œë‹¤
 			if ((states.chunkTreeNodeContainer.getSelectedNode() == NULL)
 				|| (node->getIdStr() != states.chunkTreeNodeContainer.getSelectedNode()->getIdStr())) {
-				// ·»´õ¸µ ÁßÀÌ´ø ³ëµå°¡ ÀÖ´Ù¸é ÇØÁ¦½ÃÅ²´Ù
-				// *** ºÎ¸ğ ³ëµå¿¡´Â ¾î¶»°Ô ¼¼ÆÃÇØ¾ß ÇÑ´Ù...
+				// ë Œë”ë§ ì¤‘ì´ë˜ ë…¸ë“œê°€ ìˆë‹¤ë©´ í•´ì œì‹œí‚¨ë‹¤
+				// *** ë¶€ëª¨ ë…¸ë“œì—ëŠ” ì–´ë–»ê²Œ ì„¸íŒ…í•´ì•¼ í•œë‹¤...
 				if (states.renderingChunk != NULL && !states.isRenderingChunkAppInfo) {
 					delete states.renderingChunk;
 					states.renderingChunk = NULL;
 				}
-				// ¼±ÅÃ ÀüÈ¯
+				// ì„ íƒ ì „í™˜
 				bool toggleSelect = !node->selected();
-				// ÃÊ±âÈ­ ÈÄ ÇÏ³ª¸¸ ¼±ÅÃµÇµµ·Ï ¼¼ÆÃ
+				// ì´ˆê¸°í™” í›„ í•˜ë‚˜ë§Œ ì„ íƒë˜ë„ë¡ ì„¸íŒ…
 				states.chunkTreeNodeContainer.getRootNodePointer()->setAllNodeSelected(false);
 				states.chunkTreeNodeContainer.setSelectedNode(NULL);
 				node->setSelected(toggleSelect);
@@ -1121,18 +1121,18 @@ void Dx9Application::renderTreeNodes(ChunkTreeNode *node, UINT32 depth, UINT32 i
 				}
 			}
 		}
-		// --- ´ÙÀ½ ÄÃ·³ ---
+		// --- ë‹¤ìŒ ì»¬ëŸ¼ ---
 		ImGui::TableNextColumn();
-		// Å©±â
+		// í¬ê¸°
 		if (isRoot) {
 			ImGui::TextDisabled("--");
 		}
 		else {
 			ImGui::Text("%d", node->getValue().size);
 		}
-		// --- ´ÙÀ½ ÄÃ·³ ---
+		// --- ë‹¤ìŒ ì»¬ëŸ¼ ---
 		ImGui::TableNextColumn();
-		// Å¸ÀÔ
+		// íƒ€ì…
 		if (isRoot) {
 			ImGui::TextDisabled("--");
 		}
@@ -1143,12 +1143,12 @@ void Dx9Application::renderTreeNodes(ChunkTreeNode *node, UINT32 depth, UINT32 i
 }
 
 
-// ¾ÆÄ«ÀÌºê Chunk ¸®½ºÆ® À©µµ¿ì
+// ì•„ì¹´ì´ë¸Œ Chunk ë¦¬ìŠ¤íŠ¸ ìœˆë„ìš°
 void Dx9Application::renderArchiveChunkListWindow()
 {
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize;
 
-	// ¾ÆÄ«ÀÌºê Á¤º¸ À©µµ¿ì ¹Ù·Î ¹Ø¿¡ ÁöÁ¤
+	// ì•„ì¹´ì´ë¸Œ ì •ë³´ ìœˆë„ìš° ë°”ë¡œ ë°‘ì— ì§€ì •
 	float xPos = 0.0f;
 	float yPos = (float)states.menuHeight + (float)states.archiveOpenWindowHeight;
 	ImVec2 windowSize;
@@ -1157,7 +1157,7 @@ void Dx9Application::renderArchiveChunkListWindow()
 	ImGui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiCond_Always);
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
 
-	if (!ImGui::Begin(u8"Chunk ¸®½ºÆ®", NULL, windowFlags)) {
+	if (!ImGui::Begin(u8"Chunk ë¦¬ìŠ¤íŠ¸", NULL, windowFlags)) {
 		ImGui::End();
 		return;
 	}
@@ -1170,12 +1170,12 @@ void Dx9Application::renderArchiveChunkListWindow()
 	
 	if (ImGui::BeginTable("3ways", 3, tableFlags, tableSize))
 	{
-		// name / size / type ÅÇ ¼¼ÆÃ
+		// name / size / type íƒ­ ì„¸íŒ…
 		ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_NoHide);
 		ImGui::TableSetupColumn("Size", ImGuiTableColumnFlags_WidthFixed, ImGui::CalcTextSize("0").x * 8.0f);
 		ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_None);
 		ImGui::TableHeadersRow();
-		// Node ¸®½ºÆ® ·»´õ
+		// Node ë¦¬ìŠ¤íŠ¸ ë Œë”
 		renderTreeNodes(states.chunkTreeNodeContainer.getRootNodePointer(), 0, 0, true);
 		ImGui::EndTable();
 	}
@@ -1185,12 +1185,12 @@ void Dx9Application::renderArchiveChunkListWindow()
 }
 
 
-// ¾ÆÄ«ÀÌºêÀÇ °¢ Chunk Á¤º¸ À©µµ¿ì
+// ì•„ì¹´ì´ë¸Œì˜ ê° Chunk ì •ë³´ ìœˆë„ìš°
 void Dx9Application::renderArchiveEachChunkInfoWindow()
 {
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize;
 
-	// ¾ÆÄ«ÀÌºê Á¤º¸ À©µµ¿ì ¹Ù·Î ¹Ø, chunk ¸®½ºÆ® À©µµ¿ì ¿À¸¥ÂÊ¿¡ ÁöÁ¤
+	// ì•„ì¹´ì´ë¸Œ ì •ë³´ ìœˆë„ìš° ë°”ë¡œ ë°‘, chunk ë¦¬ìŠ¤íŠ¸ ìœˆë„ìš° ì˜¤ë¥¸ìª½ì— ì§€ì •
 	float xPos = (float)states.chunkListWindowWidth;
 	float yPos = (float)states.menuHeight + (float)states.archiveOpenWindowHeight;
 	ImVec2 windowSize;
@@ -1199,69 +1199,69 @@ void Dx9Application::renderArchiveEachChunkInfoWindow()
 	ImGui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiCond_Always);
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
 	
-	if (!ImGui::Begin(u8"°¢ Chunk Á¤º¸", NULL, windowFlags)) {
+	if (!ImGui::Begin(u8"ê° Chunk ì •ë³´", NULL, windowFlags)) {
 		ImGui::End();
 		return;
 	}
 
-	// ÀÌÂÊÀº ÇÏ³ª¸¸ ¼±ÅÃµÆÀ»¶§ ±× Á¤º¸¸¸ ·»´õ¸µÇÑ´Ù
+	// ì´ìª½ì€ í•˜ë‚˜ë§Œ ì„ íƒëì„ë•Œ ê·¸ ì •ë³´ë§Œ ë Œë”ë§í•œë‹¤
 	ChunkTreeNode* selectedNode = states.chunkTreeNodeContainer.getSelectedNode();
 	if (selectedNode != NULL)
 	{
-		// ÇÊ¿ä Á¤º¸ È®º¸
+		// í•„ìš” ì •ë³´ í™•ë³´
 		ChunkInfo chunkInfo = selectedNode->getValue();
 		UINT32 chunkOffset = selectedNode->getOffset();
 
 		std::stringstream oss;
 
-		// chunk Å¸ÀÔ ¶óÀÎ
-		ImGui::Text(u8"Å¸ÀÔ:");
-		// --- °°Àº ¶óÀÎ ---
+		// chunk íƒ€ì… ë¼ì¸
+		ImGui::Text(u8"íƒ€ì…:");
+		// --- ê°™ì€ ë¼ì¸ ---
 		ImGui::SameLine(120.0f, 0.0f);
 		ImGui::Text(getNameAnsi(chunkInfo.type));
 
-		// chunk Å©±â ¶óÀÎ
-		ImGui::Text(u8"Å©±â:");
-		// --- °°Àº ¶óÀÎ ---
+		// chunk í¬ê¸° ë¼ì¸
+		ImGui::Text(u8"í¬ê¸°:");
+		// --- ê°™ì€ ë¼ì¸ ---
 		ImGui::SameLine(120.0f, 0.0f);
 		oss << dec << chunkInfo.size << " (0x" << hex << uppercase << chunkInfo.size << ")";
 		ImGui::Text(oss.str().c_str());
 		oss.str("");
 
-		// chunk ¿ÀÇÁ¼Â ¶óÀÎ
-		ImGui::Text(u8"¿ÀÇÁ¼Â:");
-		// --- °°Àº ¶óÀÎ ---
+		// chunk ì˜¤í”„ì…‹ ë¼ì¸
+		ImGui::Text(u8"ì˜¤í”„ì…‹:");
+		// --- ê°™ì€ ë¼ì¸ ---
 		ImGui::SameLine(120.0f, 0.0f);
 		oss << dec << chunkOffset << " (0x" << hex << uppercase << chunkOffset << ")";
 		ImGui::Text(oss.str().c_str());
 		oss.str("");
 
-		// chunk ¾ĞÃà/¾ÏÈ£È­ ¿©ºÎ ¶óÀÎ
-		ImGui::Text(u8"¾ĞÃà/¾ÏÈ£È­:");
-		// --- °°Àº ¶óÀÎ ---
+		// chunk ì••ì¶•/ì•”í˜¸í™” ì—¬ë¶€ ë¼ì¸
+		ImGui::Text(u8"ì••ì¶•/ì•”í˜¸í™”:");
+		// --- ê°™ì€ ë¼ì¸ ---
 		ImGui::SameLine(120.0f, 0.0f);
 		if ((chunkInfo.flag & 0x1) && (chunkInfo.flag & 0x2)) {
-			ImGui::Text(u8"[¾ĞÃà][¾ÏÈ£È­]");
+			ImGui::Text(u8"[ì••ì¶•][ì•”í˜¸í™”]");
 		}
 		else if (chunkInfo.flag & 0x1) {
-			ImGui::Text(u8"[¾ĞÃà]");
+			ImGui::Text(u8"[ì••ì¶•]");
 		}
 		else if (chunkInfo.flag & 0x2) {
-			ImGui::Text(u8"[¾ÏÈ£È­]");
+			ImGui::Text(u8"[ì•”í˜¸í™”]");
 		}
 		else {
 			ImGui::TextDisabled(u8"--");
 		}
 
-		// °ª ÀĞ¾îµéÀÌ±â, DataChunk´Â °¡Áø µ¥ÀÌÅÍ ¼ö¸¸ º¸¿©Áàµµ µÉ°Å°°À½
-		// ÀÌ¹Ì ÀĞÀº °ªµéÀº ¶Ç ÀĞ¾îµéÀÏ ÇÊ¿ä°¡ ¾ø´Ù
+		// ê°’ ì½ì–´ë“¤ì´ê¸°, DataChunkëŠ” ê°€ì§„ ë°ì´í„° ìˆ˜ë§Œ ë³´ì—¬ì¤˜ë„ ë ê±°ê°™ìŒ
+		// ì´ë¯¸ ì½ì€ ê°’ë“¤ì€ ë˜ ì½ì–´ë“¤ì¼ í•„ìš”ê°€ ì—†ë‹¤
 		if (!states.renderingChunkLoaded) {
 			states.renderingChunk = allocateChunk(chunkInfo.type, states.isRenderingChunkAppInfo);
 
-			// appData·Î ÀÌ¹Ì ÀĞ¾îµé¿´´Ù¸é, Á¤º¸ µ¿±âÈ­¸¦ À§ÇØ¼­ »õ·Î ÀĞÁö ¾Ê´Â´Ù
+			// appDataë¡œ ì´ë¯¸ ì½ì–´ë“¤ì˜€ë‹¤ë©´, ì •ë³´ ë™ê¸°í™”ë¥¼ ìœ„í•´ì„œ ìƒˆë¡œ ì½ì§€ ì•ŠëŠ”ë‹¤
 			if (states.isRenderingChunkAppInfo) {
 
-				// ¼ÎÀÌ´õ ¸®½ºÆ®´Â DataChunk¶ó¼­ µû·Î Ã³¸®ÇØ Áà¾ß ÇÑ´Ù
+				// ì…°ì´ë” ë¦¬ìŠ¤íŠ¸ëŠ” DataChunkë¼ì„œ ë”°ë¡œ ì²˜ë¦¬í•´ ì¤˜ì•¼ í•œë‹¤
 				if (dynamic_cast<DataChunk*>(states.renderingChunk)) {
 					DataChunk* dcPtr = reinterpret_cast<DataChunk*>(states.renderingChunk);
 					states.chunkDataCount = (UINT32)dcPtr->getValue().size();
@@ -1271,26 +1271,26 @@ void Dx9Application::renderArchiveEachChunkInfoWindow()
 			}
 			else {
 
-				// »õ·Î ÀĞ¾îµéÀÌ±â À§ÇØ ÇÚµé ¿ÀÇÁ¼Â ÁöÁ¤
+				// ìƒˆë¡œ ì½ì–´ë“¤ì´ê¸° ìœ„í•´ í•¸ë“¤ ì˜¤í”„ì…‹ ì§€ì •
 				HANDLE hArchive = getArchive()->getArchiveHandle();
 				SetFilePointer(hArchive, chunkOffset, NULL, FILE_BEGIN);
 
-				// FrameLayerEffectDataChunk ¶ó¸é FrameLayerDataChunk¸¦ ¼±ÇàÇÏ¿© ÀĞ¾îµé¿©¾ß Ã³¸®°¡ °¡´ÉÇÏ´Ù
-				// ÀÌ¸¦ ¼öÇàÇÏ·Á¸é ºÎ¸ğ chunkÀÎ FrameChunk¸¦ Ã£Àº ÈÄ, °Å±â¼­ FrameLayerDataChunk¸¦ Ã£´Â ¹æ½ÄÀ¸·Î °¡¾ß ÇÑ´Ù
+				// FrameLayerEffectDataChunk ë¼ë©´ FrameLayerDataChunkë¥¼ ì„ í–‰í•˜ì—¬ ì½ì–´ë“¤ì—¬ì•¼ ì²˜ë¦¬ê°€ ê°€ëŠ¥í•˜ë‹¤
+				// ì´ë¥¼ ìˆ˜í–‰í•˜ë ¤ë©´ ë¶€ëª¨ chunkì¸ FrameChunkë¥¼ ì°¾ì€ í›„, ê±°ê¸°ì„œ FrameLayerDataChunkë¥¼ ì°¾ëŠ” ë°©ì‹ìœ¼ë¡œ ê°€ì•¼ í•œë‹¤
 				
-				// ºÎ¸ğ ³ëµå(FrameChunk) ÀÇ ¿ÀÇÁ¼Â
+				// ë¶€ëª¨ ë…¸ë“œ(FrameChunk) ì˜ ì˜¤í”„ì…‹
 				// states.chunkTreeNodeContainer.getSelectedNode()->getParent()->getOffset();
-				// ½ÇÁ¦ ¿Å°Ü¾ß ÇÒ À§Ä¡´Â sizeof(ChunkInfo)¸¦ ´õÇÏ¿© ¼¼ÆÃÇÑ´Ù
+				// ì‹¤ì œ ì˜®ê²¨ì•¼ í•  ìœ„ì¹˜ëŠ” sizeof(ChunkInfo)ë¥¼ ë”í•˜ì—¬ ì„¸íŒ…í•œë‹¤
 
-				// ÇÚµéÀ» ÀÌ À§Ä¡·Î ¿Å±â°í, ³»ºÎ¿¡¼­ µ¥ÀÌÅÍ¸¦ ¿Å°Ü °¡¸ç chunkTypeÀÌ
-				// ChunkType::CHUNK_FRAME_LAYERS ÀÎ À§Ä¡¸¦ Ã£Àº ÈÄ FrameLayerDataChunk¸¦ ÀĞ¾îµé¿©¾ß¸¸ ÇÑ´Ù
-				// À§Ä¡¸¦ Ã£´Â °Ç Chunk ÂÊ¿¡ ¼±¾ğÇØµÎ´Â°Ô ÁÁ°Ú´Ù.
-				// ÀÌÈÄ ¿©±â¼­ °³¼ö¸¸ ¾ò°í FrameLayerDataChunk´Â ÇØÁ¦ÇÏ°í ¶¯Ä£´Ù
+				// í•¸ë“¤ì„ ì´ ìœ„ì¹˜ë¡œ ì˜®ê¸°ê³ , ë‚´ë¶€ì—ì„œ ë°ì´í„°ë¥¼ ì˜®ê²¨ ê°€ë©° chunkTypeì´
+				// ChunkType::CHUNK_FRAME_LAYERS ì¸ ìœ„ì¹˜ë¥¼ ì°¾ì€ í›„ FrameLayerDataChunkë¥¼ ì½ì–´ë“¤ì—¬ì•¼ë§Œ í•œë‹¤
+				// ìœ„ì¹˜ë¥¼ ì°¾ëŠ” ê±´ Chunk ìª½ì— ì„ ì–¸í•´ë‘ëŠ”ê²Œ ì¢‹ê² ë‹¤.
+				// ì´í›„ ì—¬ê¸°ì„œ ê°œìˆ˜ë§Œ ì–»ê³  FrameLayerDataChunkëŠ” í•´ì œí•˜ê³  ë•¡ì¹œë‹¤
 
-				// DataChunk »ó¼Ó ¿©ºÎ¿¡ µû¶ó ´Ù¸£°Ô Ã³¸®
+				// DataChunk ìƒì† ì—¬ë¶€ì— ë”°ë¼ ë‹¤ë¥´ê²Œ ì²˜ë¦¬
 				if (dynamic_cast<DataChunk*>(states.renderingChunk)) {
 
-					// FrameLayerEffectDataChunkÀÏ ¶§´Â º°°³·Î FrameLayerDataChunk¸¦ ÀĞ¾î¼­ °³¼ö¸¦ ÁöÁ¤ÇÏ´Â Ã³¸®°¡ ÇÊ¿äÇÏ´Ù
+					// FrameLayerEffectDataChunkì¼ ë•ŒëŠ” ë³„ê°œë¡œ FrameLayerDataChunkë¥¼ ì½ì–´ì„œ ê°œìˆ˜ë¥¼ ì§€ì •í•˜ëŠ” ì²˜ë¦¬ê°€ í•„ìš”í•˜ë‹¤
 					if (dynamic_cast<FrameLayerEffectDataChunk*>(states.renderingChunk)) {
 
 						UINT32 parentChunkOffset = states.chunkTreeNodeContainer.getSelectedNode()->getParent()->getOffset();
@@ -1305,9 +1305,9 @@ void Dx9Application::renderArchiveEachChunkInfoWindow()
 
 					}
 
-					// ImageDataChunk, SoundDataChunk¸¦ Á¦¿ÜÇÏ¸é Å©±â°¡ Å©Áö ¾ÊÀ¸¹Ç·Î ±×³É ÀĞ¾îµéÀÎ´Ù
+					// ImageDataChunk, SoundDataChunkë¥¼ ì œì™¸í•˜ë©´ í¬ê¸°ê°€ í¬ì§€ ì•Šìœ¼ë¯€ë¡œ ê·¸ëƒ¥ ì½ì–´ë“¤ì¸ë‹¤
 					if (dynamic_cast<ImageDataChunk*>(states.renderingChunk) || dynamic_cast<SoundDataChunk*>(states.renderingChunk)) {
-						// DataChunk·Î Æ÷ÀÎÆ® º¯È¯ ÈÄ ÀĞ±â
+						// DataChunkë¡œ í¬ì¸íŠ¸ ë³€í™˜ í›„ ì½ê¸°
 						DataChunk* dcPtr = reinterpret_cast<DataChunk*>(states.renderingChunk);
 						dcPtr->readOnlyDataCount(hArchive);
 					}
@@ -1324,8 +1324,8 @@ void Dx9Application::renderArchiveEachChunkInfoWindow()
 			states.renderingChunkLoaded = true;
 		}
 
-		// °¢ chunkÀÇ value ¶óÀÎ
-		ImGui::Text(u8"µ¥ÀÌÅÍ:");
+		// ê° chunkì˜ value ë¼ì¸
+		ImGui::Text(u8"ë°ì´í„°:");
 		ImGui::PushTextWrapPos(states.windowWidth - states.chunkListWindowWidth - ImGui::GetStyle().FramePadding.x);
 		if (states.renderingChunk != NULL) {
 			states.renderingChunk->renderData();
@@ -1338,4 +1338,4 @@ void Dx9Application::renderArchiveEachChunkInfoWindow()
 }
 
 
-// ------------------- END [À©µµ¿ì] ---------------------
+// ------------------- END [ìœˆë„ìš°] ---------------------

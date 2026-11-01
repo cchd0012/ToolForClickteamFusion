@@ -1,4 +1,4 @@
-#include "TrueTypeFontInfo.h"
+Ôªø#include "TrueTypeFontInfo.h"
 #include "../../Archive/Archive.h"
 #include "../../Util/ZlibUtil.h"
 #include "../../Util/CommonUtil.h"
@@ -20,7 +20,7 @@ TrueTypeFontInfo::~TrueTypeFontInfo() {
 
 bool TrueTypeFontInfo::exportJson(Json::Value& exportValue, vector<UINT32>& offsetList)
 {
-	// value∑Œ √ﬂ√‚
+	// valueÎ°ú Ï∂îÏ∂ú
 	exportValue["height"] = -(value.height);
 	exportValue["width"] = value.width;
 	exportValue["orientation"] = value.orientation;
@@ -36,7 +36,7 @@ bool TrueTypeFontInfo::exportJson(Json::Value& exportValue, vector<UINT32>& offs
 	exportValue["pitch_and_family"] = value.pitchAndFamily;
 	exportValue["name"] = getAnsiStr(value.name, CodePage::CP_UTF_8);
 
-	// fontPathName ¡ˆ¡§
+	// fontPathName ÏßÄÏ†ï
 	INT32 offsetIndex = -1;
 	if (contains(offsetList, value.offset, offsetIndex)) {
 		wostringstream woss;
@@ -55,7 +55,7 @@ bool TrueTypeFontInfo::exportJson(Json::Value& exportValue, vector<UINT32>& offs
 bool TrueTypeFontInfo::importJson(Json::Value& importValue, vector<UINT32>& offsetList)
 {
 	
-	// value∑Œ∫Œ≈Õ ¿–æÓµÈø© ±‚∑œ
+	// valueÎ°úÎ∂ÄÌÑ∞ ÏùΩÏñ¥Îì§Ïó¨ Í∏∞Î°ù
 	value.height = -(importValue["height"].asInt());
 	value.width = importValue["width"].asUInt();
 	value.escapement = importValue["escapement"].asUInt();
@@ -73,7 +73,7 @@ bool TrueTypeFontInfo::importJson(Json::Value& importValue, vector<UINT32>& offs
 	wstring nameStr = getUniStr(nameAnsi, CodePage::CP_UTF_8);
 	memcpy(value.name, nameStr.c_str(), ((0x1F < nameStr.size() ? 0x1F : nameStr.size()) * sizeof(WCHAR)));
 
-	// fontPathName¿ª ±‚π›¿∏∑Œ offsetListø°º≠ « ø‰«— ø¿«¡º¬¿ª ±‚∑œ, æ¯∞≈≥™ π¸¿ß∏¶ π˛æÓ≥™∏È ±◊≥… 0¿∏∑Œ µ–¥Ÿ
+	// fontPathNameÏùÑ Í∏∞Î∞òÏúºÎ°ú offsetListÏóêÏÑú ÌïÑÏöîÌïú Ïò§ÌîÑÏÖãÏùÑ Í∏∞Î°ù, ÏóÜÍ±∞ÎÇò Î≤îÏúÑÎ•º Î≤óÏñ¥ÎÇòÎ©¥ Í∑∏ÎÉ• 0ÏúºÎ°ú ÎëîÎã§
 	string fontPathNameAnsi = importValue["fontPathName"].asCString();
 	wstring fontPathName = getUniStr(fontPathNameAnsi, CodePage::CP_UTF_8);
 	if (fontPathName != L"--") {
@@ -104,12 +104,12 @@ bool TrueTypeFontInfo::saveIntoBuffer(BYTE*& bufferPnt)
 }
 
 
-// µ•¿Ã≈Õ ∑ª¥ı∏µøÎ «‘ºˆ
+// Îç∞Ïù¥ÌÑ∞ Î†åÎçîÎßÅÏö© Ìï®Ïàò
 void TrueTypeFontInfo::renderData(UINT32 index)
 {
 	stringstream oss;
 
-	// ¿Œµ¶Ω∫ «•«ˆ
+	// Ïù∏Îç±Ïä§ ÌëúÌòÑ
 	oss << "  <" << index << ">{";
 	ImGui::Text(oss.str().c_str());
 	oss.str("");

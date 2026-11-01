@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../Archive.h"
 
@@ -26,7 +26,7 @@ namespace CTT {
 			bool exportModules();
 			bool importModules();
 		private:
-			UINT32 frontHeaderStartOffset;		// module °ü·Ã Á¤º¸¸¦ ¾ò±â À§ÇÔ
+			UINT32 frontHeaderStartOffset;		// module ê´€ë ¨ ì •ë³´ë¥¼ ì–»ê¸° ìœ„í•¨
 			vector<Module> modules;
 			bool readModulesFromArchive();
 		};

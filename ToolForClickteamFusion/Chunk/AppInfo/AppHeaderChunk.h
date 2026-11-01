@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../Chunk.h"
 #include "../../Util/JsonUtil.h"
@@ -19,7 +19,7 @@ namespace CTT {
 			AppHeader& getValue() { return value; }
 			Json::Value exportAsJson();
 			void importFromJson(Json::Value &importValues);
-			// µ¥ÀÌÅÍ ·»´õ¸µ¿ë ÇÔ¼ö
+			// ë°ì´í„° ë Œë”ë§ìš© í•¨ìˆ˜
 			void renderData();
 		protected:
 			bool loadFromOrgBuffer();

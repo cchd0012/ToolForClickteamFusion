@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../Common.h"
 #include "../Archive/Archive.h"
@@ -17,37 +17,37 @@ namespace CTT {
 			Application(wstring appName);
 			virtual ~Application() = 0;
 
-			// appÀÇ ±âº» ÇÔ¼ö
+			// appì˜ ê¸°ë³¸ í•¨ìˆ˜
 			virtual bool init() = 0;
 			virtual void run() = 0;
 			virtual void terminate() = 0;
 
-			// ¾ÆÄ«ÀÌºê Æ÷ÀÎÅÍ È¹µæ ÇÔ¼ö
+			// ì•„ì¹´ì´ë¸Œ í¬ì¸í„° íšë“ í•¨ìˆ˜
 			CTT::Archive::Archive* getArchive() { return archive; }
 
-			// app »óÅÂ Æ÷ÀÎÅÍ È¹µæ ÇÔ¼ö
+			// app ìƒíƒœ í¬ì¸í„° íšë“ í•¨ìˆ˜
 			ApplicationState* getStates() { return &states; }
 
-			// app »óÅÂ ÃÊ±âÈ­ ÇÔ¼ö
+			// app ìƒíƒœ ì´ˆê¸°í™” í•¨ìˆ˜
 			void initializeAppState();
 
-			// ¿¡·¯ ¼¼ÆÃ ÇÔ¼ö
+			// ì—ëŸ¬ ì„¸íŒ… í•¨ìˆ˜
 			void triggerError(const char* errTitle, const char* errMsg, bool closeAllModal);
 
-			// ·çÇÁ¸¦ Àü¿ªÀ¸·Î Ã³¸®ÇÏ±â À§ÇÔ
+			// ë£¨í”„ë¥¼ ì „ì—­ìœ¼ë¡œ ì²˜ë¦¬í•˜ê¸° ìœ„í•¨
 			static LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 		private:
-			// appº° ·»´õ¸µ ÇÔ¼ö
+			// appë³„ ë Œë”ë§ í•¨ìˆ˜
 			virtual void render() = 0;
 
-			// appº° ÇÁ·Î¼¼½Ì ÇÔ¼ö
+			// appë³„ í”„ë¡œì„¸ì‹± í•¨ìˆ˜
 			virtual void terminateProcess() = 0;
 
 		protected:
 			wstring name;
 			CTT::Archive::Archive* archive;
-			// resizeWidth, resizeHeight´Â WindowMessage ÀÌº¥Æ® ¹ŞÀ» ½Ã ¸®»çÀÌÂ¡ Ã³¸® º¯¼ö
+			// resizeWidth, resizeHeightëŠ” WindowMessage ì´ë²¤íŠ¸ ë°›ì„ ì‹œ ë¦¬ì‚¬ì´ì§• ì²˜ë¦¬ ë³€ìˆ˜
 			ApplicationState states;
 			UINT32 resizeWidth;
 			UINT32 resizeHeight;

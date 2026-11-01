@@ -1,4 +1,4 @@
-#include "ExeArchive.h"
+Ôªø#include "ExeArchive.h"
 #include "../../Util/DecryptionUtil.h"
 #include "../../Util/ZlibUtil.h"
 #include "../../Util/CommonUtil.h"
@@ -38,55 +38,55 @@ bool ExeArchive::init()
 {
 	wcout << infoPrefix << L"<<function>> " << __FUNCTIONW__ << L": processing..." << endl;
 
-	// exe ∆ƒ¿œ ø≠±‚
+	// exe ÌååÏùº Ïó¥Í∏∞
 	hArchive = CreateFileW(archivePath.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hArchive == INVALID_HANDLE_VALUE) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": æ∆ƒ´¿Ã∫Í ∆ƒ¿œ¿ª ø≠¡ˆ ∏¯«ﬂΩ¿¥œ¥Ÿ." << endl;
-		triggerError(__FUNCTION__, u8"æ∆ƒ´¿Ã∫Í ∆ƒ¿œ¿ª ø≠¡ˆ ∏¯«ﬂΩ¿¥œ¥Ÿ");
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": ÏïÑÏπ¥Ïù¥Î∏å ÌååÏùºÏùÑ Ïó¥ÏßÄ Î™ªÌñàÏäµÎãàÎã§." << endl;
+		triggerError(__FUNCTION__, u8"ÏïÑÏπ¥Ïù¥Î∏å ÌååÏùºÏùÑ Ïó¥ÏßÄ Î™ªÌñàÏäµÎãàÎã§");
 		return false;
 	}
 
 	DWORD dRead;
 
-	// « ø‰ ∫Øºˆ
+	// ÌïÑÏöî Î≥ÄÏàò
 	UINT32 archiveSize = 0;
 	UINT32 archiveBackHeaderOffset = 0;
 
-	// DOS «Ï¥ı ¿–±‚
+	// DOS Ìó§Îçî ÏùΩÍ∏∞
 	IMAGE_DOS_HEADER dosHeader;
 	ReadFile(hArchive, &dosHeader, sizeof(IMAGE_DOS_HEADER), &dRead, NULL);
 	if (dRead != sizeof(IMAGE_DOS_HEADER)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": DOS «Ï¥ı∏¶ ¿–¡ˆ ∏¯«ﬂΩ¿¥œ¥Ÿ." << endl;
-		triggerError(__FUNCTION__, u8"DOS «Ï¥ı∏¶ ¿–¡ˆ ∏¯«ﬂΩ¿¥œ¥Ÿ");
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": DOS Ìó§ÎçîÎ•º ÏùΩÏßÄ Î™ªÌñàÏäµÎãàÎã§." << endl;
+		triggerError(__FUNCTION__, u8"DOS Ìó§ÎçîÎ•º ÏùΩÏßÄ Î™ªÌñàÏäµÎãàÎã§");
 		return false;
 	}
 
-	// PE «Ï¥ı ¿ßƒ°∑Œ ¿Ãµø
+	// PE Ìó§Îçî ÏúÑÏπòÎ°ú Ïù¥Îèô
 	SetFilePointer(hArchive, dosHeader.e_lfanew, NULL, FILE_BEGIN);
 
-	// PE ∆ƒ¿œ «Ï¥ı ¿–∞Ì OptionalHeader¥¬ ±◊≥… ø≈±‚±‚. ¥Ÿ ¿–¿∏¥œ±Ó ≤ø¿”
+	// PE ÌååÏùº Ìó§Îçî ÏùΩÍ≥† OptionalHeaderÎäî Í∑∏ÎÉ• ÏòÆÍ∏∞Í∏∞. Îã§ ÏùΩÏúºÎãàÍπå Íº¨ÏûÑ
 	IMAGE_NT_HEADERS ntHeaders;
 	ReadFile(hArchive, &ntHeaders.Signature, sizeof(DWORD), &dRead, NULL);
 	if (dRead != sizeof(DWORD)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": PE «Ï¥ı Ω√±◊¥œ√≥∏¶ ¿–¡ˆ ∏¯«ﬂΩ¿¥œ¥Ÿ." << endl;
-		triggerError(__FUNCTION__, u8"PE «Ï¥ı Ω√±◊¥œ√≥∏¶ ¿–¡ˆ ∏¯«ﬂΩ¿¥œ¥Ÿ");
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": PE Ìó§Îçî ÏãúÍ∑∏ÎãàÏ≤òÎ•º ÏùΩÏßÄ Î™ªÌñàÏäµÎãàÎã§." << endl;
+		triggerError(__FUNCTION__, u8"PE Ìó§Îçî ÏãúÍ∑∏ÎãàÏ≤òÎ•º ÏùΩÏßÄ Î™ªÌñàÏäµÎãàÎã§");
 		return false;
 	}
 	ReadFile(hArchive, &ntHeaders.FileHeader, sizeof(IMAGE_FILE_HEADER), &dRead, NULL);
 	if (dRead != sizeof(IMAGE_FILE_HEADER)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": PE ∆ƒ¿œ «Ï¥ı∏¶ ¿–¡ˆ ∏¯«ﬂΩ¿¥œ¥Ÿ." << endl;
-		triggerError(__FUNCTION__, u8"PE ∆ƒ¿œ «Ï¥ı∏¶ ¿–¡ˆ ∏¯«ﬂΩ¿¥œ¥Ÿ");
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": PE ÌååÏùº Ìó§ÎçîÎ•º ÏùΩÏßÄ Î™ªÌñàÏäµÎãàÎã§." << endl;
+		triggerError(__FUNCTION__, u8"PE ÌååÏùº Ìó§ÎçîÎ•º ÏùΩÏßÄ Î™ªÌñàÏäµÎãàÎã§");
 		return false;
 	}
 	SetFilePointer(hArchive, ntHeaders.FileHeader.SizeOfOptionalHeader, NULL, FILE_CURRENT);
 
-	// ¡¶¿œ ∏∂¡ˆ∏∑ ºΩº« ±◊ ¥Ÿ¿Ω ¿ßƒ°∏¶ √£¥¬¥Ÿ
+	// Ï†úÏùº ÎßàÏßÄÎßâ ÏÑπÏÖò Í∑∏ Îã§Ïùå ÏúÑÏπòÎ•º Ï∞æÎäîÎã§
 	IMAGE_SECTION_HEADER sectionHeader;
 	for (int i = 0; i < ntHeaders.FileHeader.NumberOfSections; ++i) {
 		ReadFile(hArchive, &sectionHeader, sizeof(IMAGE_SECTION_HEADER), &dRead, NULL);
 		if (dRead != sizeof(IMAGE_SECTION_HEADER)) {
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": ºΩº« «Ï¥ı∏¶ ¿–¡ˆ ∏¯«ﬂΩ¿¥œ¥Ÿ." << endl;
-			triggerError(__FUNCTION__, u8"ºΩº« «Ï¥ı∏¶ ¿–¡ˆ ∏¯«ﬂΩ¿¥œ¥Ÿ");
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": ÏÑπÏÖò Ìó§ÎçîÎ•º ÏùΩÏßÄ Î™ªÌñàÏäµÎãàÎã§." << endl;
+			triggerError(__FUNCTION__, u8"ÏÑπÏÖò Ìó§ÎçîÎ•º ÏùΩÏßÄ Î™ªÌñàÏäµÎãàÎã§");
 			return false;
 		}
 		if (frontHeaderStartOffset < (sectionHeader.PointerToRawData + sectionHeader.SizeOfRawData)) {
@@ -94,67 +94,67 @@ bool ExeArchive::init()
 		}
 	}
 
-	// «¡∑–∆Æ «Ï¥ı ¿–æÓµÈ¿Ã±‚
+	// ÌîÑÎ°†Ìä∏ Ìó§Îçî ÏùΩÏñ¥Îì§Ïù¥Í∏∞
 	SetFilePointer(hArchive, frontHeaderStartOffset, NULL, FILE_BEGIN);
 	ReadFile(hArchive, &frontHeader, sizeof(FrontHeader), &dRead, NULL);
 	if (dRead != sizeof(FrontHeader)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": ∆–≈∑µ» µ•¿Ã≈Õ∞° æ¯Ω¿¥œ¥Ÿ." << endl;
-		triggerError(__FUNCTION__, u8"∆–≈∑µ» µ•¿Ã≈Õ∞° æ¯Ω¿¥œ¥Ÿ");
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Ìå®ÌÇπÎêú Îç∞Ïù¥ÌÑ∞Í∞Ä ÏóÜÏäµÎãàÎã§." << endl;
+		triggerError(__FUNCTION__, u8"Ìå®ÌÇπÎêú Îç∞Ïù¥ÌÑ∞Í∞Ä ÏóÜÏäµÎãàÎã§");
 		return false;
 	}
 
-	// «Ï¥ı ∞À¡ı, firstMagic ∞™¿Ã [77 77 77 77]¿Œ ∞Õ∏∏ ¿–¥¬¥Ÿ¥¬ ∞Õ¿∫ ∞ normal«— ∞Õ∏∏ ¿–∞⁄¥Ÿ¥¬ ∂Ê¿Ã¥Ÿ
+	// Ìó§Îçî Í≤ÄÏ¶ù, firstMagic Í∞íÏù¥ [77 77 77 77]Ïù∏ Í≤ÉÎßå ÏùΩÎäîÎã§Îäî Í≤ÉÏùÄ Í≥ß normalÌïú Í≤ÉÎßå ÏùΩÍ≤†Îã§Îäî ÎúªÏù¥Îã§
 	if (frontHeader.firstMagic != FIRST_MAGIC_VALUE) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": µ•¿Ã≈Õ∞° ±˙¡≥Ω¿¥œ¥Ÿ [MGC-1]." << endl;
-		triggerError(__FUNCTION__, u8"µ•¿Ã≈Õ∞° ±˙¡≥Ω¿¥œ¥Ÿ [MGC-1]");
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Îç∞Ïù¥ÌÑ∞Í∞Ä Íπ®Ï°åÏäµÎãàÎã§ [MGC-1]." << endl;
+		triggerError(__FUNCTION__, u8"Îç∞Ïù¥ÌÑ∞Í∞Ä Íπ®Ï°åÏäµÎãàÎã§ [MGC-1]");
 		return false;
 	}
 	if (frontHeader.secondMagic != SECOND_MAGIC_VALUE) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": µ•¿Ã≈Õ∞° ±˙¡≥Ω¿¥œ¥Ÿ [MGC-2]." << endl;
-		triggerError(__FUNCTION__, u8"µ•¿Ã≈Õ∞° ±˙¡≥Ω¿¥œ¥Ÿ [MGC-2]");
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Îç∞Ïù¥ÌÑ∞Í∞Ä Íπ®Ï°åÏäµÎãàÎã§ [MGC-2]." << endl;
+		triggerError(__FUNCTION__, u8"Îç∞Ïù¥ÌÑ∞Í∞Ä Íπ®Ï°åÏäµÎãàÎã§ [MGC-2]");
 		return false;
 	}
 	if (frontHeader.headerSize != sizeof(FrontHeader)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": «Ï¥ı ≈©±‚∞° ∏¬¡ˆ æ Ω¿¥œ¥Ÿ." << endl;
-		triggerError(__FUNCTION__, u8"«Ï¥ı ≈©±‚∞° ∏¬¡ˆ æ Ω¿¥œ¥Ÿ");
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Ìó§Îçî ÌÅ¨Í∏∞Í∞Ä ÎßûÏßÄ ÏïäÏäµÎãàÎã§." << endl;
+		triggerError(__FUNCTION__, u8"Ìó§Îçî ÌÅ¨Í∏∞Í∞Ä ÎßûÏßÄ ÏïäÏäµÎãàÎã§");
 		return false;
 	}
 
-	// module µ•¿Ã≈Õ ¿–±‚
+	// module Îç∞Ïù¥ÌÑ∞ ÏùΩÍ∏∞
 	if (!readModulesFromArchive()) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": module µ•¿Ã≈Õ∏¶ ¿–æÓµÈ¿Ã¡ˆ ∏¯«ﬂΩ¿¥œ¥Ÿ." << endl;
-		triggerError(__FUNCTION__, u8"module µ•¿Ã≈Õ∏¶ ¿–æÓµÈ¿Ã¡ˆ ∏¯«ﬂΩ¿¥œ¥Ÿ");
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": module Îç∞Ïù¥ÌÑ∞Î•º ÏùΩÏñ¥Îì§Ïù¥ÏßÄ Î™ªÌñàÏäµÎãàÎã§." << endl;
+		triggerError(__FUNCTION__, u8"module Îç∞Ïù¥ÌÑ∞Î•º ÏùΩÏñ¥Îì§Ïù¥ÏßÄ Î™ªÌñàÏäµÎãàÎã§");
 		return false;
 	}
 
-	// πÈ «Ï¥ı ¿ßƒ°
+	// Î∞± Ìó§Îçî ÏúÑÏπò
 	archiveBackHeaderOffset = frontHeaderStartOffset + (frontHeader.moduleDataSize - frontHeader.headerSize);
 
-	// πÈ «Ï¥ı ¿–±‚
+	// Î∞± Ìó§Îçî ÏùΩÍ∏∞
 	SetFilePointer(hArchive, archiveBackHeaderOffset, NULL, FILE_BEGIN);
 	ReadFile(hArchive, &backHeader, sizeof(BackHeader), &dRead, NULL);
 	if (dRead != sizeof(BackHeader)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": πÈ «Ï¥ı∏¶ ¿–¡ˆ ∏¯«ﬂΩ¿¥œ¥Ÿ." << endl;
-		triggerError(__FUNCTION__, u8"πÈ «Ï¥ı∏¶ ¿–¡ˆ ∏¯«ﬂΩ¿¥œ¥Ÿ");
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Î∞± Ìó§ÎçîÎ•º ÏùΩÏßÄ Î™ªÌñàÏäµÎãàÎã§." << endl;
+		triggerError(__FUNCTION__, u8"Î∞± Ìó§ÎçîÎ•º ÏùΩÏßÄ Î™ªÌñàÏäµÎãàÎã§");
 		return false;
 	}
 
-	// πÈ «Ï¥ı ∞À¡ı, firstMagic ∞™¿Ã "PAMU"¿Œ ∞Õ∏∏ ¿–¥¬¥Ÿ¥¬ ∞Õ¿∫ ∞ ¿Ø¥œƒ⁄µÂ«— normal µ•¿Ã≈Õ∏∏ ¿–∞⁄¥Ÿ¥¬ ∂Ê¿Ã¥Ÿ
+	// Î∞± Ìó§Îçî Í≤ÄÏ¶ù, firstMagic Í∞íÏù¥ "PAMU"Ïù∏ Í≤ÉÎßå ÏùΩÎäîÎã§Îäî Í≤ÉÏùÄ Í≥ß Ïú†ÎãàÏΩîÎìúÌïú normal Îç∞Ïù¥ÌÑ∞Îßå ÏùΩÍ≤†Îã§Îäî ÎúªÏù¥Îã§
 	if (backHeader.firstMagic != PAMU_VALUE) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": «ÿ¥Á æ∆ƒ´¿Ã∫Í¥¬ ¡ˆø¯«œ¡ˆ æ Ω¿¥œ¥Ÿ." << endl;
-		triggerError(__FUNCTION__, u8"«ÿ¥Á æ∆ƒ´¿Ã∫Í¥¬ ¡ˆø¯«œ¡ˆ æ Ω¿¥œ¥Ÿ");
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Ìï¥Îãπ ÏïÑÏπ¥Ïù¥Î∏åÎäî ÏßÄÏõêÌïòÏßÄ ÏïäÏäµÎãàÎã§." << endl;
+		triggerError(__FUNCTION__, u8"Ìï¥Îãπ ÏïÑÏπ¥Ïù¥Î∏åÎäî ÏßÄÏõêÌïòÏßÄ ÏïäÏäµÎãàÎã§");
 		return false;
 	}
 
-	// chunk Ω√¿€¿ßƒ° ¿˙¿Â π◊ App ¡§∫∏ ºº∆√
+	// chunk ÏãúÏûëÏúÑÏπò Ï†ÄÏû• Î∞è App Ï†ïÎ≥¥ ÏÑ∏ÌåÖ
 	chunkStartOffset = SetFilePointer(hArchive, 0, NULL, FILE_CURRENT);
 	if (!setApplicationInfo()) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Application ¡§∫∏∏¶ æÚ¡ˆ ∏¯«ﬂΩ¿¥œ¥Ÿ." << endl;
-		triggerError(__FUNCTION__, u8"Application ¡§∫∏∏¶ æÚ¡ˆ ∏¯«ﬂΩ¿¥œ¥Ÿ");
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Application Ï†ïÎ≥¥Î•º ÏñªÏßÄ Î™ªÌñàÏäµÎãàÎã§." << endl;
+		triggerError(__FUNCTION__, u8"Application Ï†ïÎ≥¥Î•º ÏñªÏßÄ Î™ªÌñàÏäµÎãàÎã§");
 		return false;
 	}
 
-	// ∫π»£»≠/æœ»£»≠øÎ ≈◊¿Ã∫Ì √ ±‚»≠ »ƒ ∏Æ≈œ
+	// Î≥µÌò∏Ìôî/ÏïîÌò∏ÌôîÏö© ÌÖåÏù¥Î∏î Ï¥àÍ∏∞Ìôî ÌõÑ Î¶¨ÌÑ¥
 	initializeDecryptionTable();
 	initializeEncryptionTable();
 
@@ -167,31 +167,31 @@ bool ExeArchive::makeModuleReplacedArchive()
 {
 	wcout << infoPrefix << L"<<function>> " << __FUNCTIONW__ << L": processing..." << endl;
 
-	// ªı ∆ƒ¿œ «⁄µÈ ø≠±‚
+	// ÏÉà ÌååÏùº Ìï∏Îì§ Ïó¥Í∏∞
 	wstring newArchivePath = getExtentionRemovedPath(archivePath) + L"_new." + getExtention(archivePath);
 	_wremove(newArchivePath.c_str());
 	HANDLE hNewArchive = CreateFileW(newArchivePath.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hNewArchive == INVALID_HANDLE_VALUE) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(newArchivePath) << L": æ∆ƒ´¿Ã∫Í ∆ƒ¿œ¿ª ø≠¡ˆ ∏¯«ﬂΩ¿¥œ¥Ÿ." << endl;
-		triggerError(__FUNCTION__, u8"æ∆ƒ´¿Ã∫Í ∆ƒ¿œ¿ª ø≠¡ˆ ∏¯«ﬂΩ¿¥œ¥Ÿ");
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(newArchivePath) << L": ÏïÑÏπ¥Ïù¥Î∏å ÌååÏùºÏùÑ Ïó¥ÏßÄ Î™ªÌñàÏäµÎãàÎã§." << endl;
+		triggerError(__FUNCTION__, u8"ÏïÑÏπ¥Ïù¥Î∏å ÌååÏùºÏùÑ Ïó¥ÏßÄ Î™ªÌñàÏäµÎãàÎã§");
 		return false;
 	}
 
-	// ∏µ‚∞˙ πÈ«Ï¥ı ±‚∑œ
+	// Î™®ÎìàÍ≥º Î∞±Ìó§Îçî Í∏∞Î°ù
 	writeModulesIntoArchive(hNewArchive);
 
-	// ±‚¡∏ hArchive¿« πÈ «Ï¥ı ¿ßƒ°
+	// Í∏∞Ï°¥ hArchiveÏùò Î∞± Ìó§Îçî ÏúÑÏπò
 	UINT32 archiveBackHeaderOffset = frontHeaderStartOffset + (frontHeader.moduleDataSize - frontHeader.headerSize);
 
-	// πÈ«Ï¥ı¥¬ ¿ÃπÃ ±‚∑œ«ﬂ¿∏¥œ ¿ßƒ°∏¶ ¿Ãµø«—¥Ÿ
+	// Î∞±Ìó§ÎçîÎäî Ïù¥ÎØ∏ Í∏∞Î°ùÌñàÏúºÎãà ÏúÑÏπòÎ•º Ïù¥ÎèôÌïúÎã§
 	UINT32 archiveAfterBackHeaderOffset = archiveBackHeaderOffset + sizeof(BackHeader);
 
-	// hArchive «⁄µÈ ¿Ãµø »ƒ ≥™∏”¡ˆ µ•¿Ã≈Õµµ ¿¸∫Œ ¿–æÓµÈø©º≠ ±‚∑œ, øÎ∑Æ¿Ã ≈¨ ∞°¥…º∫¿Ã ≥Ù¿∏¥œ Ω∫∆Æ∏≤ «¸Ωƒ¿∏∑Œ ø≈±‰¥Ÿ
+	// hArchive Ìï∏Îì§ Ïù¥Îèô ÌõÑ ÎÇòÎ®∏ÏßÄ Îç∞Ïù¥ÌÑ∞ÎèÑ Ï†ÑÎ∂Ä ÏùΩÏñ¥Îì§Ïó¨ÏÑú Í∏∞Î°ù, Ïö©ÎüâÏù¥ ÌÅ¥ Í∞ÄÎä•ÏÑ±Ïù¥ ÎÜíÏúºÎãà Ïä§Ìä∏Î¶º ÌòïÏãùÏúºÎ°ú ÏòÆÍ∏¥Îã§
 	SetFilePointer(hArchive, archiveAfterBackHeaderOffset, NULL, FILE_BEGIN);
 	UINT32 tmpAfterModuleSize = GetFileSize(hArchive, NULL) - archiveAfterBackHeaderOffset;
 	if (!segmentedTransferData(hArchive, hNewArchive, tmpAfterModuleSize)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(newArchivePath) << L": module ¿Ãø‹¿« µ•¿Ã≈Õ∏¶ ø≈±‚¡ˆ ∏¯«ﬂΩ¿¥œ¥Ÿ." << endl;
-		triggerError(__FUNCTION__, u8"module ¿Ãø‹¿« µ•¿Ã≈Õ∏¶ ø≈±‚¡ˆ ∏¯«ﬂΩ¿¥œ¥Ÿ");
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(newArchivePath) << L": module Ïù¥Ïô∏Ïùò Îç∞Ïù¥ÌÑ∞Î•º ÏòÆÍ∏∞ÏßÄ Î™ªÌñàÏäµÎãàÎã§." << endl;
+		triggerError(__FUNCTION__, u8"module Ïù¥Ïô∏Ïùò Îç∞Ïù¥ÌÑ∞Î•º ÏòÆÍ∏∞ÏßÄ Î™ªÌñàÏäµÎãàÎã§");
 		return false;
 	}
 
@@ -207,7 +207,7 @@ bool ExeArchive::writeModulesIntoArchive(HANDLE hNewArchive)
 
 	DWORD dRead, dWrite;
 
-	// frontHeaderStartOffset ¿Ã¿¸±Ó¡ˆ ¿–æÓµÈø¥¥Ÿ∞° ªı «⁄µÈø° ±‚∑œ
+	// frontHeaderStartOffset Ïù¥Ï†ÑÍπåÏßÄ ÏùΩÏñ¥Îì§ÏòÄÎã§Í∞Ä ÏÉà Ìï∏Îì§Ïóê Í∏∞Î°ù
 	SetFilePointer(hArchive, 0, NULL, FILE_BEGIN);
 	UINT32 tmpBeforeModuleSize = frontHeaderStartOffset;
 	BYTE* tmpBeforeModuleBuffer = (BYTE*)malloc(tmpBeforeModuleSize);
@@ -215,7 +215,7 @@ bool ExeArchive::writeModulesIntoArchive(HANDLE hNewArchive)
 	WriteFile(hNewArchive, tmpBeforeModuleBuffer, tmpBeforeModuleSize, &dWrite, NULL);
 	free(tmpBeforeModuleBuffer);
 
-	// ≈©±‚ ∞ËªÍ π◊ πˆ∆€ ªı∑Œ ∏∏µÈ±‚ (æ–√‡«œ¡ˆ æ ¥¬¥Ÿ¥¬ ∞°¡§«œ¿« πˆ∆€)
+	// ÌÅ¨Í∏∞ Í≥ÑÏÇ∞ Î∞è Î≤ÑÌçº ÏÉàÎ°ú ÎßåÎì§Í∏∞ (ÏïïÏ∂ïÌïòÏßÄ ÏïäÎäîÎã§Îäî Í∞ÄÏ†ïÌïòÏùò Î≤ÑÌçº)
 	UINT32 firstModuleBufferSize = 0;
 	for (size_t i = 0; i < modules.size(); i++) {
 		firstModuleBufferSize += sizeof(UINT16);
@@ -225,11 +225,11 @@ bool ExeArchive::writeModulesIntoArchive(HANDLE hNewArchive)
 		firstModuleBufferSize += modules[i].size;
 	}
 
-	// πˆ∆€ «“¥Á
+	// Î≤ÑÌçº Ìï†Îãπ
 	BYTE* moduleRawBuffer = (BYTE*)malloc(firstModuleBufferSize);
 	memset(moduleRawBuffer, 0, firstModuleBufferSize);
 
-	// Ω«¡¶∑Œ æ–√‡«ÿ∞°∏Á √ﬂ∞°
+	// Ïã§Ï†úÎ°ú ÏïïÏ∂ïÌï¥Í∞ÄÎ©∞ Ï∂îÍ∞Ä
 	BYTE* moduleRawBufferPnt = moduleRawBuffer;
 	for (size_t i = 0; i < modules.size(); i++) {
 
@@ -242,7 +242,7 @@ bool ExeArchive::writeModulesIntoArchive(HANDLE hNewArchive)
 		*(UINT32*)(moduleRawBufferPnt) = modules[i].checksum;
 		moduleRawBufferPnt += sizeof(UINT32);
 
-		// "mmfs2.dll"¿Ã æ∆¥œ∏È ¿¸∫Œ æ–√‡
+		// "mmfs2.dll"Ïù¥ ÏïÑÎãàÎ©¥ Ï†ÑÎ∂Ä ÏïïÏ∂ï
 		if (modules[i].name == L"mmfs2.dll") {
 
 			*(UINT32*)(moduleRawBufferPnt) = modules[i].size;
@@ -257,8 +257,8 @@ bool ExeArchive::writeModulesIntoArchive(HANDLE hNewArchive)
 			UINT32 compressedSize = 0;
 			BYTE* compressedData = NULL;
 			if (!ZlibUtil::encode(modules[i].data, modules[i].size, compressedData, compressedSize)) {
-				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << modules[i].name << L": ¿Œƒ⁄µ˘µ» µ•¿Ã≈Õ∏¶ π›øµ«œ¡ˆ ∏¯«ﬂΩ¿¥œ¥Ÿ." << endl;
-				triggerError(__FUNCTION__, u8"¿Œƒ⁄µ˘µ» µ•¿Ã≈Õ∏¶ π›øµ«œ¡ˆ ∏¯«ﬂΩ¿¥œ¥Ÿ");
+				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << modules[i].name << L": Ïù∏ÏΩîÎî©Îêú Îç∞Ïù¥ÌÑ∞Î•º Î∞òÏòÅÌïòÏßÄ Î™ªÌñàÏäµÎãàÎã§." << endl;
+				triggerError(__FUNCTION__, u8"Ïù∏ÏΩîÎî©Îêú Îç∞Ïù¥ÌÑ∞Î•º Î∞òÏòÅÌïòÏßÄ Î™ªÌñàÏäµÎãàÎã§");
 				if (compressedData != NULL) {
 					free(compressedData);
 				}
@@ -278,20 +278,20 @@ bool ExeArchive::writeModulesIntoArchive(HANDLE hNewArchive)
 
 	}
 
-	// Ω«¡¶ πˆ∆€ ≈©±‚
+	// Ïã§Ï†ú Î≤ÑÌçº ÌÅ¨Í∏∞
 	UINT32 realModuleBufferSize = (UINT32)(moduleRawBufferPnt - moduleRawBuffer);
 
-	// ±‚¡∏ hArchive¿« πÈ «Ï¥ı ¿ßƒ°
+	// Í∏∞Ï°¥ hArchiveÏùò Î∞± Ìó§Îçî ÏúÑÏπò
 	UINT32 archiveBackHeaderOffset = frontHeaderStartOffset + (frontHeader.moduleDataSize - frontHeader.headerSize);
 
-	// ºˆ¡§µ» frontHeader π◊ module πˆ∆€ ±‚∑œ
+	// ÏàòÏ†ïÎêú frontHeader Î∞è module Î≤ÑÌçº Í∏∞Î°ù
 	frontHeader.moduleDataSize = realModuleBufferSize + frontHeader.headerSize + sizeof(FrontHeader);
 	frontHeader.moduleCount = (UINT32)modules.size();
 	WriteFile(hNewArchive, &frontHeader, sizeof(FrontHeader), &dWrite, NULL);
 	WriteFile(hNewArchive, moduleRawBuffer, realModuleBufferSize, &dWrite, NULL);
 	free(moduleRawBuffer);
 
-	// πÈ«ÏµÂ πˆ∆€ ±‚∑œ
+	// Î∞±Ìó§Îìú Î≤ÑÌçº Í∏∞Î°ù
 	WriteFile(hNewArchive, &backHeader, sizeof(BackHeader), &dWrite, NULL);
 
 	wcout << infoPrefix << L"<<function>> " << __FUNCTIONW__ << L": complete!" << endl;
@@ -311,10 +311,10 @@ bool ExeArchive::exportModules()
 
 	for (size_t i = 0; i < modules.size();i++) {
 
-		// √ﬂ√‚ ∞≥ºˆ ∞ªΩ≈
+		// Ï∂îÏ∂ú Í∞úÏàò Í∞±Ïã†
 		getStates()->currentDataIndex++;
 
-		// ∞Ê∑Œ ª˝º∫
+		// Í≤ΩÎ°ú ÏÉùÏÑ±
 		wostringstream woss;
 		woss << setw(4) << setfill(L'0') << i;
 		wostringstream woss2;
@@ -344,7 +344,7 @@ bool ExeArchive::importModules()
 
 	wstring moduleDirPath = getExtentionRemovedPath(archivePath) + L"/modules";
 	if (isFileOrDir(moduleDirPath) != FSOType::FSO_DIRECTORY) {
-		wcout << infoPrefix << moduleDirPath << L": µ∑∫≈‰∏Æ∞° ¡∏¿Á«œ¡ˆ æ Ω¿¥œ¥Ÿ." << endl;
+		wcout << infoPrefix << moduleDirPath << L": ÎîîÎ†âÌÜ†Î¶¨Í∞Ä Ï°¥Ïû¨ÌïòÏßÄ ÏïäÏäµÎãàÎã§." << endl;
 		wcout << infoPrefix << L"<<function>> " << __FUNCTIONW__ << L": complete!" << endl;
 		return true;
 	}
@@ -361,7 +361,7 @@ bool ExeArchive::importModules()
 	WIN32_FIND_DATAW wfd;
 	wstring searchPattern = moduleDirPath + L"/*";
 
-	// modules µ∑∫≈‰∏Æ æ»ø° ¿÷¥¬ ∏µÁ ∆ƒ¿œ ∞Àªˆ (µ∑∫≈‰∏Æ ¡¶ø‹)
+	// modules ÎîîÎ†âÌÜ†Î¶¨ ÏïàÏóê ÏûàÎäî Î™®Îì† ÌååÏùº Í≤ÄÏÉâ (ÎîîÎ†âÌÜ†Î¶¨ Ï†úÏô∏)
 	hModuleSearch = FindFirstFileW(searchPattern.c_str(), &wfd);
 	if (hModuleSearch != INVALID_HANDLE_VALUE) {
 		do {
@@ -375,7 +375,7 @@ bool ExeArchive::importModules()
 				splitTwice(wfd.cFileName, indexStr, checksumHexStr, onlyName);
 
 				if (indexStr.empty() || checksumHexStr.empty() || onlyName.empty()) {
-					wcout << infoPrefix << wfd.cFileName << L": «ÿ¥Á ∆ƒ¿œ¿∫ æÁΩƒø° ∏¬¡ˆ æ æ∆ π›øµ«œ¡ˆ æ Ω¿¥œ¥Ÿ." << endl;
+					wcout << infoPrefix << wfd.cFileName << L": Ìï¥Îãπ ÌååÏùºÏùÄ ÏñëÏãùÏóê ÎßûÏßÄ ÏïäÏïÑ Î∞òÏòÅÌïòÏßÄ ÏïäÏäµÎãàÎã§." << endl;
 					CloseHandle(hModuleRead);
 				}
 				else {
@@ -427,8 +427,8 @@ bool ExeArchive::readModulesFromArchive()
 	BYTE* moduleRawBuffer = (BYTE*)malloc(moduleRawBufferSize);
 	ReadFile(hArchive, moduleRawBuffer, moduleRawBufferSize, &dRead, NULL);
 	if (dRead != moduleRawBufferSize) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": module ¡§∫∏∏¶ ¿–æÓµÈ¿Ã¡ˆ ∏¯«ﬂΩ¿¥œ¥Ÿ." << endl;
-		triggerError(__FUNCTION__, u8"module ¡§∫∏∏¶ ¿–æÓµÈ¿Ã¡ˆ ∏¯«ﬂΩ¿¥œ¥Ÿ");
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": module Ï†ïÎ≥¥Î•º ÏùΩÏñ¥Îì§Ïù¥ÏßÄ Î™ªÌñàÏäµÎãàÎã§." << endl;
+		triggerError(__FUNCTION__, u8"module Ï†ïÎ≥¥Î•º ÏùΩÏñ¥Îì§Ïù¥ÏßÄ Î™ªÌñàÏäµÎãàÎã§");
 		free(moduleRawBuffer);
 		return false;
 	}
@@ -448,7 +448,7 @@ bool ExeArchive::readModulesFromArchive()
 		tmpModule.checksum = *(UINT32*)moduleRawBufferPnt;
 		moduleRawBufferPnt += sizeof(UINT32);
 
-		// "mmfs2.dll"¿Ã æ∆¥œ∏È ¿¸∫Œ æ–√‡µ«æÓ ¿÷¿Ω
+		// "mmfs2.dll"Ïù¥ ÏïÑÎãàÎ©¥ Ï†ÑÎ∂Ä ÏïïÏ∂ïÎêòÏñ¥ ÏûàÏùå
 		if (tmpModule.name == L"mmfs2.dll") {
 			tmpModule.size = *(UINT32*)moduleRawBufferPnt;
 			moduleRawBufferPnt += sizeof(UINT32);
@@ -465,11 +465,11 @@ bool ExeArchive::readModulesFromArchive()
 			memcpy(compressedData, moduleRawBufferPnt, compressedSize);
 			moduleRawBufferPnt += compressedSize;
 
-			// πÃ∏Æ ≈©±‚∏¶ ¡§«ÿµ÷æﬂ «“µÌ
+			// ÎØ∏Î¶¨ ÌÅ¨Í∏∞Î•º Ï†ïÌï¥Îë¨Ïïº Ìï†ÎìØ
 			tmpModule.size = ((compressedSize * 3) + 0x500000);
 			if (!ZlibUtil::decode(compressedData, compressedSize, tmpModule.data, tmpModule.size, false)) {
-				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << tmpModule.name << L": module ¡§∫∏∏¶ µƒ⁄µ˘«œ¡ˆ ∏¯«ﬂΩ¿¥œ¥Ÿ." << endl;
-				triggerError(__FUNCTION__, u8"module ¡§∫∏∏¶ µƒ⁄µ˘«œ¡ˆ ∏¯«ﬂΩ¿¥œ¥Ÿ");
+				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << tmpModule.name << L": module Ï†ïÎ≥¥Î•º ÎîîÏΩîÎî©ÌïòÏßÄ Î™ªÌñàÏäµÎãàÎã§." << endl;
+				triggerError(__FUNCTION__, u8"module Ï†ïÎ≥¥Î•º ÎîîÏΩîÎî©ÌïòÏßÄ Î™ªÌñàÏäµÎãàÎã§");
 				free(compressedData);
 				return false;
 			}

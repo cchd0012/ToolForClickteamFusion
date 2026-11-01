@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../Chunk.h"
 #include "../BaseData.h"
@@ -27,13 +27,13 @@ namespace CTT {
 			bool loadFromBuffer(BYTE*& bufferPnt);
 			bool saveIntoBuffer(BYTE*& bufferPnt);
 
-			// ÀÌ°É ÇØÁà¾ß µ¥ÀÌÅÍ¸¦ Á¤»óÀûÀ¸·Î loadÇÒ ¼ö ÀÖÀ½
+			// ì´ê±¸ í•´ì¤˜ì•¼ ë°ì´í„°ë¥¼ ì •ìƒì ìœ¼ë¡œ loadí•  ìˆ˜ ìˆìŒ
 			void setTotalDataSize(UINT32 totalDataSize) { this->totalDataSize = totalDataSize; }
 
-			// frame/object/object 2.5+ ¿Í ¿¬µ¿ÇÏ±â À§ÇØ ÇÊ¿äÇÏ´Ù
+			// frame/object/object 2.5+ ì™€ ì—°ë™í•˜ê¸° ìœ„í•´ í•„ìš”í•˜ë‹¤
 			vector<ShaderParameter>& getParameterList() { return parameterList; }
 
-			// µ¥ÀÌÅÍ ·»´õ¸µ¿ë ÇÔ¼ö
+			// ë°ì´í„° ë Œë”ë§ìš© í•¨ìˆ˜
 			void renderData(UINT32 index);
 
 		private:

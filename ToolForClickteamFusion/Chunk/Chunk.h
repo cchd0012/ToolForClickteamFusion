@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "ChunkConstant.h"
 #include "ChunkStructure.h"
@@ -31,20 +31,20 @@ namespace CTT {
 
 			bool hasRead() { return chunkRead; }
 
-			// µ¥ÀÌÅÍ ·»´õ¸µ¿ë ÇÔ¼ö
+			// ë°ì´í„° ë Œë”ë§ìš© í•¨ìˆ˜
 			virtual void renderData() = 0;
 
 		protected:
 			ChunkInfo info;
 			BYTE* orgBuffer;
 			UINT32 orgSize;
-			bool chunkRead;		// chunk µ¥ÀÌÅÍ¸¦ ÇÑ ¹ø ÀÌ»ó ÀĞ¾îµé¿´³Ä¿¡ ´ëÇÑ ¿©ºÎ
+			bool chunkRead;		// chunk ë°ì´í„°ë¥¼ í•œ ë²ˆ ì´ìƒ ì½ì–´ë“¤ì˜€ëƒì— ëŒ€í•œ ì—¬ë¶€
 
 			virtual bool loadFromOrgBuffer() = 0;
 			virtual bool saveIntoOrgBuffer() = 0;
 		};
 
-		// ºĞ·ù°¡ ºÒ°¡´ÉÇÑ Chunk
+		// ë¶„ë¥˜ê°€ ë¶ˆê°€ëŠ¥í•œ Chunk
 		class UnknownChunk : public Chunk 
 		{
 		public:
@@ -61,7 +61,7 @@ namespace CTT {
 			BYTE*& getValue() { return value; }
 			UINT32& getValueSize() { return valueSize; }
 
-			// µ¥ÀÌÅÍ ·»´õ¸µ¿ë ÇÔ¼ö
+			// ë°ì´í„° ë Œë”ë§ìš© í•¨ìˆ˜
 			void renderData();
 
 		protected:
@@ -95,7 +95,7 @@ namespace CTT {
 			UINT32 valueSize;
 		};
 
-		// ¸¶Áö¸· Chunk
+		// ë§ˆì§€ë§‰ Chunk
 		class EndChunk : public Chunk {
 		public:
 			EndChunk() {
@@ -109,7 +109,7 @@ namespace CTT {
 			BYTE* &getValue() { return value; }
 			UINT32& getValueSize() { return valueSize; }
 
-			// µ¥ÀÌÅÍ ·»´õ¸µ¿ë ÇÔ¼ö
+			// ë°ì´í„° ë Œë”ë§ìš© í•¨ìˆ˜
 			void renderData();
 
 		protected:
@@ -121,10 +121,10 @@ namespace CTT {
 			UINT32 valueSize;
 		};
 
-		// ** chunkType¿¡ µû¶ó chunk¸¦ ÇÒ´çÇØ¼­ ¹İÈ¯ÇØ ÁÖ´Â ÇÔ¼ö **
+		// ** chunkTypeì— ë”°ë¼ chunkë¥¼ í• ë‹¹í•´ì„œ ë°˜í™˜í•´ ì£¼ëŠ” í•¨ìˆ˜ **
 		Chunk* allocateChunk(ChunkType chunkType, bool &isAppInfo);
 
-		// ** ÇØ´ç chunkTypeÀÌ À§Ä¡ÇÑ ¿ÀÇÁ¼ÂÀ» ¼¼ÆÃÇØ ÁÖ´Â ÇÔ¼ö, ¼º°øÇÏ¸é true **
+		// ** í•´ë‹¹ chunkTypeì´ ìœ„ì¹˜í•œ ì˜¤í”„ì…‹ì„ ì„¸íŒ…í•´ ì£¼ëŠ” í•¨ìˆ˜, ì„±ê³µí•˜ë©´ true **
 		bool moveArchiveHandleToChunk(HANDLE hArchive, ChunkType chunkType);
 
 	}

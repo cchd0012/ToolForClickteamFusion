@@ -1,4 +1,4 @@
-#include "FrameChunk.h"
+ï»¿#include "FrameChunk.h"
 #include "../../Archive/Archive.h"
 #include "../../Util/CommonUtil.h"
 #include "../../ImGUI/Headers.h"
@@ -26,7 +26,7 @@ bool FrameChunk::loadFromOrgBuffer()
 {
 	BYTE* orgBufferPnt = orgBuffer;
 
-	// chunkList ÃÊ±âÈ­
+	// chunkList ì´ˆê¸°í™”
 	for (UINT32 i = 0; i < chunkList.size(); i++) {
 		if (chunkList[i] != NULL) {
 			delete chunkList[i];
@@ -34,7 +34,7 @@ bool FrameChunk::loadFromOrgBuffer()
 	}
 	chunkList.clear();
 
-	// FrameLayerDataChunk ¿Í FrameLayerEffectDataChunk ¸¦ ¿¬µ¿ÇÏ±â À§ÇÏ¿© ÇÊ¿äÇÑ º¯¼ö
+	// FrameLayerDataChunk ì™€ FrameLayerEffectDataChunk ë¥¼ ì—°ë™í•˜ê¸° ìœ„í•˜ì—¬ í•„ìš”í•œ ë³€ìˆ˜
 	FrameLayerDataChunk* frameLayerDataChunk = NULL;
 	FrameLayerEffectDataChunk* frameLayerEffectDataChunk = NULL;
 
@@ -72,8 +72,8 @@ bool FrameChunk::loadFromOrgBuffer()
 			}
 			case ChunkType::CHUNK_FRAME_OBJECT_INSTANCE:
 			{
-				//*** ÀÌÀ¯´Â ¸ð¸£°ÚÁö¸¸ µÚÂÊ¿¡ 4¹ÙÀÌÆ®°¡ Ãß°¡·Î ºÙ°í, ÀÌ µ¥ÀÌÅÍ°¡ ´©¶ôµÇ¸é ½ÇÇàÀÌ ¾ÈµÈ´Ù
-				//*** ±×°Ô ÇØ°áµÇ±â Àü±îÁö´Â ÀÏ´Ü ÀúÀåÇÒ ¶§ UnknownChunk·Î ÀúÀåÇÏµµ·Ï ÇØ¾ß ÇÔ
+				//*** ì´ìœ ëŠ” ëª¨ë¥´ê² ì§€ë§Œ ë’¤ìª½ì— 4ë°”ì´íŠ¸ê°€ ì¶”ê°€ë¡œ ë¶™ê³ , ì´ ë°ì´í„°ê°€ ëˆ„ë½ë˜ë©´ ì‹¤í–‰ì´ ì•ˆëœë‹¤
+				//*** ê·¸ê²Œ í•´ê²°ë˜ê¸° ì „ê¹Œì§€ëŠ” ì¼ë‹¨ ì €ìž¥í•  ë•Œ UnknownChunkë¡œ ì €ìž¥í•˜ë„ë¡ í•´ì•¼ í•¨
 				//tmpChunk = new FrameObjectDataChunk();
 				tmpChunk = new UnknownChunk();
 				break;
@@ -141,7 +141,7 @@ bool FrameChunk::loadFromOrgBuffer()
 			case ChunkType::CHUNK_FRAME_LAYER_EFFECTS:
 			{
 				tmpChunk = frameLayerEffectDataChunk = new FrameLayerEffectDataChunk();
-				// °³¼ö ¿¬µ¿ Ã³¸®
+				// ê°œìˆ˜ ì—°ë™ ì²˜ë¦¬
 				if (frameLayerDataChunk != NULL) {
 					frameLayerEffectDataChunk->setFrameLayerCount((UINT32)frameLayerDataChunk->getValue().size());
 				}
@@ -191,13 +191,13 @@ bool FrameChunk::loadFromOrgBuffer()
 		}
 
 		if (!tmpChunk->readFromBufferAndChunkInfo(tmpRawBuffer, (*tmpChunkInfo))) {
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": frame chunk µ¥ÀÌÅÍ¸¦ ÀÐ¾î¿ÀÁö ¸øÇß½À´Ï´Ù. (buffer)" << endl;
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": frame chunk ë°ì´í„°ë¥¼ ì½ì–´ì˜¤ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. (buffer)" << endl;
 			delete tmpChunk;
 			return false;
 		}
 		chunkList.push_back(tmpChunk);
 
-		// end¸é ¹Ù·Î ºüÁ®³ª°¡°Ô ÇØ¾ß ÇÒ °Í °°´Ù
+		// endë©´ ë°”ë¡œ ë¹ ì ¸ë‚˜ê°€ê²Œ í•´ì•¼ í•  ê²ƒ ê°™ë‹¤
 		if (tmpChunkInfo->type == ChunkType::CHUNK_END) {
 			break;
 		}
@@ -210,17 +210,17 @@ bool FrameChunk::loadFromOrgBuffer()
 }
 
 
-// ¿ÀÁ÷ Á¤º¸ ÀÐ±â¿ë
+// ì˜¤ì§ ì •ë³´ ì½ê¸°ìš©
 bool FrameChunk::readChunkTreeInfoFromArchive(HANDLE hArchive)
 {
 	DWORD dRead;
 
-	// Frame Chunk´Â ÀÌÁß Chunk·Î µÇ¾îÀÖ¾î¼­ depth¸¦ º¯°æÇÒ ÇÊ¿ä°¡ ÀÖ´Ù
-	// ¶ÇÇÑ offsetµµ ÇöÀç ¾ÆÄ«ÀÌºê ¿ÀÇÁ¼ÂÀ» ±â¹ÝÀ¸·Î Ãß°¡ÇØ¾ß ÇÑ´Ù
+	// Frame ChunkëŠ” ì´ì¤‘ Chunkë¡œ ë˜ì–´ìžˆì–´ì„œ depthë¥¼ ë³€ê²½í•  í•„ìš”ê°€ ìžˆë‹¤
+	// ë˜í•œ offsetë„ í˜„ìž¬ ì•„ì¹´ì´ë¸Œ ì˜¤í”„ì…‹ì„ ê¸°ë°˜ìœ¼ë¡œ ì¶”ê°€í•´ì•¼ í•œë‹¤
 	UINT32 baseOffset = SetFilePointer(hArchive, 0, NULL, FILE_CURRENT);
 	getStates()->chunkTreeNodeContainer.plusDepth();
 
-	// ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ´Â °Ç ÀÌ¹Ì Á¤º¸°¡ È®Á¤µÈ µÚÀÏ °ÍÀÌ¹Ç·Î ±×³É ÀÐ´Â´Ù
+	// ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ëŠ” ê±´ ì´ë¯¸ ì •ë³´ê°€ í™•ì •ëœ ë’¤ì¼ ê²ƒì´ë¯€ë¡œ ê·¸ëƒ¥ ì½ëŠ”ë‹¤
 	ReadFile(hArchive, &info, sizeof(ChunkInfo), &dRead, NULL);
 	BYTE* rawBuffer = (BYTE*)malloc(info.size);
 	if (info.size > SEGMENT_SIZE) {
@@ -238,7 +238,7 @@ bool FrameChunk::readChunkTreeInfoFromArchive(HANDLE hArchive)
 		ChunkInfo* tmpChunkInfo = (ChunkInfo*)orgBufferPnt;
 		orgBufferPnt += sizeof(ChunkInfo);
 
-		// chunk Á¤º¸ Ãß°¡
+		// chunk ì •ë³´ ì¶”ê°€
 		ChunkTreeNode* node = new ChunkTreeNode();
 		node->setValue(*tmpChunkInfo);
 		node->setOffset((UINT32)(baseOffset + (orgBufferPnt - orgBuffer)));
@@ -247,14 +247,14 @@ bool FrameChunk::readChunkTreeInfoFromArchive(HANDLE hArchive)
 		BYTE* tmpRawBuffer = orgBufferPnt;
 		orgBufferPnt += tmpChunkInfo->size;
 
-		// ¿©±â¼­µµ end¸é ¹Ù·Î ºüÁ®³ª°¡°Ô ÇØ¾ß ÇÒ °Í °°´Ù
+		// ì—¬ê¸°ì„œë„ endë©´ ë°”ë¡œ ë¹ ì ¸ë‚˜ê°€ê²Œ í•´ì•¼ í•  ê²ƒ ê°™ë‹¤
 		if (tmpChunkInfo->type == ChunkType::CHUNK_END) {
 			break;
 		}
 
 	}
 
-	// depth º¹±¸
+	// depth ë³µêµ¬
 	getStates()->chunkTreeNodeContainer.minusDepth();
 
 	free(orgBuffer);
@@ -263,7 +263,7 @@ bool FrameChunk::readChunkTreeInfoFromArchive(HANDLE hArchive)
 }
 
 
-// µ¥ÀÌÅÍ ·»´õ¸µ¿ë (»ç½Ç ÀÌ ÇÔ¼ö´Â È£ÃâÇÏÁö ¾ÊÀ» °ÍÀÌ´Ù)
+// ë°ì´í„° ë Œë”ë§ìš© (ì‚¬ì‹¤ ì´ í•¨ìˆ˜ëŠ” í˜¸ì¶œí•˜ì§€ ì•Šì„ ê²ƒì´ë‹¤)
 void FrameChunk::renderData()
 {
 	ImGui::TextDisabled(u8"--");
@@ -280,7 +280,7 @@ bool FrameChunk::saveIntoOrgBuffer()
 		BYTE* tmpRawBuffer = NULL;
 
 		if (!chunkList[i]->writeIntoBufferAndChunkInfo(tmpRawBuffer, tmpChunkInfo)) {
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": frame chunk µ¥ÀÌÅÍ¸¦ ±â·ÏÇÏÁö ¸øÇß½À´Ï´Ù. (buffer)" << endl;
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": frame chunk ë°ì´í„°ë¥¼ ê¸°ë¡í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. (buffer)" << endl;
 			return false;
 		}
 
@@ -290,10 +290,10 @@ bool FrameChunk::saveIntoOrgBuffer()
 		free(tmpRawBuffer);
 	}
 
-	// Å©±â °è»êÇÏ¿© Àç¼¼ÆÃ
+	// í¬ê¸° ê³„ì‚°í•˜ì—¬ ìž¬ì„¸íŒ…
 	orgSize = newChunkSize;
 
-	// ¹öÆÛ ÇÒ´ç
+	// ë²„í¼ í• ë‹¹
 	if (orgBuffer != NULL) {
 		free(orgBuffer);
 		orgBuffer = NULL;
@@ -301,7 +301,7 @@ bool FrameChunk::saveIntoOrgBuffer()
 	orgBuffer = (BYTE*)malloc(orgSize);
 	memset(orgBuffer, 0, orgSize);
 
-	// orgBuffer¿¡ ±â·Ï, ±â·ÏÀ» ¸¶Ä£ µ¥ÀÌÅÍ´Â Á¤¸®
+	// orgBufferì— ê¸°ë¡, ê¸°ë¡ì„ ë§ˆì¹œ ë°ì´í„°ëŠ” ì •ë¦¬
 	BYTE *orgBufferPnt = orgBuffer;
 
 	for (size_t i = 0; i < chunkList.size(); i++) {
@@ -309,9 +309,9 @@ bool FrameChunk::saveIntoOrgBuffer()
 		ChunkInfo tmpChunkInfo;
 		BYTE* tmpRawBuffer = NULL;
 
-		// frame»Ó¸¸ ¾Æ´Ï¶ó object¿¡µµ Àû¿ëÇØ¾ß ÇÒ °Í °°À½...
+		// frameë¿ë§Œ ì•„ë‹ˆë¼ objectì—ë„ ì ìš©í•´ì•¼ í•  ê²ƒ ê°™ìŒ...
 		if (!chunkList[i]->writeIntoBufferAndChunkInfo(tmpRawBuffer, tmpChunkInfo)) {
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": frame chunk µ¥ÀÌÅÍ¸¦ ±â·ÏÇÏÁö ¸øÇß½À´Ï´Ù. (buffer)" << endl;
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": frame chunk ë°ì´í„°ë¥¼ ê¸°ë¡í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. (buffer)" << endl;
 			return false;
 		}
 
@@ -328,7 +328,7 @@ bool FrameChunk::saveIntoOrgBuffer()
 }
 
 
-// ÇÁ·¹ÀÓ¿¡ µé¾î ÀÖ´Â ÀÌº¥Æ® Ã»Å©¸¦ Ã£´Â´Ù (¾øÀ¸¸é NULL)
+// í”„ë ˆìž„ì— ë“¤ì–´ ìžˆëŠ” ì´ë²¤íŠ¸ ì²­í¬ë¥¼ ì°¾ëŠ”ë‹¤ (ì—†ìœ¼ë©´ NULL)
 static FrameEventChunk* findFrameEventChunk(vector<CTT::Chunk::Chunk*>& chunkList)
 {
 	for (size_t i = 0; i < chunkList.size(); i++) {

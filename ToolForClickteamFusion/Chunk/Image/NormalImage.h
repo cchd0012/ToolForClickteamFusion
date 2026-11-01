@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "BaseImage.h"
 #include "../Chunk.h"
@@ -23,16 +23,16 @@ namespace CTT {
 			UINT32 getHandle() { return handle; }
 			void setHandle(UINT32 handle){ this->handle = handle; }
 
-			// µ¥ÀÌÅÍ ·»´õ¸µ¿ë ÇÔ¼ö
+			// ë°ì´í„° ë Œë”ë§ìš© í•¨ìˆ˜
 			void renderData(UINT32 index);
 
 		protected:
 			bool deriveTranslatingData();
 			bool deriveCompressedData();
 		private:
-			// ÃßÈÄ ³²´Â °ø°£ÀÇ handle À§Ä¡¸¦ ³Ö°Å³ª, ²Ë Â÷¸é (handleÃÖ´ë°ª + 1) ÇÏ¸é µÉµí
+			// ì¶”í›„ ë‚¨ëŠ” ê³µê°„ì˜ handle ìœ„ì¹˜ë¥¼ ë„£ê±°ë‚˜, ê½‰ ì°¨ë©´ (handleìµœëŒ€ê°’ + 1) í•˜ë©´ ë ë“¯
 			UINT32 handle;
-			// ¿øº» »çÀÌÁî´Â ¾îÂ¿ ¼ö ¾øÀÌ °ü¸®ÇØ¾ß ÇÑ´Ù
+			// ì›ë³¸ ì‚¬ì´ì¦ˆëŠ” ì–´ì©” ìˆ˜ ì—†ì´ ê´€ë¦¬í•´ì•¼ í•œë‹¤
 			UINT32 originalSize;
 		};
 

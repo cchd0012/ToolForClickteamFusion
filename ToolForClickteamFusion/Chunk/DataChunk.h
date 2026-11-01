@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "Chunk.h"
 #include "Literal/Headers.h"
@@ -21,7 +21,7 @@ namespace CTT {
 			bool exportJson(wstring& exportJsonPath);
 			bool importJson(wstring& importJsonPath);
 
-			// ¿ÀÇÁ¼Â ¸®½ºÆ®¸¦ ¹Ş¾Æ¾ß Á¦´ë·Î µÈ chunk¸¦ »ı¼ºÇÒ ¼ö ÀÖÀ» ¶§ ¾²ÀÎ´Ù
+			// ì˜¤í”„ì…‹ ë¦¬ìŠ¤íŠ¸ë¥¼ ë°›ì•„ì•¼ ì œëŒ€ë¡œ ëœ chunkë¥¼ ìƒì„±í•  ìˆ˜ ìˆì„ ë•Œ ì“°ì¸ë‹¤
 			void fillOffsets(ListChunk<UINT32>& offsetsChunk);
 			vector<UINT32>& getOffsetList() { return offsetList; }
 			void setOffsetList(vector<UINT32>& offsetList) { 
@@ -29,9 +29,9 @@ namespace CTT {
 				memcpy(this->offsetList.data(), offsetList.data(), (offsetList.size() * sizeof(UINT32)));
 			}
 
-			// µ¥ÀÌÅÍ Ä«¿îÆ®¿ë
+			// ë°ì´í„° ì¹´ìš´íŠ¸ìš©
 			virtual bool readOnlyDataCount(HANDLE hArchive);
-			// µ¥ÀÌÅÍ ·»´õ¸µ¿ë ÇÔ¼ö
+			// ë°ì´í„° ë Œë”ë§ìš© í•¨ìˆ˜
 			void renderData();
 		protected:
 			virtual BaseData* allocateData() = 0;

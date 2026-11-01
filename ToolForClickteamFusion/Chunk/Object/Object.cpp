@@ -1,4 +1,4 @@
-#include "Object.h"
+ï»¿#include "Object.h"
 #include "ObjectHeaderChunk.h"
 #include "../../Archive/Archive.h"
 #include "../../Util/JsonUtil.h"
@@ -29,35 +29,35 @@ Object::~Object()
 
 bool Object::exportData(wstring& dirPath, UINT32 index, bool isFullyExport)
 {
-	// ¹ø¿ª¿ëÀ¸·Î ¾²·Á¸é ±âº»ÀûÀ¸·Î .ext.txt´Â ¹Ù·Î º¸ÀÌ´Â °÷¿¡´Ù ÃßÃâÇÏ°í,
-	// ³ª¸ÓÁö´Â Æú´õ¸¦ ¸¸µé¾î¼­ °Å±â ¾È¿¡ common.bin, info.json À¸·Î ÃßÃâÇÏ´Â °Ô ÁÁ°Ú´Ù
-	// ÇÏÁö¸¸ ±×·¸´Ù ÇØ¼­ ÀüºÎ ÃßÃâÇÏ¸é ºñÈ¿À²ÀûÀÌ´Ï isFullyExport ¿©ºÎ·Î ÆÇº°ÇÑ´Ù
-	// ±âº»°ªÀº false
+	// ë²ˆì—­ìš©ìœ¼ë¡œ ì“°ë ¤ë©´ ê¸°ë³¸ì ìœ¼ë¡œ .ext.txtëŠ” ë°”ë¡œ ë³´ì´ëŠ” ê³³ì—ë‹¤ ì¶”ì¶œí•˜ê³ ,
+	// ë‚˜ë¨¸ì§€ëŠ” í´ë”ë¥¼ ë§Œë“¤ì–´ì„œ ê±°ê¸° ì•ˆì— common.bin, info.json ìœ¼ë¡œ ì¶”ì¶œí•˜ëŠ” ê²Œ ì¢‹ê² ë‹¤
+	// í•˜ì§€ë§Œ ê·¸ë ‡ë‹¤ í•´ì„œ ì „ë¶€ ì¶”ì¶œí•˜ë©´ ë¹„íš¨ìœ¨ì ì´ë‹ˆ isFullyExport ì—¬ë¶€ë¡œ íŒë³„í•œë‹¤
+	// ê¸°ë³¸ê°’ì€ false
 
 	DWORD dWrite;
 
-	// ÃßÃâ ÆÄÀÏ °æ·Î »ı¼º
+	// ì¶”ì¶œ íŒŒì¼ ê²½ë¡œ ìƒì„±
 	wostringstream woss;
 	woss << setw(6) << setfill(L'0') << index;
 	wstring numberStr = woss.str();
 	wstring exportTxtPath = dirPath + L"/" + numberStr + L"_" + name + L".ext.txt";
 
-	// ***±¸ÇöÁß: ±âº» .ext.txt ÆÄÀÏ ÃßÃâ
+	// ***êµ¬í˜„ì¤‘: ê¸°ë³¸ .ext.txt íŒŒì¼ ì¶”ì¶œ
 	// wcout << infoPrefix << L"exporting " << exportTxtPath << L"..." << endl;
 
-	// ±âÅ¸ Á¤º¸ ÃßÃâ ±¸ÇöÁß...
+	// ê¸°íƒ€ ì •ë³´ ì¶”ì¶œ êµ¬í˜„ì¤‘...
 	if (isFullyExport) {
 
-		// json, common °æ·Î »ı¼º
+		// json, common ê²½ë¡œ ìƒì„±
 		wstring exportJsonPath = dirPath + L"/" + numberStr + L"_" + name + L".info.json";
 		wstring exportCommonPath = dirPath + L"/" + numberStr + L"_" + name + L".common.bin";
 
-		// json ÃßÃâ ÁØºñ
+		// json ì¶”ì¶œ ì¤€ë¹„
 		wcout << infoPrefix << L"exporting " << exportJsonPath << L"..." << endl;
 
 		Json::Value root;
 
-		// Çì´õ µ¥ÀÌÅÍ ÃßÃâ
+		// í—¤ë” ë°ì´í„° ì¶”ì¶œ
 		ObjectHeaderChunk* tmpHeaderChunk = NULL;
 		for (size_t i = 0; i < chunkList.size();i++) {
 			if (chunkList[i]->getType() == ChunkType::CHUNK_OBJECT_HEADER) {
@@ -70,15 +70,15 @@ bool Object::exportData(wstring& dirPath, UINT32 index, bool isFullyExport)
 			root["object_header"] = headerValue;
 		}
 
-		// ÀÌÆåÆ® µ¥ÀÌÅÍ ÃßÃâ
+		// ì´í™íŠ¸ ë°ì´í„° ì¶”ì¶œ
 
-		// json ÃßÃâ
+		// json ì¶”ì¶œ
 		if (!writeIntoJson(root, exportJsonPath)) {
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ObjectHeaderChunk: json µ¥ÀÌÅÍ¸¦ ±â·ÏÇÏÁö ¸øÇß½À´Ï´Ù." << endl;
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ObjectHeaderChunk: json ë°ì´í„°ë¥¼ ê¸°ë¡í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 			return false;
 		}
 
-		// bin ÆÄÀÏ ÃßÃâ (ÃßÈÄ UnknownChunk¿¡¼­ ObjectCommonChunk·Î ¹Ù²ã¾ß ÇÔ. ¹°·Ğ ¿øº»µ¥ÀÌÅÍµµ ¾òÀ» ¼ö ÀÖ°Ô ¼¼ÆÃÇÏ°í)
+		// bin íŒŒì¼ ì¶”ì¶œ (ì¶”í›„ UnknownChunkì—ì„œ ObjectCommonChunkë¡œ ë°”ê¿”ì•¼ í•¨. ë¬¼ë¡  ì›ë³¸ë°ì´í„°ë„ ì–»ì„ ìˆ˜ ìˆê²Œ ì„¸íŒ…í•˜ê³ )
 		UnknownChunk* tmpCommonChunk = NULL;
 		for (size_t i = 0; i < chunkList.size(); i++) {
 			if (chunkList[i]->getType() == ChunkType::CHUNK_OBJECT_COMMON) {
@@ -101,12 +101,12 @@ bool Object::exportData(wstring& dirPath, UINT32 index, bool isFullyExport)
 
 bool Object::importData(wstring& dirPath, UINT32 index)
 {
-	// ¿©±â¼­´Â ±×³É Á¸ÀçÇÏ´Â´ë·Î ±³Ã¼ÇÏ´Â °Ô ÁÁÀ»°Í °°´Ù
-	// Áï [Æ¯Á¤¸í]/info.json, [Æ¯Á¤¸í]/common.bin, [Æ¯Á¤¸í].ext.txt
-	// ÀÌ ÆÄÀÏµéÀÌ ÀüºÎ Á¸ÀçÇÏ´Â ´ë·Î ±³Ã¼ÀÛ¾÷À» ¼öÇàÇÑ´Ù
+	// ì—¬ê¸°ì„œëŠ” ê·¸ëƒ¥ ì¡´ì¬í•˜ëŠ”ëŒ€ë¡œ êµì²´í•˜ëŠ” ê²Œ ì¢‹ì„ê²ƒ ê°™ë‹¤
+	// ì¦‰ [íŠ¹ì •ëª…]/info.json, [íŠ¹ì •ëª…]/common.bin, [íŠ¹ì •ëª…].ext.txt
+	// ì´ íŒŒì¼ë“¤ì´ ì „ë¶€ ì¡´ì¬í•˜ëŠ” ëŒ€ë¡œ êµì²´ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤
 
-	// ±Ùµ¥ ÀÌ°Å ½ÇÇàÇÏ¸é ±×³É import Ã³¸®ÇÏ¸é¼­ µ¥ÀÌÅÍ ±³Ã¼µÇ´Â°Å ¾Æ´Ñ°¡?
-	// ±×·³ GetDataSize()ÇÒ¶§ »ğÁúÇÒ ÀÌÀ¯°¡ ¾øÀ½
+	// ê·¼ë° ì´ê±° ì‹¤í–‰í•˜ë©´ ê·¸ëƒ¥ import ì²˜ë¦¬í•˜ë©´ì„œ ë°ì´í„° êµì²´ë˜ëŠ”ê±° ì•„ë‹Œê°€?
+	// ê·¸ëŸ¼ GetDataSize()í• ë•Œ ì‚½ì§ˆí•  ì´ìœ ê°€ ì—†ìŒ
 
 	return true;
 }
@@ -150,7 +150,7 @@ bool Object::loadFromBuffer(BYTE*& bufferPnt)
 			}
 			case ChunkType::CHUNK_OBJECT_EFFECTS:
 			{
-				// ÀÌ µ¥ÀÌÅÍ¸¦ ÀÇ¹ÌÀÖ°Ô ÃßÃâÇÏ·Á¸é archiveÀÇ shader µ¥ÀÌÅÍ¸¦ °¡Áö°í ÀÖ¾î¾ß ÇÑ´Ù
+				// ì´ ë°ì´í„°ë¥¼ ì˜ë¯¸ìˆê²Œ ì¶”ì¶œí•˜ë ¤ë©´ archiveì˜ shader ë°ì´í„°ë¥¼ ê°€ì§€ê³  ìˆì–´ì•¼ í•œë‹¤
 				tmpChunk = new UnknownChunk();
 				break;
 			}
@@ -168,13 +168,13 @@ bool Object::loadFromBuffer(BYTE*& bufferPnt)
 		}
 
 		if (!tmpChunk->readFromBufferAndChunkInfo(tmpRawBuffer, (*tmpChunkInfo))) {
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": object chunk µ¥ÀÌÅÍ¸¦ ÀĞ¾î¿ÀÁö ¸øÇß½À´Ï´Ù. (buffer)" << endl;
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": object chunk ë°ì´í„°ë¥¼ ì½ì–´ì˜¤ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. (buffer)" << endl;
 			delete tmpChunk;
 			return false;
 		}
 		chunkList.push_back(tmpChunk);
 
-		// ÀÌ¸§ÀÌ¸é name¿¡ ±â·ÏÇØÁÖ±â
+		// ì´ë¦„ì´ë©´ nameì— ê¸°ë¡í•´ì£¼ê¸°
 		if (tmpChunkInfo->type == ChunkType::CHUNK_OBJECT_NAME) {
 			ObjectNameChunk* tmpNameChunk = (ObjectNameChunk*)tmpChunk;
 			name = tmpNameChunk->getValue();
@@ -191,7 +191,7 @@ bool Object::saveIntoBuffer(BYTE*& bufferPnt)
 
 	for (size_t i = 0; i < chunkList.size(); i++) {
 
-		// ÀÌ¸§ÀÌ¸é name¿¡¼­ ¾ò¾î¿Í ¸ÕÀú ±â·ÏÇØµÎ±â
+		// ì´ë¦„ì´ë©´ nameì—ì„œ ì–»ì–´ì™€ ë¨¼ì € ê¸°ë¡í•´ë‘ê¸°
 		if (chunkList[i]->getType() == ChunkType::CHUNK_OBJECT_NAME) {
 			((ObjectNameChunk*)chunkList[i])->setValue(name);
 		}
@@ -200,7 +200,7 @@ bool Object::saveIntoBuffer(BYTE*& bufferPnt)
 		BYTE* tmpRawBuffer = NULL;
 
 		if (!chunkList[i]->writeIntoBufferAndChunkInfo(tmpRawBuffer, tmpChunkInfo)) {
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": object chunk µ¥ÀÌÅÍ¸¦ ±â·ÏÇÏÁö ¸øÇß½À´Ï´Ù. (buffer)" << endl;
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": object chunk ë°ì´í„°ë¥¼ ê¸°ë¡í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. (buffer)" << endl;
 			return false;
 		}
 
@@ -217,16 +217,16 @@ bool Object::saveIntoBuffer(BYTE*& bufferPnt)
 }
 
 
-// µ¥ÀÌÅÍ ·»´õ¸µ¿ë ÇÔ¼ö
+// ë°ì´í„° ë Œë”ë§ìš© í•¨ìˆ˜
 void Object::renderData(UINT32 index)
 {
 	stringstream oss;
 
-	// ÀÎµ¦½º Ç¥Çö
+	// ì¸ë±ìŠ¤ í‘œí˜„
 	oss << "  <" << index << ">{";
 	ImGui::Text(oss.str().c_str());
 	oss.str("");
 
-	// *** Ãâ·Â *** //
+	// *** ì¶œë ¥ *** //
 	ImGui::Text("  }");
 }

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../Chunk.h"
 #include "FrameStructure.h"
@@ -12,7 +12,7 @@ namespace CTT {
 		public:
 			FrameTransitionChunk();
 			~FrameTransitionChunk();
-			// µ¥ÀÌÅÍ ·»´õ¸µ¿ë ÇÔ¼ö
+			// ë°ì´í„° ë Œë”ë§ìš© í•¨ìˆ˜
 			void renderData();
 		protected:
 			bool loadFromOrgBuffer();
@@ -21,8 +21,8 @@ namespace CTT {
 			FrameTransitionInfo value;
 		};
 
-		// FrameTransitionChunk¸¦ ±×´ë·Î »ó¼Ó¹Ş´Â Å¬·¡½ºµé
-		// FrameFadeInFrameChunk°ú FrameFadeOutFrameChunk´Â È£ÃâÇÏ´Â°Ô ¾ø´øµ¥ ÀÌ°Ô ¹«½¼ ¿ªÇÒÀ» ÇÏ´ÂÁö ¸ğ¸£°ÚÀ½
+		// FrameTransitionChunkë¥¼ ê·¸ëŒ€ë¡œ ìƒì†ë°›ëŠ” í´ë˜ìŠ¤ë“¤
+		// FrameFadeInFrameChunkê³¼ FrameFadeOutFrameChunkëŠ” í˜¸ì¶œí•˜ëŠ”ê²Œ ì—†ë˜ë° ì´ê²Œ ë¬´ìŠ¨ ì—­í• ì„ í•˜ëŠ”ì§€ ëª¨ë¥´ê² ìŒ
 		class FrameFadeInChunk : public FrameTransitionChunk { ; };
 		class FrameFadeOutChunk : public FrameTransitionChunk { ; };
 		class FrameFadeInFrameChunk : public FrameTransitionChunk { ; };

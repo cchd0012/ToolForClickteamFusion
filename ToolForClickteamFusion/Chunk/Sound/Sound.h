@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../Chunk.h"
 #include "../BaseData.h"
@@ -12,14 +12,14 @@ namespace CTT {
 
 		typedef struct _common_sound_info
 		{
-			UINT32 handle;		// ÃßÈÄ ³²´Â °ø°£ÀÇ handle À§Ä¡¸¦ ³Ö°Å³ª, ²Ë Â÷¸é (handleÃÖ´ë°ª + 1) ÇÏ¸é µÉµí
-			UINT32 checksum;	// Ã¼Å©¼¶, 0ÀÌ¾îµµ »ó°ü¾ø´Âµí?
-			UINT32 reference;	// ´ëÃæ 1ÀÌ¸é µÉµí
-			UINT32 orgSize;		// *¿øº»Å©±â
-			BYTE flags;			// ÀÌ°Ç ±×³É ÀÌ°Ç 0x1ÀÎ°Å °°À½
-			BYTE flags2;		// ÀÌ°Ç ±×³É ÀÌ°Ç 0x40ÀÎ°Å °°À½
-			BYTE padd[6];		// 0 Ã¤¿ì±â
-			UINT32 nameLength;	// *ÀÌ¸§ ±æÀÌ (wcslen, 4ÀÇ ¹è¼ö¿©¾ß ÇÏ³ª?)
+			UINT32 handle;		// ì¶”í›„ ë‚¨ëŠ” ê³µê°„ì˜ handle ìœ„ì¹˜ë¥¼ ë„£ê±°ë‚˜, ê½‰ ì°¨ë©´ (handleìµœëŒ€ê°’ + 1) í•˜ë©´ ë ë“¯
+			UINT32 checksum;	// ì²´í¬ì„¬, 0ì´ì–´ë„ ìƒê´€ì—†ëŠ”ë“¯?
+			UINT32 reference;	// ëŒ€ì¶© 1ì´ë©´ ë ë“¯
+			UINT32 orgSize;		// *ì›ë³¸í¬ê¸°
+			BYTE flags;			// ì´ê±´ ê·¸ëƒ¥ ì´ê±´ 0x1ì¸ê±° ê°™ìŒ
+			BYTE flags2;		// ì´ê±´ ê·¸ëƒ¥ ì´ê±´ 0x40ì¸ê±° ê°™ìŒ
+			BYTE padd[6];		// 0 ì±„ìš°ê¸°
+			UINT32 nameLength;	// *ì´ë¦„ ê¸¸ì´ (wcslen, 4ì˜ ë°°ìˆ˜ì—¬ì•¼ í•˜ë‚˜?)
 		} CommonSoundInfo;
 
 		class Sound : public BaseData
@@ -44,7 +44,7 @@ namespace CTT {
 			bool loadFromBuffer(BYTE*& bufferPnt);
 			bool saveIntoBuffer(BYTE*& bufferPnt);
 
-			// µ¥ÀÌÅÍ ·»´õ¸µ¿ë ÇÔ¼ö
+			// ë°ì´í„° ë Œë”ë§ìš© í•¨ìˆ˜
 			void renderData(UINT32 index);
 
 		private:

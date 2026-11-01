@@ -1,4 +1,4 @@
-#include "ShaderListChunk.h"
+ï»¿#include "ShaderListChunk.h"
 #include "../../Archive/Archive.h"
 #include "../../Util/CommonUtil.h"
 
@@ -14,11 +14,11 @@ bool ShaderListChunk::loadFromOrgBuffer()
 	UINT32 totalCount = *(UINT32*)orgBufferPnt;
 	orgBufferPnt += sizeof(UINT32);
 
-	// ¿ÀÇÁ¼Â µ¥ÀÌÅÍ´Â ±âÁ¸ ¹æ½Ä°ú Á¶±İ ´Ù¸§
-	// ¿ÀÇÁ¼ÂÀÌ ¹Ù·Î ´ÙÀ½¿¡ ºÙ¾î³ª¿Â´Ù
+	// ì˜¤í”„ì…‹ ë°ì´í„°ëŠ” ê¸°ì¡´ ë°©ì‹ê³¼ ì¡°ê¸ˆ ë‹¤ë¦„
+	// ì˜¤í”„ì…‹ì´ ë°”ë¡œ ë‹¤ìŒì— ë¶™ì–´ë‚˜ì˜¨ë‹¤
 	UINT32* offsetPnt = (UINT32*)orgBufferPnt;
 
-	// value ÃÊ±âÈ­
+	// value ì´ˆê¸°í™”
 	for (UINT32 i = 0; i < value.size();i++) {
 		if (value[i] != NULL) {
 			delete value[i];
@@ -32,50 +32,50 @@ bool ShaderListChunk::loadFromOrgBuffer()
 		//wcout << infoPrefix << L"loading " << to_wstring(i + 1) << L"/" << to_wstring(totalCount) << L" data from buffer...";
 		Shader* data = new Shader();
 		
-		// ÇÊ¿äÇÑ ¹öÆÛ Å©±â ÆÇº°
+		// í•„ìš”í•œ ë²„í¼ í¬ê¸° íŒë³„
 		UINT32 eachBufferSize = 0;
 
-		// offsetPnt[i] °ªÀÌ 0ÀÎ °æ¿ì°¡ ÀÖÀ» ÁÙÀº ¸ô¶úÀ½... ÀÌ¶§´Â NULLÀ» Çª½ÃÇØ ÁÖ°í ³Ñ±ä´Ù
+		// offsetPnt[i] ê°’ì´ 0ì¸ ê²½ìš°ê°€ ìˆì„ ì¤„ì€ ëª°ëìŒ... ì´ë•ŒëŠ” NULLì„ í‘¸ì‹œí•´ ì£¼ê³  ë„˜ê¸´ë‹¤
 		if (offsetPnt[i] == 0) {
 			value.push_back(NULL);
 			continue;
 		}
 		else {
-			// 0ÀÌ ¾Æ´Ñ °ªÀÌ ³ª¿Ã¶§±îÁö, ±×¸®°í Å©±â Á¦ÇÑ ³»¿¡¼­ µ¹¸²
+			// 0ì´ ì•„ë‹Œ ê°’ì´ ë‚˜ì˜¬ë•Œê¹Œì§€, ê·¸ë¦¬ê³  í¬ê¸° ì œí•œ ë‚´ì—ì„œ ëŒë¦¼
 			UINT32 nextNotZeroValueIndex = (i + 1);
 			for (; (offsetPnt[nextNotZeroValueIndex] != 0) && (nextNotZeroValueIndex < totalCount); nextNotZeroValueIndex++) { ; }
 			if (nextNotZeroValueIndex == totalCount) {
-				// nextNotZeroValueIndex°¡ totalCount°¡ µÇ¾ú´Ù´Â °Ç, 0ÀÌ ¾Æ´Ñ °ªÀ» Ã£Áö ¸øÇÏ°Å³ª ¾ÖÃÊ¿¡ ³¡ÀÌ¶ó´Â ¶æÀÌ¹Ç·Î ±×³É Å©±âÂ÷¸¦ °è»êÇØ¼­ ³Ö¾îÁØ´Ù
+				// nextNotZeroValueIndexê°€ totalCountê°€ ë˜ì—ˆë‹¤ëŠ” ê±´, 0ì´ ì•„ë‹Œ ê°’ì„ ì°¾ì§€ ëª»í•˜ê±°ë‚˜ ì• ì´ˆì— ëì´ë¼ëŠ” ëœ»ì´ë¯€ë¡œ ê·¸ëƒ¥ í¬ê¸°ì°¨ë¥¼ ê³„ì‚°í•´ì„œ ë„£ì–´ì¤€ë‹¤
 				eachBufferSize = orgSize - offsetPnt[i];
 			}
 			else {
-				// nextNotZeroValueIndex°¡ totalCount°¡ ¾Æ´Ï¶ó´Â °ÍÀº, ³¡ÀÌ ¾Æ´Ñ µ¥¼­ 0ÀÌ ¾Æ´Ñ °ªÀ» Ã£¾Ò´Ù´Â ¶æÀÌ¹Ç·Î ±× ÀÎµ¦½º¿ÍÀÇ °ªÂ÷¸¦ °è»êÇØ¼­ ³Ö¾îÁØ´Ù
+				// nextNotZeroValueIndexê°€ totalCountê°€ ì•„ë‹ˆë¼ëŠ” ê²ƒì€, ëì´ ì•„ë‹Œ ë°ì„œ 0ì´ ì•„ë‹Œ ê°’ì„ ì°¾ì•˜ë‹¤ëŠ” ëœ»ì´ë¯€ë¡œ ê·¸ ì¸ë±ìŠ¤ì™€ì˜ ê°’ì°¨ë¥¼ ê³„ì‚°í•´ì„œ ë„£ì–´ì¤€ë‹¤
 				eachBufferSize = orgSize - offsetPnt[nextNotZeroValueIndex];
 			}
 		}
 
 		if (eachBufferSize > orgSize) {
 			delete data;
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getNameUni(info.type) << L": ¿ÀÇÁ¼Â µ¥ÀÌÅÍ°¡ ±úÁ³½À´Ï´Ù." << endl;
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getNameUni(info.type) << L": ì˜¤í”„ì…‹ ë°ì´í„°ê°€ ê¹¨ì¡ŒìŠµë‹ˆë‹¤." << endl;
 			return false;
 		}
 
-		// ¹öÆÛ Å©±â¸¸Å­ º¹»ç
+		// ë²„í¼ í¬ê¸°ë§Œí¼ ë³µì‚¬
 		BYTE* eachBuffer = (BYTE*)malloc(eachBufferSize);
 		memcpy(eachBuffer, (orgBuffer + offsetPnt[i]), eachBufferSize);
 		BYTE* eachBufferPnt = eachBuffer;
 
-		// ±âÁ¸°ú ¶È°°ÀÌ ·Îµå, ´Ù¸¸ totalDataSize¸¦ ¼¼ÆÃÇØÁà¾ß Á¤»óÀûÀ¸·Î ·ÎµåÇÒ ¼ö ÀÖ´Ù
+		// ê¸°ì¡´ê³¼ ë˜‘ê°™ì´ ë¡œë“œ, ë‹¤ë§Œ totalDataSizeë¥¼ ì„¸íŒ…í•´ì¤˜ì•¼ ì •ìƒì ìœ¼ë¡œ ë¡œë“œí•  ìˆ˜ ìˆë‹¤
 		data->setTotalDataSize(eachBufferSize);
 		if (!data->loadFromBuffer(eachBufferPnt)) {
 			delete data;
 			free(eachBuffer);
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getNameUni(info.type) << L": µ¥ÀÌÅÍ¸¦ ·ÎµåÇÏÁö ¸øÇß½À´Ï´Ù." << endl;
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getNameUni(info.type) << L": ë°ì´í„°ë¥¼ ë¡œë“œí•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 			return false;
 		}
 		value.push_back(data);
 
-		// Á¤¸®
+		// ì •ë¦¬
 		free(eachBuffer);
 	}
 
@@ -87,7 +87,7 @@ bool ShaderListChunk::loadFromOrgBuffer()
 
 bool ShaderListChunk::saveIntoOrgBuffer()
 {
-	// *** ¹Ì±¸Çö ***
+	// *** ë¯¸êµ¬í˜„ ***
 
 	return true;
 }

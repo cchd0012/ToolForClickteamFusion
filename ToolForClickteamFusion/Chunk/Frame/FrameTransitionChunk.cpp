@@ -1,4 +1,4 @@
-#include "FrameTransitionChunk.h"
+ï»¿#include "FrameTransitionChunk.h"
 #include "../../Archive/Archive.h"
 #include "../../Util/ZlibUtil.h"
 #include "../../Util/CommonUtil.h"
@@ -22,7 +22,7 @@ FrameTransitionChunk::~FrameTransitionChunk()
 
 bool FrameTransitionChunk::loadFromOrgBuffer()
 {
-	// chunk µ¥ÀÌÅÍ: [FrameTransitionInfo]
+	// chunk ë°ì´í„°: [FrameTransitionInfo]
 
 	BYTE* orgBufferPnt = orgBuffer;
 	BYTE* baseBuffer = orgBuffer;
@@ -47,7 +47,7 @@ bool FrameTransitionChunk::loadFromOrgBuffer()
 	value.color = *(Color*)orgBufferPnt;
 	orgBufferPnt += sizeof(Color);
 
-	// ½ÇÁ¦ ¸ğµâ¸íÀÇ ÀÌ¸§À» °¡¸®Å°´Â ¿ÀÇÁ¼ÂÀÎ°¡?
+	// ì‹¤ì œ ëª¨ë“ˆëª…ì˜ ì´ë¦„ì„ ê°€ë¦¬í‚¤ëŠ” ì˜¤í”„ì…‹ì¸ê°€?
 	UINT32 moduleFileNameOffset = *(UINT32*)orgBufferPnt;
 	orgBufferPnt += sizeof(UINT32);
 
@@ -72,9 +72,9 @@ bool FrameTransitionChunk::loadFromOrgBuffer()
 
 bool FrameTransitionChunk::saveIntoOrgBuffer()
 {
-	// parameterOffset = 4 + 4 + (sizeof(UINT32) * 2) + sizeof(Color) + sizeof(wchar_t) * (value.moduleFileName ±æÀÌ + 1)
-	// Å©±â °è»ê: parameterOffset + (value.parameterDataÀÇ Å©±â)
-	// parameterOffsetÀº parameterSize°¡ 0ÀÌ¶óµµ Á¤È®È÷ ±â·ÏÇØ¾ß ÇÑ´Ù
+	// parameterOffset = 4 + 4 + (sizeof(UINT32) * 2) + sizeof(Color) + sizeof(wchar_t) * (value.moduleFileName ê¸¸ì´ + 1)
+	// í¬ê¸° ê³„ì‚°: parameterOffset + (value.parameterDataì˜ í¬ê¸°)
+	// parameterOffsetì€ parameterSizeê°€ 0ì´ë¼ë„ ì •í™•íˆ ê¸°ë¡í•´ì•¼ í•œë‹¤
 
 	if (orgBuffer != NULL) {
 		free(orgBuffer);
@@ -127,7 +127,7 @@ bool FrameTransitionChunk::saveIntoOrgBuffer()
 }
 
 
-// µ¥ÀÌÅÍ ·»´õ¸µ¿ë
+// ë°ì´í„° ë Œë”ë§ìš©
 void FrameTransitionChunk::renderData()
 {
 	stringstream oss;
@@ -154,14 +154,14 @@ void FrameTransitionChunk::renderData()
 	ImGui::Text(oss.str().c_str());
 	oss.str("");
 
-	// ÄÃ·¯ Ã¢Àº ³ªÅ¸³»µÇ ¼±ÅÃ ºÒ°¡´ÉÇÏµµ·Ï
+	// ì»¬ëŸ¬ ì°½ì€ ë‚˜íƒ€ë‚´ë˜ ì„ íƒ ë¶ˆê°€ëŠ¥í•˜ë„ë¡
 	ImGuiColorEditFlags colorEditFlags = ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel;
 	ImVec4 bgColor = ImVec4((float(value.color.r) / 255.0f), (float(value.color.g) / 255.0f), (float(value.color.b) / 255.0f), (float(value.color.a) / 255.0f));
-	// -- °°Àº ¶óÀÎ --
+	// -- ê°™ì€ ë¼ì¸ --
 	ImGui::SameLine();
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3.0f);
 	ImGui::ColorEdit4("MyColor##1", (float*)&bgColor, colorEditFlags);
-	// -- °°Àº ¶óÀÎ --
+	// -- ê°™ì€ ë¼ì¸ --
 	ImGui::SameLine(ImGui::CalcTextSize(u8"  color:").x + 36.0f);
 	ImGui::Text(",");
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3.0f);

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../Chunk.h"
 
@@ -16,7 +16,7 @@ namespace CTT {
 			void insert(T val)  { value.push_back(val); }
 			void insert(T val, size_t index) { value.insert(value.begin() + index, val); }
 			T &get(size_t index) { return value[index]; }
-			// µ¥ÀÌÅÍ ·»´õ¸µ¿ë ÇÔ¼ö
+			// ë°ì´í„° ë Œë”ë§ìš© í•¨ìˆ˜
 			void renderData();
 		protected:
 			virtual bool loadFromOrgBuffer();
@@ -24,7 +24,7 @@ namespace CTT {
 			vector<T> value;
 		};
 
-		// ListChunk<UINT32>¸¦ ±×´ë·Î »ó¼Ó¹Ş´Â Å¬·¡½ºµé
+		// ListChunk<UINT32>ë¥¼ ê·¸ëŒ€ë¡œ ìƒì†ë°›ëŠ” í´ë˜ìŠ¤ë“¤
 		class ImageOffsetsChunk : public ListChunk<UINT32> { ; };
 		class LogFontOffsetsChunk : public ListChunk<UINT32> { ; };
 		class FontOffsetsChunk : public ListChunk<UINT32> { ; };
@@ -32,11 +32,11 @@ namespace CTT {
 		class MusicOffsetsChunk : public ListChunk<UINT32> { ; };
 		class ObjectOffsetsChunk : public ListChunk<UINT32> { ; };
 
-		// ListChunk<string>À» ±×´ë·Î »ó¼Ó¹Ş´Â Å¬·¡½ºµé (¾à°£Àº ÆíÂ÷ Á¸Àç)
+		// ListChunk<string>ì„ ê·¸ëŒ€ë¡œ ìƒì†ë°›ëŠ” í´ë˜ìŠ¤ë“¤ (ì•½ê°„ì€ í¸ì°¨ ì¡´ì¬)
 		class AppOtherExtentionsChunk : public ListChunk<string> { ; };
 		class AppGlobalStringsChunk : public ListChunk<string> { ; };
 
-		// ¾Æ·¡ 2°³´Â È®½ÇÄ¡ ¾ÊÀ½
+		// ì•„ë˜ 2ê°œëŠ” í™•ì‹¤ì¹˜ ì•ŠìŒ
 		class ProductVersionInfoChunk : public ListChunk<UINT32> { ; };
 		class ProductBuildVersionInfoChunk : public ListChunk<UINT32> { ; };
 

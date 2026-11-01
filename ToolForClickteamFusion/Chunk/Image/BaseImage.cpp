@@ -1,4 +1,4 @@
-#include "BaseImage.h"
+ï»¿#include "BaseImage.h"
 #include "../../Application/Application.h"
 #include "../../Archive/Archive.h"
 #include "../../Util/BitmapTranslationUtil.h"
@@ -44,15 +44,15 @@ BaseImage::~BaseImage()
 
 bool BaseImage::exportData(wstring& dirPath, UINT32 index, bool isFullyExport)
 {
-	// ¾ĞÃà µ¥ÀÌÅÍ¿¡¼­ º¯È¯ µ¥ÀÌÅÍ »Ì¾Æ³»±â
+	// ì••ì¶• ë°ì´í„°ì—ì„œ ë³€í™˜ ë°ì´í„° ë½‘ì•„ë‚´ê¸°
 	if (!deriveTranslatingData()) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": º¯È¯µÈ µ¥ÀÌÅÍ¸¦ ¾òÁö ¸øÇß½À´Ï´Ù. (buffer)" << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ë³€í™˜ëœ ë°ì´í„°ë¥¼ ì–»ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. (buffer)" << endl;
 		return false;
 	}
 
-	// º¯È¯ µ¥ÀÌÅÍ¿¡¼­ ºñÆ®¸Ê µ¥ÀÌÅÍ »Ì¾Æ³»±â
+	// ë³€í™˜ ë°ì´í„°ì—ì„œ ë¹„íŠ¸ë§µ ë°ì´í„° ë½‘ì•„ë‚´ê¸°
 	if (!getBitmapDataFromTranslatingData()) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ºñÆ®¸Ê µ¥ÀÌÅÍ¸¦ ¾òÁö ¸øÇß½À´Ï´Ù. (buffer)" << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ë¹„íŠ¸ë§µ ë°ì´í„°ë¥¼ ì–»ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. (buffer)" << endl;
 		return false;
 	}
 
@@ -60,7 +60,7 @@ bool BaseImage::exportData(wstring& dirPath, UINT32 index, bool isFullyExport)
 	UINT32 height = getHeight();
 	UINT32 bitCount = 32;
 
-	// ÃßÃâ ÆÄÀÏ °æ·Î »ı¼º, Åõ¸í¸ğµå ¹ÌÃßÃâµµ °æ·Î¿¡ ¹İ¿µ
+	// ì¶”ì¶œ íŒŒì¼ ê²½ë¡œ ìƒì„±, íˆ¬ëª…ëª¨ë“œ ë¯¸ì¶”ì¶œë„ ê²½ë¡œì— ë°˜ì˜
 	wostringstream woss;
 	woss << setw(6) << setfill(L'0') << index;
 
@@ -74,9 +74,9 @@ bool BaseImage::exportData(wstring& dirPath, UINT32 index, bool isFullyExport)
 		wcout << infoPrefix << L" - transparent_color: " << getTransparent().toString() << endl;
 	}
 
-	// Åõ¸í¸ğµå ¹ÌÃßÃâ Ã¼Å© ¹İ¿µ
+	// íˆ¬ëª…ëª¨ë“œ ë¯¸ì¶”ì¶œ ì²´í¬ ë°˜ì˜
 	if (!writeToPng(bitmapData, exportFilePath, width, height, bitCount, getApp()->getStates()->usingImageAndExtractNoneTransparent)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(exportFilePath) << L": ÀÌ¹ÌÁö ÃßÃâÀ» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(exportFilePath) << L": ì´ë¯¸ì§€ ì¶”ì¶œì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
@@ -89,22 +89,22 @@ bool BaseImage::exportData(wstring& dirPath, UINT32 index, bool isFullyExport)
 
 bool BaseImage::importData(wstring& dirPath, UINT32 index)
 {
-	// info¿¡¼­ flag, graphicMode, transparent °ªÀÌ ¼¼ÆÃµÇ¾î ÀÖÀ» °ÍÀ» ÀüÁ¦·Î ÇÏ°í ÁøÇàÇÑ´Ù
-	// ±×°Ô ¿©ÀÇÄ¡ ¾ÊÀ¸¸é Á÷Á¢ flag, graphicMode, transparent¸¦ ¼¼ÆÃÇÏ´Â ¼ö¹Û¿¡ ¾øÀ½
+	// infoì—ì„œ flag, graphicMode, transparent ê°’ì´ ì„¸íŒ…ë˜ì–´ ìˆì„ ê²ƒì„ ì „ì œë¡œ í•˜ê³  ì§„í–‰í•œë‹¤
+	// ê·¸ê²Œ ì—¬ì˜ì¹˜ ì•Šìœ¼ë©´ ì§ì ‘ flag, graphicMode, transparentë¥¼ ì„¸íŒ…í•˜ëŠ” ìˆ˜ë°–ì— ì—†ìŒ
 
-	// import ÆÄÀÏ °æ·Î »ı¼º
+	// import íŒŒì¼ ê²½ë¡œ ìƒì„±
 	wostringstream woss;
 	woss << setw(6) << setfill(L'0') << index;
 	wstring importFilePath = dirPath + L"/" + woss.str() + L".png";
 
-	// Á¸Àç È®ÀÎ, ¾øÀ¸¸é ±×³É µ¹¾Æ°¨
+	// ì¡´ì¬ í™•ì¸, ì—†ìœ¼ë©´ ê·¸ëƒ¥ ëŒì•„ê°
 	if (isFileOrDir(importFilePath) != FSOType::FSO_FILE) {
 		return true;
 	}
 
 	wcout << infoPrefix << L"importing " << importFilePath << L"..." << endl;
 
-	// ÀÌ¹ÌÁö ÀĞ¾îµé¿©¼­ ³Êºñ/³ôÀÌ »õ·Î ¼¼ÆÃ
+	// ì´ë¯¸ì§€ ì½ì–´ë“¤ì—¬ì„œ ë„ˆë¹„/ë†’ì´ ìƒˆë¡œ ì„¸íŒ…
 	UINT32 width = 0, height = 0, bitCount = 0;
 
 	if (bitmapData != NULL) {
@@ -114,7 +114,7 @@ bool BaseImage::importData(wstring& dirPath, UINT32 index)
 	bitmapSize = 0;
 
 	if (!readFromPng(bitmapData, importFilePath, width, height, bitCount)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(importFilePath) << L": ÀÌ¹ÌÁö¸¦ ÀĞ¾îµéÀÌÁö ¸øÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(importFilePath) << L": ì´ë¯¸ì§€ë¥¼ ì½ì–´ë“¤ì´ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
@@ -122,25 +122,25 @@ bool BaseImage::importData(wstring& dirPath, UINT32 index)
 	setHeight(height);
 	bitmapSize = width * height * (bitCount / 8);
 
-	// »ı°¢ÇØº¸´Ï±î NormalImage¸é compressedData¸¸ ¼¼ÆÃµÇ°í imageInfo°¡ ¼¼ÆÃµÇÁö ¾ÊÀº »óÅÂ´Ù
-	// ÇÃ·¡±×¸¦ ¼¼ÆÃÇÏ´ø°¡, ¾Æ´Ï¸é ÇÑ ¹ø µ¹·Á¼­ ¹Ì¸® ¼¼ÆÃÇÏ´ø°¡
-	// ¿©±â¼­´Â ±³Ã¼°¡ ¸ñÀûÀÌ¶ó ´Ù¸¥ Á¤º¸µéÀ» ÀüºÎ °®Ãß°í ÀÖ¾î¾ß ÇÏ¹Ç·Î, ´À¸®´õ¶óµµ ÇÑ ¹ø µ¹·Á¼­ ¼¼ÆÃÇÏ´Â °Ô ÇÕ¸®ÀûÀÌ´Ù
+	// ìƒê°í•´ë³´ë‹ˆê¹Œ NormalImageë©´ compressedDataë§Œ ì„¸íŒ…ë˜ê³  imageInfoê°€ ì„¸íŒ…ë˜ì§€ ì•Šì€ ìƒíƒœë‹¤
+	// í”Œë˜ê·¸ë¥¼ ì„¸íŒ…í•˜ë˜ê°€, ì•„ë‹ˆë©´ í•œ ë²ˆ ëŒë ¤ì„œ ë¯¸ë¦¬ ì„¸íŒ…í•˜ë˜ê°€
+	// ì—¬ê¸°ì„œëŠ” êµì²´ê°€ ëª©ì ì´ë¼ ë‹¤ë¥¸ ì •ë³´ë“¤ì„ ì „ë¶€ ê°–ì¶”ê³  ìˆì–´ì•¼ í•˜ë¯€ë¡œ, ëŠë¦¬ë”ë¼ë„ í•œ ë²ˆ ëŒë ¤ì„œ ì„¸íŒ…í•˜ëŠ” ê²Œ í•©ë¦¬ì ì´ë‹¤
 	if (!getArchive()->isTwoPointFiveImage()) {
 		if (!deriveTranslatingData()) {
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(importFilePath) << L": ÇÊ¿äÇÑ ÇÃ·¡±× ¹× Á¤º¸¸¦ ¼¼ÆÃÇÏÁö ¸øÇß½À´Ï´Ù." << endl;
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(importFilePath) << L": í•„ìš”í•œ í”Œë˜ê·¸ ë° ì •ë³´ë¥¼ ì„¸íŒ…í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 			return false;
 		}
 	}
 
-	// ºñÆ®¸Ê µ¥ÀÌÅÍ¿¡¼­ º¯È¯ µ¥ÀÌÅÍ »Ì¾Æ³»±â
+	// ë¹„íŠ¸ë§µ ë°ì´í„°ì—ì„œ ë³€í™˜ ë°ì´í„° ë½‘ì•„ë‚´ê¸°
 	if (!getTranslatingDataFromBitmapData()) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": translating µ¥ÀÌÅÍ¸¦ ¾òÁö ¸øÇß½À´Ï´Ù. (buffer)" << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": translating ë°ì´í„°ë¥¼ ì–»ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. (buffer)" << endl;
 		return false;
 	}
 
-	// º¯È¯ µ¥ÀÌÅÍ¿¡¼­ ¾ĞÃà µ¥ÀÌÅÍ »Ì¾Æ³»±â
+	// ë³€í™˜ ë°ì´í„°ì—ì„œ ì••ì¶• ë°ì´í„° ë½‘ì•„ë‚´ê¸°
 	if (!deriveCompressedData()) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ¾ĞÃàµÈ µ¥ÀÌÅÍ¸¦ ¾òÁö ¸øÇß½À´Ï´Ù. (buffer)" << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ì••ì¶•ëœ ë°ì´í„°ë¥¼ ì–»ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. (buffer)" << endl;
 		return false;
 	}
 
@@ -154,20 +154,20 @@ bool BaseImage::getBitmapDataFromTranslatingData()
 	UINT32 height = getHeight();
 	UINT32 bitCount = 32;
 
-	// flipRGB´Â ½Å°æ¾²Áö ¾ÊÀ»°ÅÀÓ
-	// alpha || RGBA ¸é imageData¿¡ alpha µ¥ÀÌÅÍ°¡ ³¢¾îÀÖÀ½
-	// ±×·¸Áö ¾Ê´Ù¸é transparent »ö±ò·Î alpha¸¦ ÁöÁ¤ÇÑ´Ù
-	// À§Ä¡¸¦ ÀüºÎ ´Ù ¼öÇàÇÏ°Å³ª, alphaÀÌµÇ RGBA°¡ ¾Æ´Ï¸é alpha µ¥ÀÌÅÍ°¡ µû·Î ºĞ¸®µÇ¾îÀÖ´Ù°í ÆÇ´ÜÇÔ
+	// flipRGBëŠ” ì‹ ê²½ì“°ì§€ ì•Šì„ê±°ì„
+	// alpha || RGBA ë©´ imageDataì— alpha ë°ì´í„°ê°€ ë¼ì–´ìˆìŒ
+	// ê·¸ë ‡ì§€ ì•Šë‹¤ë©´ transparent ìƒ‰ê¹”ë¡œ alphaë¥¼ ì§€ì •í•œë‹¤
+	// ìœ„ì¹˜ë¥¼ ì „ë¶€ ë‹¤ ìˆ˜í–‰í•˜ê±°ë‚˜, alphaì´ë˜ RGBAê°€ ì•„ë‹ˆë©´ alpha ë°ì´í„°ê°€ ë”°ë¡œ ë¶„ë¦¬ë˜ì–´ìˆë‹¤ê³  íŒë‹¨í•¨
 
-	// ¾ĞÃàÇ®°í ¾òÀº µ¥ÀÌÅÍ¸¦ ´ë»óÀ¸·Î Ãß°¡ º¯È¯ ÀÛ¾÷À» ¼öÇàÇÑ´Ù
-	// ÀÌ °úÁ¤¿¡¼­ ÁøÂ¥ bitCount¸¦ ¾Ë ¼ö ÀÖÀ½
+	// ì••ì¶•í’€ê³  ì–»ì€ ë°ì´í„°ë¥¼ ëŒ€ìƒìœ¼ë¡œ ì¶”ê°€ ë³€í™˜ ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤
+	// ì´ ê³¼ì •ì—ì„œ ì§„ì§œ bitCountë¥¼ ì•Œ ìˆ˜ ìˆìŒ
 	switch (getGraphicMode())
 	{
 		case 0:
 		{
 			if (!Normal32BitImageToRGBA(translatingData, translatingSize, bitmapData, bitmapSize,
 				width, height, isAlphaSeparated(), getTransparent())) {
-				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Normal 32bit -> 32bit png º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù" << endl;
+				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Normal 32bit -> 32bit png ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤" << endl;
 				return false;
 			}
 			break;
@@ -176,7 +176,7 @@ bool BaseImage::getBitmapDataFromTranslatingData()
 		{
 			if (!Normal24BitImageToRGBA(translatingData, translatingSize, bitmapData, bitmapSize,
 				width, height, isAlphaSeparated(), getTransparent())) {
-				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Normal 24bit -> 32bit png º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù" << endl;
+				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Normal 24bit -> 32bit png ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤" << endl;
 				return false;
 			}
 			break;
@@ -187,7 +187,7 @@ bool BaseImage::getBitmapDataFromTranslatingData()
 			setTransparent(transparentColor);
 			if (!Normal24BitImageToRGBA(translatingData, translatingSize, bitmapData, bitmapSize,
 				width, height, isAlphaSeparated(), getTransparent())) {
-				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Normal 24bit -> 32bit png º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù" << endl;
+				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Normal 24bit -> 32bit png ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤" << endl;
 				return false;
 			}
 			break;
@@ -196,7 +196,7 @@ bool BaseImage::getBitmapDataFromTranslatingData()
 		{
 			if (!Normal15BitImageToRGBA(translatingData, translatingSize, bitmapData, bitmapSize,
 				width, height, getTransparent())) {
-				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Normal 15bit -> 32bit png º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù" << endl;
+				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Normal 15bit -> 32bit png ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤" << endl;
 				return false;
 			}
 			break;
@@ -205,7 +205,7 @@ bool BaseImage::getBitmapDataFromTranslatingData()
 		{
 			if (!Normal16BitImageToRGBA(translatingData, translatingSize, bitmapData, bitmapSize,
 				width, height, getTransparent())) {
-				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Normal 16bit -> 32bit png º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù" << endl;
+				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Normal 16bit -> 32bit png ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤" << endl;
 				return false;
 			}
 			break;
@@ -214,7 +214,7 @@ bool BaseImage::getBitmapDataFromTranslatingData()
 		{
 			if (!twoFivePlusImageToRGBA(translatingData, translatingSize, bitmapData, bitmapSize,
 				width, height, isAlphaSeparated(), isRGBAData(), getTransparent())) {
-				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 2.5+ image -> 32bit png º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù" << endl;
+				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 2.5+ image -> 32bit png ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤" << endl;
 				return false;
 			}
 			break;
@@ -224,13 +224,13 @@ bool BaseImage::getBitmapDataFromTranslatingData()
 		case 3:
 		default:
 		{
-			// Android Mode 1, Android Mode 2, Android Mode 3, (Android Mode 4 = case 4, Android) ¹ÌÁö¿ø
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": graphicMode: " << to_wstring(getGraphicMode()) << L": ÇØ´ç ±×·¡ÇÈ ¸ğµå´Â Áö¿øÇÏÁö ¾Ê½À´Ï´Ù." << endl;
+			// Android Mode 1, Android Mode 2, Android Mode 3, (Android Mode 4 = case 4, Android) ë¯¸ì§€ì›
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": graphicMode: " << to_wstring(getGraphicMode()) << L": í•´ë‹¹ ê·¸ë˜í”½ ëª¨ë“œëŠ” ì§€ì›í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤." << endl;
 			return false;
 		}
 	};
 
-	// ¸Ş¸ğ¸® °ü¸®¸¦ À§ÇØ º¯È¯ µ¥ÀÌÅÍ Á¦°Å
+	// ë©”ëª¨ë¦¬ ê´€ë¦¬ë¥¼ ìœ„í•´ ë³€í™˜ ë°ì´í„° ì œê±°
 	free(translatingData);
 	translatingData = NULL;
 	translatingSize = 0;
@@ -244,21 +244,21 @@ bool BaseImage::getTranslatingDataFromBitmapData()
 	UINT32 width = getWidth();
 	UINT32 height = getHeight();
 
-	// ÃÊ±âÈ­
+	// ì´ˆê¸°í™”
 	if (translatingData != NULL) {
 		free(translatingData);
 		translatingData = NULL;
 	}
 	translatingSize = 0;
 
-	// º¯È¯ ¼öÇà
+	// ë³€í™˜ ìˆ˜í–‰
 	switch (getGraphicMode())
 	{
 		case 0:
 		{
 			if (!RGBAToNormal32BitImage(bitmapData, bitmapSize, translatingData, translatingSize,
 				width, height, isAlphaSeparated(), getTransparent())) {
-				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 32bit png -> 32bit º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù" << endl;
+				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 32bit png -> 32bit ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤" << endl;
 				return false;
 			}
 			break;
@@ -267,7 +267,7 @@ bool BaseImage::getTranslatingDataFromBitmapData()
 		{
 			if (!RGBAToNormal24BitImage(bitmapData, bitmapSize, translatingData, translatingSize,
 				width, height, isAlphaSeparated(), getTransparent())) {
-				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 32bit png -> Normal 24bit º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù" << endl;
+				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 32bit png -> Normal 24bit ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤" << endl;
 				return false;
 			}
 			break;
@@ -278,7 +278,7 @@ bool BaseImage::getTranslatingDataFromBitmapData()
 			setTransparent(transparentColor);
 			if (!RGBAToNormal24BitImage(bitmapData, bitmapSize, translatingData, translatingSize,
 				width, height, isAlphaSeparated(), getTransparent())) {
-				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 32bit png -> Normal 24bit º¯È¯À» ½ÇÆĞÇß½À´Ï´Ù" << endl;
+				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 32bit png -> Normal 24bit ë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤" << endl;
 				return false;
 			}
 			break;
@@ -287,7 +287,7 @@ bool BaseImage::getTranslatingDataFromBitmapData()
 		{
 			if (!RGBAToNormal15BitImage(bitmapData, bitmapSize, translatingData, translatingSize,
 				width, height, getTransparent())) {
-				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 32bit png -> Normal 15bitº¯È¯À» ½ÇÆĞÇß½À´Ï´Ù" << endl;
+				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 32bit png -> Normal 15bitë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤" << endl;
 				return false;
 			}
 			break;
@@ -296,7 +296,7 @@ bool BaseImage::getTranslatingDataFromBitmapData()
 		{
 			if (!Normal16BitImageToRGBA(bitmapData, bitmapSize, translatingData, translatingSize,
 				width, height, getTransparent())) {
-				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 32bit png -> Normal 16bitº¯È¯À» ½ÇÆĞÇß½À´Ï´Ù" << endl;
+				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 32bit png -> Normal 16bitë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤" << endl;
 				return false;
 			}
 			break;
@@ -305,7 +305,7 @@ bool BaseImage::getTranslatingDataFromBitmapData()
 		{
 			if (!RGBAToTwoFivePlusImage(bitmapData, bitmapSize, translatingData, translatingSize,
 				width, height, isAlphaSeparated(), isRGBAData(), getTransparent())) {
-				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 32bit png -> 2.5+ imageº¯È¯À» ½ÇÆĞÇß½À´Ï´Ù" << endl;
+				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 32bit png -> 2.5+ imageë³€í™˜ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤" << endl;
 				return false;
 			}
 			break;
@@ -315,13 +315,13 @@ bool BaseImage::getTranslatingDataFromBitmapData()
 		case 3:
 		default:
 		{
-			// Android Mode 1, Android Mode 2, Android Mode 3, (Android Mode 4 = case 4, Android) ¹ÌÁö¿ø
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L"graphicMode: " << to_wstring(getGraphicMode()) << L": ÇØ´ç ±×·¡ÇÈ ¸ğµå´Â Áö¿øÇÏÁö ¾Ê½À´Ï´Ù." << endl;
+			// Android Mode 1, Android Mode 2, Android Mode 3, (Android Mode 4 = case 4, Android) ë¯¸ì§€ì›
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L"graphicMode: " << to_wstring(getGraphicMode()) << L": í•´ë‹¹ ê·¸ë˜í”½ ëª¨ë“œëŠ” ì§€ì›í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤." << endl;
 			return false;
 		}
 	};
 
-	// ¸Ş¸ğ¸® °ü¸®¸¦ À§ÇØ ºñÆ®¸Ê µ¥ÀÌÅÍ Á¦°Å
+	// ë©”ëª¨ë¦¬ ê´€ë¦¬ë¥¼ ìœ„í•´ ë¹„íŠ¸ë§µ ë°ì´í„° ì œê±°
 	free(bitmapData);
 	bitmapData = NULL;
 	bitmapSize = 0;

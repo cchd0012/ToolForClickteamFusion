@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "Chunk.h"
 #include "../Util/JsonUtil.h"
@@ -24,7 +24,7 @@ namespace CTT {
 			virtual BYTE getFlags() { return 0; }
 			virtual void clearFlags() { ; }
 
-			// ¼ø¼ö °¡»ó ÇÔ¼ö¸¦ È°¿ëÇÏ·Á¸é ¾îÂ¿ ¼ö ¾ø´Â °Ç°¡...?
+			// ìˆœìˆ˜ ê°€ìƒ í•¨ìˆ˜ë¥¼ í™œìš©í•˜ë ¤ë©´ ì–´ì©” ìˆ˜ ì—†ëŠ” ê±´ê°€...?
 			virtual bool exportData(wstring& dirPath, UINT32 index, bool isFullyExport = false) = 0;
 			virtual bool importData(wstring& dirPath, UINT32 index) = 0;
 			virtual bool exportJson(Json::Value& exportValue, vector<UINT32>& offsetList) = 0;
@@ -33,7 +33,7 @@ namespace CTT {
 			virtual bool loadFromBuffer(BYTE*& bufferPnt) = 0;
 			virtual bool saveIntoBuffer(BYTE*& bufferPnt) = 0;
 
-			// µ¥ÀÌÅÍ ·»´õ¸µ¿ë ÇÔ¼ö
+			// ë°ì´í„° ë Œë”ë§ìš© í•¨ìˆ˜
 			virtual void renderData(UINT32 index) = 0;
 
 		protected:

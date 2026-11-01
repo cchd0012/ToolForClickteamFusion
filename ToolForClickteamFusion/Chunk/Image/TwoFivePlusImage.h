@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "BaseImage.h"
 #include "../Chunk.h"
@@ -10,11 +10,11 @@ namespace CTT {
 
 		using namespace CTT::CommonUtil;
 
-		// TwoFivePlusImage´Â [AdditionalImageInfo] + [CommonImageInfo] ±¸Á¶·Î µÇ¾îÀÖ´Ù
+		// TwoFivePlusImageëŠ” [AdditionalImageInfo] + [CommonImageInfo] êµ¬ì¡°ë¡œ ë˜ì–´ìˆë‹¤
 		typedef struct _additional_image_info
 		{
-			UINT32 handle;		// ÃßÈÄ ³²´Â °ø°£ÀÇ handle À§Ä¡¸¦ ³Ö°Å³ª, ²Ë Â÷¸é (handleÃÖ´ë°ª + 1) ÇÏ¸é µÉµí
-			UINT32 unknown1;	// ÀÏ´ÜÀº 0xFFFFFFFF¸é µÉµí
+			UINT32 handle;		// ì¶”í›„ ë‚¨ëŠ” ê³µê°„ì˜ handle ìœ„ì¹˜ë¥¼ ë„£ê±°ë‚˜, ê½‰ ì°¨ë©´ (handleìµœëŒ€ê°’ + 1) í•˜ë©´ ë ë“¯
+			UINT32 unknown1;	// ì¼ë‹¨ì€ 0xFFFFFFFFë©´ ë ë“¯
 		} AdditionalImageInfo;
 
 		class TwoFivePlusImage : public BaseImage
@@ -30,11 +30,11 @@ namespace CTT {
 			UINT32 getHandle() { return additional.handle; }
 			void setHandle(UINT32 handle) { additional.handle = handle; }
 
-			// µ¥ÀÌÅÍ ·»´õ¸µ¿ë ÇÔ¼ö
+			// ë°ì´í„° ë Œë”ë§ìš© í•¨ìˆ˜
 			void renderData(UINT32 index);
 
 		protected:
-			// 2.5+¿¡¼­ Ãß°¡µÇ´Â µ¥ÀÌÅÍ..º¸´Ù´Â, °³ÆíÇÏ¸é¼­ µ¥ÀÌÅÍ À§Ä¡¸¦ ¿Å±ä °Í °°´Ù
+			// 2.5+ì—ì„œ ì¶”ê°€ë˜ëŠ” ë°ì´í„°..ë³´ë‹¤ëŠ”, ê°œí¸í•˜ë©´ì„œ ë°ì´í„° ìœ„ì¹˜ë¥¼ ì˜®ê¸´ ê²ƒ ê°™ë‹¤
 			AdditionalImageInfo additional;
 			bool deriveTranslatingData();
 			bool deriveCompressedData();

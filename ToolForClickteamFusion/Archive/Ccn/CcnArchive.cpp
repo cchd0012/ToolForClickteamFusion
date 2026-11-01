@@ -1,4 +1,4 @@
-#include "CcnArchive.h"
+ï»¿#include "CcnArchive.h"
 #include "../../Util/DecryptionUtil.h"
 #include "../../Util/CommonUtil.h"
 
@@ -24,40 +24,40 @@ bool CcnArchive::init()
 {
 	wcout << infoPrefix << L"<<function>> " << __FUNCTIONW__ << L": processing..." << endl;
 
-	// ccn ÆÄÀÏ ¿­±â
+	// ccn íŒŒì¼ ì—´ê¸°
 	hArchive = CreateFileW(archivePath.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hArchive == INVALID_HANDLE_VALUE) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": ¾ÆÄ«ÀÌºê ÆÄÀÏÀ» ¿­Áö ¸øÇß½À´Ï´Ù.";
-		triggerError(__FUNCTION__, u8"¾ÆÄ«ÀÌºê ÆÄÀÏÀ» ¿­Áö ¸øÇß½À´Ï´Ù");
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": ì•„ì¹´ì´ë¸Œ íŒŒì¼ì„ ì—´ì§€ ëª»í–ˆìŠµë‹ˆë‹¤.";
+		triggerError(__FUNCTION__, u8"ì•„ì¹´ì´ë¸Œ íŒŒì¼ì„ ì—´ì§€ ëª»í–ˆìŠµë‹ˆë‹¤");
 		return false;
 	}
 
 	DWORD dRead;
 
-	// ¹é Çì´õ ÀÐ±â
+	// ë°± í—¤ë” ì½ê¸°
 	ReadFile(hArchive, &backHeader, sizeof(BackHeader), &dRead, NULL);
 	if (dRead != sizeof(BackHeader)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": ¹é Çì´õ¸¦ ÀÐÁö ¸øÇß½À´Ï´Ù." << endl;
-		triggerError(__FUNCTION__, u8"¹é Çì´õ¸¦ ÀÐÁö ¸øÇß½À´Ï´Ù");
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": ë°± í—¤ë”ë¥¼ ì½ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
+		triggerError(__FUNCTION__, u8"ë°± í—¤ë”ë¥¼ ì½ì§€ ëª»í–ˆìŠµë‹ˆë‹¤");
 		return false;
 	}
 
-	// ¹é Çì´õ °ËÁõ, firstMagic °ªÀÌ "PAMU"ÀÎ °Í¸¸ ÀÐ´Â´Ù´Â °ÍÀº °ð À¯´ÏÄÚµåÇÑ normal µ¥ÀÌÅÍ¸¸ ÀÐ°Ú´Ù´Â ¶æÀÌ´Ù
+	// ë°± í—¤ë” ê²€ì¦, firstMagic ê°’ì´ "PAMU"ì¸ ê²ƒë§Œ ì½ëŠ”ë‹¤ëŠ” ê²ƒì€ ê³§ ìœ ë‹ˆì½”ë“œí•œ normal ë°ì´í„°ë§Œ ì½ê² ë‹¤ëŠ” ëœ»ì´ë‹¤
 	if (backHeader.firstMagic != PAMU_VALUE) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": ÇØ´ç ¾ÆÄ«ÀÌºê´Â Áö¿øÇÏÁö ¾Ê½À´Ï´Ù." << endl;
-		triggerError(__FUNCTION__, u8"ÇØ´ç ¾ÆÄ«ÀÌºê´Â Áö¿øÇÏÁö ¾Ê½À´Ï´Ù");
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": í•´ë‹¹ ì•„ì¹´ì´ë¸ŒëŠ” ì§€ì›í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤." << endl;
+		triggerError(__FUNCTION__, u8"í•´ë‹¹ ì•„ì¹´ì´ë¸ŒëŠ” ì§€ì›í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤");
 		return false;
 	}
 
-	// chunk ½ÃÀÛÀ§Ä¡ ÀúÀå ¹× App Á¤º¸ ¼¼ÆÃ
+	// chunk ì‹œìž‘ìœ„ì¹˜ ì €ìž¥ ë° App ì •ë³´ ì„¸íŒ…
 	chunkStartOffset = SetFilePointer(hArchive, 0, NULL, FILE_CURRENT);
 	if (!setApplicationInfo()) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Application Á¤º¸¸¦ ¾òÁö ¸øÇß½À´Ï´Ù." << endl;
-		triggerError(__FUNCTION__, u8"Application Á¤º¸¸¦ ¾òÁö ¸øÇß½À´Ï´Ù");
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(archivePath) << L": Application ì •ë³´ë¥¼ ì–»ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
+		triggerError(__FUNCTION__, u8"Application ì •ë³´ë¥¼ ì–»ì§€ ëª»í–ˆìŠµë‹ˆë‹¤");
 		return false;
 	}
 
-	// º¹È£È­¿ë/¾ÏÈ£È­¿ë Å×ÀÌºí ÃÊ±âÈ­ ÈÄ ¸®ÅÏ
+	// ë³µí˜¸í™”ìš©/ì•”í˜¸í™”ìš© í…Œì´ë¸” ì´ˆê¸°í™” í›„ ë¦¬í„´
 	initializeDecryptionTable();
 	initializeEncryptionTable();
 

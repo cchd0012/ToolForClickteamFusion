@@ -1,4 +1,4 @@
-#include "Dx9Application.h"
+ï»¿#include "Dx9Application.h"
 
 #include "../Archive/Exe/ExeArchive.h"
 #include "../Archive/Dat/DatArchive.h"
@@ -8,14 +8,14 @@ using namespace CTT::App;
 using namespace CTT::Archive;
 
 
-// ¸ğµç ÇÁ·Î¼¼½º¸¦ ³¡³»´Â ÇÔ¼ö
+// ëª¨ë“  í”„ë¡œì„¸ìŠ¤ë¥¼ ëë‚´ëŠ” í•¨ìˆ˜
 void Dx9Application::terminateProcess()
 {
 	closeArchive();
 }
 
 
-// ¾ÆÄ«ÀÌºê ¿­±â ÇÔ¼ö
+// ì•„ì¹´ì´ë¸Œ ì—´ê¸° í•¨ìˆ˜
 bool Dx9Application::openArchive()
 {
 	closeArchive();
@@ -34,7 +34,7 @@ bool Dx9Application::openArchive()
 }
 
 
-// ¾ÆÄ«ÀÌºê ´İ±â ÇÔ¼ö
+// ì•„ì¹´ì´ë¸Œ ë‹«ê¸° í•¨ìˆ˜
 void Dx9Application::closeArchive()
 {
 	if (archive != NULL) {

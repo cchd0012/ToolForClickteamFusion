@@ -1,4 +1,4 @@
-#include "LogFont.h"
+ï»¿#include "LogFont.h"
 #include "../../Archive/Archive.h"
 #include "../../Util/ZlibUtil.h"
 #include "../../Util/CommonUtil.h"
@@ -25,7 +25,7 @@ LogFont::~LogFont() {
 bool LogFont::exportJson(Json::Value& value, vector<UINT32>& offsetList)
 {
 
-	// value·Î ÃßÃâ
+	// valueë¡œ ì¶”ì¶œ
 
 	value["handle"] = handle;
 	value["checksum"] = info.checksum;
@@ -53,7 +53,7 @@ bool LogFont::exportJson(Json::Value& value, vector<UINT32>& offsetList)
 bool LogFont::importJson(Json::Value& value, vector<UINT32>& offsetList)
 {
 
-	// value·ÎºÎÅÍ ÀĞ¾îµéÀÌ±â
+	// valueë¡œë¶€í„° ì½ì–´ë“¤ì´ê¸°
 
 	handle = value["handle"].asUInt();
 	info.checksum = value["checksum"].asUInt();
@@ -104,14 +104,14 @@ bool LogFont::loadFromBuffer(BYTE*& bufferPnt)
 	memcpy(compressedData, bufferPnt, compressedSize);
 	bufferPnt += compressedSize;
 
-	// ¿ë·®µµ ¾ó¸¶ ¾È µÇ´Âµ¥ ±×³É ¿©±â¼­ Ã³¸®ÇÏÀÚ
+	// ìš©ëŸ‰ë„ ì–¼ë§ˆ ì•ˆ ë˜ëŠ”ë° ê·¸ëƒ¥ ì—¬ê¸°ì„œ ì²˜ë¦¬í•˜ì
 	return deriveFontData();
 }
 
 
 bool LogFont::saveIntoBuffer(BYTE*& bufferPnt)
 {
-	// ¿ë·®µµ ¾ó¸¶ ¾È µÇ´Âµ¥ ±×³É ¿©±â¼­ Ã³¸®ÇÏÀÚ
+	// ìš©ëŸ‰ë„ ì–¼ë§ˆ ì•ˆ ë˜ëŠ”ë° ê·¸ëƒ¥ ì—¬ê¸°ì„œ ì²˜ë¦¬í•˜ì
 	if (!deriveCompressedData()) {
 		return false;
 	}
@@ -135,12 +135,12 @@ bool LogFont::saveIntoBuffer(BYTE*& bufferPnt)
 }
 
 
-// µ¥ÀÌÅÍ ·»´õ¸µ¿ë ÇÔ¼ö
+// ë°ì´í„° ë Œë”ë§ìš© í•¨ìˆ˜
 void LogFont::renderData(UINT32 index)
 {
 	stringstream oss;
 
-	// ÀÎµ¦½º Ç¥Çö
+	// ì¸ë±ìŠ¤ í‘œí˜„
 	oss << "  <" << index << ">{";
 	ImGui::Text(oss.str().c_str());
 	oss.str("");
@@ -220,31 +220,31 @@ void LogFont::renderData(UINT32 index)
 bool LogFont::deriveFontData()
 {
 	if ((compressedData == NULL) || (compressedSize == 0)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": µğÄÚµùÀ» ¼öÇàÇÒ µ¥ÀÌÅÍ°¡ ¾ø½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ë””ì½”ë”©ì„ ìˆ˜í–‰í•  ë°ì´í„°ê°€ ì—†ìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
-	// ¾ĞÃà ÇØÁ¦¿ë º¯¼ö
+	// ì••ì¶• í•´ì œìš© ë³€ìˆ˜
 	UINT32 tmpSize = originalSize;
 	BYTE* tmpData = NULL;
 
-	// ¾ĞÃàÇ¬ µ¥ÀÌÅÍ: [CommonFontInfo], ÀüÃ¼ Å©±â´Â originalSize ¿¡ ÀúÀåµÊ
+	// ì••ì¶•í‘¼ ë°ì´í„°: [CommonFontInfo], ì „ì²´ í¬ê¸°ëŠ” originalSize ì— ì €ì¥ë¨
 	if (!ZlibUtil::decode(compressedData, compressedSize, tmpData, tmpSize)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": »ç¿îµå µ¥ÀÌÅÍ µğÄÚµùÀ» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ì‚¬ìš´ë“œ ë°ì´í„° ë””ì½”ë”©ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		if (tmpData != NULL) {
 			free(tmpData);
 		}
 		return false;
 	}
 
-	// Á¤º¸ ¹İ¿µ
+	// ì •ë³´ ë°˜ì˜
 	memcpy(&info, tmpData, sizeof(CommonLogFontInfo));
 	info.height = -(info.height);
 
-	// ¿ªÇÒ ³¡³­ ÀÓ½Ãº¯¼ö Á¦°Å
+	// ì—­í•  ëë‚œ ì„ì‹œë³€ìˆ˜ ì œê±°
 	free(tmpData);
 
-	// ¸Ş¸ğ¸® °ü¸®¸¦ À§ÇÏ¿© ¾ĞÃà µ¥ÀÌÅÍ Á¦°Å
+	// ë©”ëª¨ë¦¬ ê´€ë¦¬ë¥¼ ìœ„í•˜ì—¬ ì••ì¶• ë°ì´í„° ì œê±°
 	free(compressedData);
 	compressedData = NULL;
 	compressedSize = 0;
@@ -264,22 +264,22 @@ bool LogFont::deriveCompressedData()
 	UINT32 tmpSize = 0;
 	BYTE* tmpData = NULL;
 
-	// Á¤º¸ ¹× Å©±â ¼¼ÆÃ, info.orgSize´Â ±×³É 0À¸·Î ÀúÀåµÈ´Ù
+	// ì •ë³´ ë° í¬ê¸° ì„¸íŒ…, info.orgSizeëŠ” ê·¸ëƒ¥ 0ìœ¼ë¡œ ì €ì¥ëœë‹¤
 	info.height = -(info.height);
 	originalSize = sizeof(CommonLogFontInfo);
 	info.orgSize = 0;
 
-	// ÀÌ¸§°ú fontData¸¦ ±×´ë·Î º¹»çÇØ¼­ ¼¼ÆÃÇÑ ÈÄ ¾ĞÃà ¼öÇà
+	// ì´ë¦„ê³¼ fontDataë¥¼ ê·¸ëŒ€ë¡œ ë³µì‚¬í•´ì„œ ì„¸íŒ…í•œ í›„ ì••ì¶• ìˆ˜í–‰
 	tmpSize = originalSize;
 	tmpData = (BYTE*)malloc(tmpSize);
 	memset(tmpData, 0, tmpSize);
 	memcpy(tmpData, &info, sizeof(CommonLogFontInfo));
 	if (!ZlibUtil::encode(tmpData, tmpSize, compressedData, compressedSize)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": LogFont µ¥ÀÌÅÍ ÀÎÄÚµùÀ» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": LogFont ë°ì´í„° ì¸ì½”ë”©ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
-	// ÇÊ¿ä¾ø´Â ¹öÆÛµé Ãß°¡ ÇØÁ¦
+	// í•„ìš”ì—†ëŠ” ë²„í¼ë“¤ ì¶”ê°€ í•´ì œ
 	free(tmpData);
 
 	return true;

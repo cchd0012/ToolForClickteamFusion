@@ -1,4 +1,4 @@
-#include "FrameLayerEffectDataChunk.h"
+ï»¿#include "FrameLayerEffectDataChunk.h"
 #include "FrameLayerEffect.h"
 #include "../../Archive/Archive.h"
 #include "../../Util/JsonUtil.h"
@@ -15,12 +15,12 @@ bool FrameLayerEffectDataChunk::loadFromOrgBuffer()
 {
 	BYTE* orgBufferPnt = orgBuffer;
 
-	// ±âÁ¸ DataChunk¿Í´Â ´Ù¸£°Ô °³¼ö¸¦ Á÷Á¢ ÀĞ¾îµéÀÌÁö ¾ÊÀ¸¹Ç·Î Á÷Á¢ ÀĞ´Â ¼ö¹Û¿¡ ¾ø´Ù
-	// FrameLayerDataChunk ³»ºÎÀÇ FrameLayer ¸®½ºÆ®¿Í´Â ÀÏ´ëÀÏ ´ëÀÀÀÌ¹Ç·Î °³¼ö¸¦ ¹Ì¸® ÀÔ·Â¹ŞÀ» °ÍÀ» ÀüÁ¦ÇÑ´Ù
-	// ³»ºÎÀûÀ¸·Î´Â ÀÌ°Ô ³¡ÀÎÁö ÆÄ¾ÇÀÌ ¾ÈµÊ
+	// ê¸°ì¡´ DataChunkì™€ëŠ” ë‹¤ë¥´ê²Œ ê°œìˆ˜ë¥¼ ì§ì ‘ ì½ì–´ë“¤ì´ì§€ ì•Šìœ¼ë¯€ë¡œ ì§ì ‘ ì½ëŠ” ìˆ˜ë°–ì— ì—†ë‹¤
+	// FrameLayerDataChunk ë‚´ë¶€ì˜ FrameLayer ë¦¬ìŠ¤íŠ¸ì™€ëŠ” ì¼ëŒ€ì¼ ëŒ€ì‘ì´ë¯€ë¡œ ê°œìˆ˜ë¥¼ ë¯¸ë¦¬ ì…ë ¥ë°›ì„ ê²ƒì„ ì „ì œí•œë‹¤
+	// ë‚´ë¶€ì ìœ¼ë¡œëŠ” ì´ê²Œ ëì¸ì§€ íŒŒì•…ì´ ì•ˆë¨
 	UINT32 totalCount = frameLayerCount;
 
-	// value ÃÊ±âÈ­
+	// value ì´ˆê¸°í™”
 	for (UINT32 i = 0; i < value.size(); i++) {
 		if (value[i] != NULL) {
 			delete value[i];
@@ -36,14 +36,14 @@ bool FrameLayerEffectDataChunk::loadFromOrgBuffer()
 
 		BaseData* data = allocateData();
 
-		// °¢ FrameLayerEffectÀÇ pamameter Á¤º¸°¡ ÀÖ´Â ¿ÀÇÁ¼ÂÀº orgBuffer ½ÃÀÛÁ¡ÀÌ ±âÁØÀÌ¹Ç·Î
-		// loadFromBuffer ÀÌÀü¿¡ orgBufferÀÇ ½ÃÀÛÁ¡À» ¼¼ÆÃÇØÁà¾ß ÇÔ
+		// ê° FrameLayerEffectì˜ pamameter ì •ë³´ê°€ ìˆëŠ” ì˜¤í”„ì…‹ì€ orgBuffer ì‹œì‘ì ì´ ê¸°ì¤€ì´ë¯€ë¡œ
+		// loadFromBuffer ì´ì „ì— orgBufferì˜ ì‹œì‘ì ì„ ì„¸íŒ…í•´ì¤˜ì•¼ í•¨
 		FrameLayerEffect* flePtr = reinterpret_cast<FrameLayerEffect*>(data);
 		flePtr->setBaseBuffer(orgBuffer);
 
 		if (!data->loadFromBuffer(orgBufferPnt)) {
 			delete data;
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getNameUni(info.type) << L": µ¥ÀÌÅÍ¸¦ ·ÎµåÇÏÁö ¸øÇß½À´Ï´Ù." << endl;
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getNameUni(info.type) << L": ë°ì´í„°ë¥¼ ë¡œë“œí•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 			return false;
 		}
 		value.push_back(data);
@@ -58,9 +58,9 @@ bool FrameLayerEffectDataChunk::loadFromOrgBuffer()
 
 bool FrameLayerEffectDataChunk::saveIntoOrgBuffer()
 {
-	// ´©ÀûÅ©±â °è»ê ¹× ¿ÀÇÁ¼Â ¼¼ÆÃ
-	// ÀüÃ¼ Å©±â °è»ê ÀÚÃ¼´Â FrameEffectInfo + (UINT32 * 2) + info Å©±âÁö¸¸
-	// paramÀ» ±â·ÏÇÏ´Â ¿ÀÇÁ¼ÂÀº (FrameEffectInfo + (UINT32 * 2))¸¸ ´õÇÑ Å©±â·Î °è»êÇØ¾ß ÇÑ´Ù
+	// ëˆ„ì í¬ê¸° ê³„ì‚° ë° ì˜¤í”„ì…‹ ì„¸íŒ…
+	// ì „ì²´ í¬ê¸° ê³„ì‚° ìì²´ëŠ” FrameEffectInfo + (UINT32 * 2) + info í¬ê¸°ì§€ë§Œ
+	// paramì„ ê¸°ë¡í•˜ëŠ” ì˜¤í”„ì…‹ì€ (FrameEffectInfo + (UINT32 * 2))ë§Œ ë”í•œ í¬ê¸°ë¡œ ê³„ì‚°í•´ì•¼ í•œë‹¤
 
 	UINT32 accumOffset = 0;
 	for (size_t i = 0; i < value.size(); i++) {
@@ -68,7 +68,7 @@ bool FrameLayerEffectDataChunk::saveIntoOrgBuffer()
 	}
 	orgSize = accumOffset;
 
-	// ¹öÆÛ ÇÒ´ç
+	// ë²„í¼ í• ë‹¹
 	if (orgBuffer != NULL) {
 		free(orgBuffer);
 		orgBuffer = NULL;
@@ -76,10 +76,10 @@ bool FrameLayerEffectDataChunk::saveIntoOrgBuffer()
 	orgBuffer = (BYTE*)malloc(orgSize);
 	memset(orgBuffer, 0, orgSize);
 
-	// orgBuffer¿¡ ±â·Ï, ±â·ÏÀ» ¸¶Ä£ µ¥ÀÌÅÍ´Â Á¤¸®
+	// orgBufferì— ê¸°ë¡, ê¸°ë¡ì„ ë§ˆì¹œ ë°ì´í„°ëŠ” ì •ë¦¬
 	BYTE* orgBufferPnt = orgBuffer;
 
-	// valuesBuffer ¼¼ÆÃ
+	// valuesBuffer ì„¸íŒ…
 	BYTE* valuesBufferPnt = orgBuffer + ((sizeof(FrameEffectInfo) + (sizeof(UINT32) * 2)) * value.size());
 
 	wcout << infoPrefix << L"ChunkType: " << uppercase << hex << getNameUni(info.type) << L": saving " << to_wstring(value.size()) << L" data to buffer..." << endl;
@@ -87,16 +87,16 @@ bool FrameLayerEffectDataChunk::saveIntoOrgBuffer()
 		//wcout << flush << L"\r";
 		//wcout << infoPrefix << L"saving " << to_wstring(i + 1) << L"/" << to_wstring(value.size()) << L" data to buffer...";
 		
-		// ¹öÆÛ Æ÷ÀÎÅÍ ¼¼ÆÃ
+		// ë²„í¼ í¬ì¸í„° ì„¸íŒ…
 		FrameLayerEffect* flePtr = reinterpret_cast<FrameLayerEffect*>(value[i]);
 		flePtr->setBaseBuffer(orgBuffer);
 		flePtr->setValuesBufferPnt(valuesBufferPnt);
 		if (!flePtr->saveIntoBuffer(orgBufferPnt)) {
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getNameUni(info.type) << L": µ¥ÀÌÅÍ¸¦ ÀúÀåÇÏÁö ¸øÇß½À´Ï´Ù." << endl;
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getNameUni(info.type) << L": ë°ì´í„°ë¥¼ ì €ì¥í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 			return false;
 		}
 
-		// valuesBufferPnt Áõ°¡½ÃÅ°±â
+		// valuesBufferPnt ì¦ê°€ì‹œí‚¤ê¸°
 		valuesBufferPnt += flePtr->getValuesSize();
 
 	}

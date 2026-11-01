@@ -1,4 +1,4 @@
-#include "DecryptionUtil.h"
+ï»¿#include "DecryptionUtil.h"
 #include "../Archive/Archive.h"
 #include "../Common.h"
 
@@ -8,7 +8,7 @@ using namespace CTT::DecryptionUtil;
 using namespace CTT::Archive;
 
 
-// ºôµå ¹öÀüÀÌ 284¸¦ ³ÑÀ¸¸é OldDecryptionInit, 284 ÀÌÇÏ¸é NewDecryptionInit
+// ë¹Œë“œ ë²„ì „ì´ 284ë¥¼ ë„˜ìœ¼ë©´ OldDecryptionInit, 284 ì´í•˜ë©´ NewDecryptionInit
 void initializeOldDecryptionTable(UINT32 tableIndex);
 void initializeNewDecryptionTable(UINT32 tableIndex);
 void addKeyStr(vector<BYTE>& BYTEs, wstring& keyStr);
@@ -16,7 +16,7 @@ void addKeyStr(vector<BYTE>& BYTEs, wstring& keyStr);
 vector<BYTE> getMixedKey(vector<BYTE>& seedBytes);
 void setDecryptionTable(vector<BYTE>& magicKey, UINT32 tableIndex);
 
-// index°¡ 0ÀÌ¸é decrypt¿ë, 1ÀÌ¸é encrypt¿ë
+// indexê°€ 0ì´ë©´ decryptìš©, 1ì´ë©´ encryptìš©
 BYTE forDecEncTables[2][0x100];
 
 
@@ -154,7 +154,7 @@ void CTT::DecryptionUtil::decrypt(BYTE* buffer, UINT32 bufferSize)
 	UINT32 v5 = 0;
 	BYTE copyDecryptionTable[0x100];
 
-	// decryption Å×ÀÌºí¿¡¼­ º¹»ç
+	// decryption í…Œì´ë¸”ì—ì„œ ë³µì‚¬
 	memcpy(copyDecryptionTable, forDecEncTables[0], 0x100);
 
 	for (UINT32 i = 0; i < bufferSize; i++) {
@@ -186,7 +186,7 @@ void CTT::DecryptionUtil::encrypt(BYTE* buffer, UINT32 bufferSize)
 	UINT32 v5 = 0;
 	BYTE copyEncryptionTable[0x100];
 
-	// encryption Å×ÀÌºí¿¡¼­ º¹»ç
+	// encryption í…Œì´ë¸”ì—ì„œ ë³µì‚¬
 	memcpy(copyEncryptionTable, forDecEncTables[1], 0x100);
 
 	for (UINT32 i = 0; i < bufferSize; i++) {

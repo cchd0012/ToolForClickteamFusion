@@ -1,4 +1,4 @@
-#include "BooleanChunk.h"
+ï»¿#include "BooleanChunk.h"
 #include "IntegerChunk.h"
 #include "UnsignedShortChunk.h"
 #include "StringChunk.h"
@@ -10,7 +10,7 @@ using namespace CTT::Chunk;
 using namespace CTT::CommonUtil;
 
 
-// StringChunk µ¥ÀÌÅÍ ·»´õ¸µ¿ë
+// StringChunk ë°ì´í„° ë Œë”ë§ìš©
 void StringChunk::renderData()
 {
 	stringstream oss;
@@ -20,7 +20,7 @@ void StringChunk::renderData()
 }
 
 
-// IntegerChunk µ¥ÀÌÅÍ ·»´õ¸µ¿ë
+// IntegerChunk ë°ì´í„° ë Œë”ë§ìš©
 void IntegerChunk::renderData()
 {
 	stringstream oss;
@@ -30,7 +30,7 @@ void IntegerChunk::renderData()
 }
 
 
-// UnsignedShortChunk µ¥ÀÌÅÍ ·»´õ¸µ¿ë
+// UnsignedShortChunk ë°ì´í„° ë Œë”ë§ìš©
 void UnsignedShortChunk::renderData()
 {
 	stringstream oss;
@@ -40,7 +40,7 @@ void UnsignedShortChunk::renderData()
 }
 
 
-// BooleanChunk µ¥ÀÌÅÍ ·»´õ¸µ¿ë
+// BooleanChunk ë°ì´í„° ë Œë”ë§ìš©
 void BooleanChunk::renderData()
 {
 	stringstream oss;
@@ -50,10 +50,10 @@ void BooleanChunk::renderData()
 }
 
 
-// ListChunk<string> µ¥ÀÌÅÍ ·»´õ¸µ¿ë
+// ListChunk<string> ë°ì´í„° ë Œë”ë§ìš©
 void ListChunk<string>::renderData()
 {
-	// ÃÖ´ë 30°³±îÁö¸¸
+	// ìµœëŒ€ 30ê°œê¹Œì§€ë§Œ
 	stringstream oss;
 	UINT32 maxCount = ((UINT32)value.size() > 30) ? 30 : (UINT32)value.size();
 	oss << "[\n";
@@ -67,16 +67,16 @@ void ListChunk<string>::renderData()
 	if (maxCount != (UINT32)value.size()) {
 		oss << "  ...\n";
 	}
-	oss << "] (" << dec << (UINT32)value.size() << u8"°³)";
+	oss << "] (" << dec << (UINT32)value.size() << u8"ê°œ)";
 	ImGui::Text(oss.str().c_str());
 	oss.str("");
 }
 
 
-// ListChunk<UINT32> µ¥ÀÌÅÍ ·»´õ¸µ¿ë
+// ListChunk<UINT32> ë°ì´í„° ë Œë”ë§ìš©
 void ListChunk<UINT32>::renderData()
 {
-	// ÃÖ´ë 30°³±îÁö¸¸
+	// ìµœëŒ€ 30ê°œê¹Œì§€ë§Œ
 	stringstream oss;
 	UINT32 maxCount = ((UINT32)value.size() > 30) ? 30 : (UINT32)value.size();
 	oss << "[\n";
@@ -90,7 +90,7 @@ void ListChunk<UINT32>::renderData()
 	if (maxCount != (UINT32)value.size()) {
 		oss << "  ...\n";
 	}
-	oss << "] (" << dec << (UINT32)value.size() << u8"°³)";
+	oss << "] (" << dec << (UINT32)value.size() << u8"ê°œ)";
 	ImGui::Text(oss.str().c_str());
 	oss.str("");
 }
@@ -98,15 +98,15 @@ void ListChunk<UINT32>::renderData()
 
 
 
-// ListChunk<string> µ¥ÀÌÅÍ
+// ListChunk<string> ë°ì´í„°
 bool ListChunk<string>::loadFromOrgBuffer() 
 {
-	// chunk µ¥ÀÌÅÍ: [string ¸®½ºÆ®(vector)]
+	// chunk ë°ì´í„°: [string ë¦¬ìŠ¤íŠ¸(vector)]
 	BYTE* orgBufferPnt = orgBuffer;
 
 	UINT32 count = 0;
 
-	// CHUNK_APP_OTHER_EXTENTIONSÀÏ °æ¿ì´Â UINT32°¡ ¾Æ´Ï¶ó UINT16¸¸Å­ ´õÇØ¾ß ÇÑ´Ù
+	// CHUNK_APP_OTHER_EXTENTIONSì¼ ê²½ìš°ëŠ” UINT32ê°€ ì•„ë‹ˆë¼ UINT16ë§Œí¼ ë”í•´ì•¼ í•œë‹¤
 	if (info.type == ChunkType::CHUNK_APP_OTHER_EXTENTIONS) {
 		count = *(UINT16*)orgBufferPnt;
 		orgBufferPnt += sizeof(UINT16);
@@ -137,9 +137,9 @@ bool ListChunk<string>::saveIntoOrgBuffer()
 		orgBuffer = NULL;
 	}
 	
-	// Å©±â °è»ê
+	// í¬ê¸° ê³„ì‚°
 
-	// CHUNK_APP_OTHER_EXTENTIONSÀÏ °æ¿ì´Â UINT32°¡ ¾Æ´Ï¶ó UINT16¸¸Å­ ´õÇØ¾ß ÇÑ´Ù
+	// CHUNK_APP_OTHER_EXTENTIONSì¼ ê²½ìš°ëŠ” UINT32ê°€ ì•„ë‹ˆë¼ UINT16ë§Œí¼ ë”í•´ì•¼ í•œë‹¤
 	if (info.type == ChunkType::CHUNK_APP_OTHER_EXTENTIONS) {
 		orgSize = sizeof(UINT16);
 	}
@@ -152,7 +152,7 @@ bool ListChunk<string>::saveIntoOrgBuffer()
 		orgSize += ((wcslen(wstr.c_str()) + 1) * sizeof(wchar_t));
 	}
 
-	// ¹öÆÛ ÇÒ´ç
+	// ë²„í¼ í• ë‹¹
 	if (orgBuffer != NULL) {
 		free(orgBuffer);
 		orgBuffer = NULL;
@@ -160,10 +160,10 @@ bool ListChunk<string>::saveIntoOrgBuffer()
 	orgBuffer = (BYTE*)malloc(orgSize);
 	memset(orgBuffer, 0, orgSize);
 
-	// orgBuffer¿¡ ±â·Ï
+	// orgBufferì— ê¸°ë¡
 	BYTE* orgBufferPnt = orgBuffer;
 
-	// CHUNK_APP_OTHER_EXTENTIONSÀÏ °æ¿ì´Â UINT32°¡ ¾Æ´Ï¶ó UINT16¸¸Å­ ´õÇØ¾ß ÇÑ´Ù
+	// CHUNK_APP_OTHER_EXTENTIONSì¼ ê²½ìš°ëŠ” UINT32ê°€ ì•„ë‹ˆë¼ UINT16ë§Œí¼ ë”í•´ì•¼ í•œë‹¤
 	if (info.type == ChunkType::CHUNK_APP_OTHER_EXTENTIONS) {
 		*(UINT16*)(orgBufferPnt) = value.size();
 		orgBufferPnt += sizeof(UINT16);
@@ -183,10 +183,10 @@ bool ListChunk<string>::saveIntoOrgBuffer()
 }
 
 
-// ListChunk<UINT32> µ¥ÀÌÅÍ
+// ListChunk<UINT32> ë°ì´í„°
 bool ListChunk<UINT32>::loadFromOrgBuffer() 
 {
-	// chunk µ¥ÀÌÅÍ: [UINT32 ¸®½ºÆ®(vector)]
+	// chunk ë°ì´í„°: [UINT32 ë¦¬ìŠ¤íŠ¸(vector)]
 	UINT32 count = orgSize / sizeof(UINT32);
 	value.resize(count);
 	memcpy(value.data(), orgBuffer, (sizeof(UINT32) * count));

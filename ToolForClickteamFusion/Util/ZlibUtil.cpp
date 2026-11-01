@@ -1,4 +1,4 @@
-#include "ZlibUtil.h"
+ï»¿#include "ZlibUtil.h"
 #include "CommonUtil.h"
 #include <zlib-1.2.3/zlib.h>
 
@@ -16,7 +16,7 @@ bool CTT::ZlibUtil::decode(BYTE* encodedData, UINT32 encodedSize, BYTE*& decoded
 	if (uncompress(tempDecodedData, (ULONG*)&tempDecodedSize, encodedData, encodedSize) == Z_OK) {
 		if (decodedSize != tempDecodedSize) {
 			if (isStrict) {
-				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": µðÄÚµùµÈ Å©±â°¡ ´Ù¸¨´Ï´Ù ("
+				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ë””ì½”ë”©ëœ í¬ê¸°ê°€ ë‹¤ë¦…ë‹ˆë‹¤ ("
 					<< L"expected: 0x" << uppercase << hex << decodedSize
 					<< L", result: 0x" << uppercase << hex << tempDecodedSize
 					<< L")" << endl;
@@ -29,7 +29,7 @@ bool CTT::ZlibUtil::decode(BYTE* encodedData, UINT32 encodedSize, BYTE*& decoded
 		return true;
 	}
 	else {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": µðÄÚµù ½ÇÆÐ" << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ë””ì½”ë”© ì‹¤íŒ¨" << endl;
 		decodedData = tempDecodedData;
 		decodedSize = tempDecodedSize;
 		return true;
@@ -44,7 +44,7 @@ bool CTT::ZlibUtil::encode(BYTE* decodedData, UINT32 decodedSize, BYTE*& encoded
 	UINT32 tempEncodedSize = (decodedSize * 3) + 0x200;
 	BYTE* tempEncodedData = (BYTE*)malloc(tempEncodedSize);
 	if (compress2(tempEncodedData, (ULONG*)&tempEncodedSize, decodedData, decodedSize, Z_BEST_COMPRESSION) == Z_OK) {
-		// Àß ÀÎÄÚµùµÇ¸é Å©±â ¸ÂÃç¼­ ¹ÝÈ¯
+		// ìž˜ ì¸ì½”ë”©ë˜ë©´ í¬ê¸° ë§žì¶°ì„œ ë°˜í™˜
 		encodedSize = tempEncodedSize;
 		encodedData = (BYTE*)malloc(encodedSize);
 		memcpy(encodedData, tempEncodedData, encodedSize);
@@ -52,7 +52,7 @@ bool CTT::ZlibUtil::encode(BYTE* decodedData, UINT32 decodedSize, BYTE*& encoded
 		return true;
 	}
 	else {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ÀÎÄÚµù ½ÇÆÐ" << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ì¸ì½”ë”© ì‹¤íŒ¨" << endl;
 		free(tempEncodedData);
 		return false;
 	}

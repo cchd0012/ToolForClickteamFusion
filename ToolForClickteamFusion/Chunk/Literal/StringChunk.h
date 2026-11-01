@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../Chunk.h"
 
@@ -11,12 +11,12 @@ namespace CTT {
 		public:
 			wstring& getValue() { return value; }
 			void setValue(wstring value) { this->value = value; }
-			// µ¥ÀÌÅÍ ·»´õ¸µ¿ë ÇÔ¼ö
+			// ë°ì´í„° ë Œë”ë§ìš© í•¨ìˆ˜
 			void renderData();
 		protected:
 			bool loadFromOrgBuffer()
 			{
-				// chunk µ¥ÀÌÅÍ: [WCHAR ¹®ÀÚ¿­] + [NULL ¹®ÀÚ]
+				// chunk ë°ì´í„°: [WCHAR ë¬¸ìì—´] + [NULL ë¬¸ì]
 				WCHAR* wstr = (WCHAR*)orgBuffer;
 				value = wstr;
 				free(orgBuffer);
@@ -39,7 +39,7 @@ namespace CTT {
 			wstring value;
 		};
 
-		// StringChunk¸¦ ±×´ë·Î »ó¼Ó¹Ş´Â Å¬·¡½ºµé
+		// StringChunkë¥¼ ê·¸ëŒ€ë¡œ ìƒì†ë°›ëŠ” í´ë˜ìŠ¤ë“¤
 		class AppNameChunk : public StringChunk { ; };
 		class AppAuthorChunk : public StringChunk { ; };
 		class ExtentionPathChunk : public StringChunk { ; };

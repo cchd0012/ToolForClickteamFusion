@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "Application.h"
 #include "../ImGUI/Headers.h"
@@ -16,11 +16,11 @@ namespace CTT {
 			void run();
 			void terminate();
 		private:
-			// ÇïÆÛ ÇÔ¼öµé
+			// í—¬í¼ í•¨ìˆ˜ë“¤
 			bool createDeviceD3D(HWND hWnd);
 			void cleanupDeviceD3D();
 			void resetDevice();
-			// ·»´õ¸µ ÇÔ¼ö
+			// ë Œë”ë§ í•¨ìˆ˜
 			void render();
 			void renderMenuTab();
 			void renderDirtyCloseModal();
@@ -36,11 +36,11 @@ namespace CTT {
 			void renderTreeNodes(ChunkTreeNode* node, UINT32 depth, UINT32 index, bool isRoot);
 			void renderArchiveChunkListWindow();
 			void renderArchiveEachChunkInfoWindow();
-			// ÇÁ·Î¼¼½Ì ÇÔ¼ö
+			// í”„ë¡œì„¸ì‹± í•¨ìˆ˜
 			void terminateProcess();
 			bool openArchive();
 			void closeArchive();
-			// Ãß°¡ º¯¼öµé
+			// ì¶”ê°€ ë³€ìˆ˜ë“¤
 			HWND hwnd;
 			WNDCLASSEXW wc;
 			ImGuiIO *io;

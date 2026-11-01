@@ -1,4 +1,4 @@
-#include "ObjectNamesChunk.h"
+Ôªø#include "ObjectNamesChunk.h"
 #include "../../Archive/Archive.h"
 #include "../../Util/CommonUtil.h"
 
@@ -9,7 +9,7 @@ using namespace CTT::CommonUtil;
 
 bool ObjectNamesChunk::loadFromOrgBuffer()
 {
-	// chunk µ•¿Ã≈Õ: [string ∏ÆΩ∫∆Æ(vector)]
+	// chunk Îç∞Ïù¥ÌÑ∞: [string Î¶¨Ïä§Ìä∏(vector)]
 	BYTE* orgBufferPnt = orgBuffer;
 
 	UINT32 count = 0;
@@ -35,14 +35,14 @@ bool ObjectNamesChunk::saveIntoOrgBuffer()
 		orgBuffer = NULL;
 	}
 
-	// ≈©±‚ ∞ËªÍ
+	// ÌÅ¨Í∏∞ Í≥ÑÏÇ∞
 	orgSize = 0;
 	for (UINT32 i = 0; i < value.size(); i++) {
 		wstring wstr = getUniStr(value[i], CodePage::CP_UTF_8);
 		orgSize += ((UINT32)(wcslen(wstr.c_str()) + 1) * sizeof(wchar_t));
 	}
 
-	// πˆ∆€ «“¥Á
+	// Î≤ÑÌçº Ìï†Îãπ
 	if (orgBuffer != NULL) {
 		free(orgBuffer);
 		orgBuffer = NULL;
@@ -50,7 +50,7 @@ bool ObjectNamesChunk::saveIntoOrgBuffer()
 	orgBuffer = (BYTE*)malloc(orgSize);
 	memset(orgBuffer, 0, orgSize);
 
-	// orgBufferø° ±‚∑œ
+	// orgBufferÏóê Í∏∞Î°ù
 	BYTE* orgBufferPnt = orgBuffer;
 
 	for (UINT32 i = 0; i < value.size(); i++) {

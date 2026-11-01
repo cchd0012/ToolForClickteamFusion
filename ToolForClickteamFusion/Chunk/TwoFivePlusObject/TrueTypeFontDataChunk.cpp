@@ -1,4 +1,4 @@
-#include "TrueTypeFontDataChunk.h"
+ï»¿#include "TrueTypeFontDataChunk.h"
 #include "../../Archive/Archive.h"
 #include "../../Util/CommonUtil.h"
 
@@ -11,7 +11,7 @@ bool TrueTypeFontDataChunk::readOnlyDataCount(HANDLE hArchive)
 {
 	DWORD dRead;
 
-	// Á¤È®ÇÑ °³¼ö¸¦ ¾Ë±â À§ÇØ¼­´Â Á÷Á¢ ÀĞ¾îµé¿©¾ß ÇÑ´Ù
+	// ì •í™•í•œ ê°œìˆ˜ë¥¼ ì•Œê¸° ìœ„í•´ì„œëŠ” ì§ì ‘ ì½ì–´ë“¤ì—¬ì•¼ í•œë‹¤
 
 	UINT32 totalCount = 0;
 	ReadFile(hArchive, &info, sizeof(ChunkInfo), &dRead, NULL);
@@ -26,7 +26,7 @@ bool TrueTypeFontDataChunk::readOnlyDataCount(HANDLE hArchive)
 	importRawData(rawBuffer);
 	free(rawBuffer);
 
-	// °³¼ö È®ÀÎ. ·çÇÁ¸¦ Á÷Á¢ µ¹¾Æ¾ß Ã³¸®ÇÒ ¼ö ÀÖÀ½...
+	// ê°œìˆ˜ í™•ì¸. ë£¨í”„ë¥¼ ì§ì ‘ ëŒì•„ì•¼ ì²˜ë¦¬í•  ìˆ˜ ìˆìŒ...
 	BYTE* orgBufferPnt = orgBuffer;
 	while (orgBufferPnt < (orgBuffer + orgSize)) {
 
@@ -43,7 +43,7 @@ bool TrueTypeFontDataChunk::readOnlyDataCount(HANDLE hArchive)
 		totalCount++;
 	}
 
-	// totalCount Ãß°¡
+	// totalCount ì¶”ê°€
 	getStates()->totalDataCount += totalCount;
 	getStates()->chunkDataCount = totalCount;
 
@@ -56,10 +56,10 @@ bool TrueTypeFontDataChunk::readOnlyDataCount(HANDLE hArchive)
 
 bool TrueTypeFontDataChunk::loadFromOrgBuffer()
 {
-	// ¿ÀÇÁ¼Â °ü·Ã µ¥ÀÌÅÍ ÃÊ±âÈ­
+	// ì˜¤í”„ì…‹ ê´€ë ¨ ë°ì´í„° ì´ˆê¸°í™”
 	offsetList.clear();
 
-	// value ÃÊ±âÈ­
+	// value ì´ˆê¸°í™”
 	for (UINT32 i = 0; i < value.size(); i++) {
 		if (value[i] != NULL) {
 			delete value[i];
@@ -72,7 +72,7 @@ bool TrueTypeFontDataChunk::loadFromOrgBuffer()
 	wcout << infoPrefix << L"ChunkType: " << uppercase << hex << getNameUni(info.type) << L": loading datus from buffer..." << endl;
 	while (orgBufferPnt < (orgBuffer + orgSize)) {
 
-		// ¿ÀÇÁ¼Â °ª Ãß°¡
+		// ì˜¤í”„ì…‹ ê°’ ì¶”ê°€
 		offsetList.push_back((UINT32)(orgBufferPnt - orgBuffer));
 
 		//wcout << flush << L"\r";
@@ -80,7 +80,7 @@ bool TrueTypeFontDataChunk::loadFromOrgBuffer()
 		BaseData* data = allocateData();
 		if (!data->loadFromBuffer(orgBufferPnt)) {
 			delete data;
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getNameUni(info.type) << L": µ¥ÀÌÅÍ¸¦ ·ÎµåÇÏÁö ¸øÇß½À´Ï´Ù." << endl;
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getNameUni(info.type) << L": ë°ì´í„°ë¥¼ ë¡œë“œí•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 			return false;
 		}
 		value.push_back(data);
@@ -95,14 +95,14 @@ bool TrueTypeFontDataChunk::loadFromOrgBuffer()
 
 bool TrueTypeFontDataChunk::saveIntoOrgBuffer()
 {
-	// Å©±â °è»êÇÏ¿© Àç¼¼ÆÃ
+	// í¬ê¸° ê³„ì‚°í•˜ì—¬ ì¬ì„¸íŒ…
 	UINT32 accumOffset = 0;
 	for (size_t i = 0; i < value.size(); i++) {
 		accumOffset += value[i]->getDataSize();
 	}
 	orgSize = accumOffset;
 
-	// ¹öÆÛ ÇÒ´ç ¹× ÃÊ±âÈ­
+	// ë²„í¼ í• ë‹¹ ë° ì´ˆê¸°í™”
 	if (orgBuffer != NULL) {
 		free(orgBuffer);
 		orgBuffer = NULL;
@@ -110,7 +110,7 @@ bool TrueTypeFontDataChunk::saveIntoOrgBuffer()
 	orgBuffer = (BYTE*)malloc(orgSize);
 	memset(orgBuffer, 0, orgSize);
 
-	// orgBuffer¿¡ ±â·Ï
+	// orgBufferì— ê¸°ë¡
 	BYTE* orgBufferPnt = orgBuffer;
 	wcout << infoPrefix << L"ChunkType: " << uppercase << hex << getNameUni(info.type) << L": saving " << to_wstring(value.size()) << L" data to buffer..." << endl;
 	for (size_t i = 0; i < value.size(); i++) {
@@ -118,7 +118,7 @@ bool TrueTypeFontDataChunk::saveIntoOrgBuffer()
 		//wcout << flush << L"\r";
 		//wcout << infoPrefix << L"saving " << to_wstring(i + 1) << L"/" << to_wstring(value.size()) << L" data to buffer...";
 		if (!value[i]->saveIntoBuffer(orgBufferPnt)) {
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getNameUni(info.type) << L": µ¥ÀÌÅÍ¸¦ ÀúÀåÇÏÁö ¸øÇß½À´Ï´Ù." << endl;
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getNameUni(info.type) << L": ë°ì´í„°ë¥¼ ì €ì¥í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 			return false;
 		}
 

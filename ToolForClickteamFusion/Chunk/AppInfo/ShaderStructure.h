@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../Chunk.h"
 #include "../../Util/CommonStructure.h"
@@ -14,17 +14,17 @@ namespace CTT {
 			UINT32 nameOffset;
 			UINT32 compiledDataOffset;
 			UINT32 parameterOffset;
-			UINT32 backgroundTexture;	// ÀÌ°Ô ¸Â´Â°ÇÁö´Â Àß ¸ğ¸£°ÚÀ½
-			UINT32 entrypointOffset;	// Á¤È®ÇÏÁø ¾Ê±ä ÇÑµ¥ ¾Æ¸¶ ¸ÂÀ» °ÍÀ¸·Î º¸ÀÓ
-			UINT32 rev;					// ÀüºÎ 0ÀÎ°É º¸¸é ¾Æ¸¶ ±×·²µí?
+			UINT32 backgroundTexture;	// ì´ê²Œ ë§ëŠ”ê±´ì§€ëŠ” ì˜ ëª¨ë¥´ê² ìŒ
+			UINT32 entrypointOffset;	// ì •í™•í•˜ì§„ ì•Šê¸´ í•œë° ì•„ë§ˆ ë§ì„ ê²ƒìœ¼ë¡œ ë³´ì„
+			UINT32 rev;					// ì „ë¶€ 0ì¸ê±¸ ë³´ë©´ ì•„ë§ˆ ê·¸ëŸ´ë“¯?
 		} ShaderHeader;
 
-		// int (4¹ÙÀÌÆ®) / float (4¹ÙÀÌÆ®) / float4_rgba (4¹ÙÀÌÆ®?) / image (ÀÌ¹ÌÁö ÇÚµé, 4¹ÙÀÌÆ®) / ÀÌ¿Ü¿¡´Â ¸ğ¸§
+		// int (4ë°”ì´íŠ¸) / float (4ë°”ì´íŠ¸) / float4_rgba (4ë°”ì´íŠ¸?) / image (ì´ë¯¸ì§€ í•¸ë“¤, 4ë°”ì´íŠ¸) / ì´ì™¸ì—ëŠ” ëª¨ë¦„
 		enum ShaderParameterType : BYTE
 		{
 			INT = 0x0,
 			FLOAT = 0x1,
-			FLOAT4_RGBA = 0x2,	// ÀÚ·áÇüÀº 4¹ÙÀÌÆ®Áö¸¸, °¢ rgba 4¹ÙÀÌÆ®´Â ¿¬»êÇÒ¶§ floatÃ³·³ ¾²ÀÓ
+			FLOAT4_RGBA = 0x2,	// ìë£Œí˜•ì€ 4ë°”ì´íŠ¸ì§€ë§Œ, ê° rgba 4ë°”ì´íŠ¸ëŠ” ì—°ì‚°í• ë•Œ floatì²˜ëŸ¼ ì“°ì„
 			IMAGE_HANDLE = 0x3,
 		};
 
@@ -36,11 +36,11 @@ namespace CTT {
 
 		typedef struct _shader_argument
 		{
-			ShaderParameter info;	// ¿©±â¼­ÀÇ ÆĞ·¯¹ÌÅÍ´Â ShaderParameter ¸¦ °¡Á®¿Í ¾²´Â°Ô ¸Â´Ù
-			UINT32 intValue;		// infoÀÇ ShaderParameterType::INT¿¡ ´ëÀÀ
-			float floatValue;		// infoÀÇ ShaderParameterType::FLOAT¿¡ ´ëÀÀ
-			Color colorValue;		// infoÀÇ ShaderParameterType::FLOAT4_RGBA¿¡ ´ëÀÀ
-			UINT32 imageHandle;		// infoÀÇ ShaderParameterType::IMAGE_HANDLE¿¡ ´ëÀÀ
+			ShaderParameter info;	// ì—¬ê¸°ì„œì˜ íŒ¨ëŸ¬ë¯¸í„°ëŠ” ShaderParameter ë¥¼ ê°€ì ¸ì™€ ì“°ëŠ”ê²Œ ë§ë‹¤
+			UINT32 intValue;		// infoì˜ ShaderParameterType::INTì— ëŒ€ì‘
+			float floatValue;		// infoì˜ ShaderParameterType::FLOATì— ëŒ€ì‘
+			Color colorValue;		// infoì˜ ShaderParameterType::FLOAT4_RGBAì— ëŒ€ì‘
+			UINT32 imageHandle;		// infoì˜ ShaderParameterType::IMAGE_HANDLEì— ëŒ€ì‘
 		} ShaderArgument;
 
 	}

@@ -1,4 +1,4 @@
-#include "Dx9Application.h"
+ï»¿#include "Dx9Application.h"
 #include "../Util/TextureUtil.h"
 
 using namespace CTT::App;
@@ -28,7 +28,7 @@ bool Dx9Application::init()
 {
 	HMODULE hModule = GetModuleHandleW(NULL);
 
-	// À©µµ¿ì È­¸é »ı¼º
+	// ìœˆë„ìš° í™”ë©´ ìƒì„±
 	wc.cbSize = sizeof(wc);
 	wc.style = CS_CLASSDC;
 	wc.lpfnWndProc = getApp()->WndProc;
@@ -43,20 +43,20 @@ bool Dx9Application::init()
 	wc.hIconSm = NULL;
 	::RegisterClassExW(&wc);
 
-	// app »óÅÂ ÃÊ±âÈ­
+	// app ìƒíƒœ ì´ˆê¸°í™”
 	initializeAppState();
 
-	// È­¸é Å©±â °¡Á®¿À±â
+	// í™”ë©´ í¬ê¸° ê°€ì ¸ì˜¤ê¸°
 	RECT desktop;
 	GetWindowRect(GetDesktopWindow(), &desktop);
 	int screenWidth = desktop.right;
 	int screenHeight = desktop.bottom;
 
-	// À©µµ¿ì À§Ä¡ °è»ê
+	// ìœˆë„ìš° ìœ„ì¹˜ ê³„ì‚°
 	int x = (screenWidth - states.windowWidth) / 2;
 	int y = (screenHeight - states.windowHeight) / 2;
 
-	// Áß¾Ó À§Ä¡·Î, ¸Ş´º ¾ø¾Ú(¸ğ´Ş ¶ç¿ï¶§ À§Ä¡ ¾î±ß³²), È­¸é Å©±â Á¶Àı ºÒ°¡ÇÏ°Ô
+	// ì¤‘ì•™ ìœ„ì¹˜ë¡œ, ë©”ë‰´ ì—†ì•°(ëª¨ë‹¬ ë„ìš¸ë•Œ ìœ„ì¹˜ ì–´ê¸‹ë‚¨), í™”ë©´ í¬ê¸° ì¡°ì ˆ ë¶ˆê°€í•˜ê²Œ
 	hwnd = ::CreateWindowW(
 		wc.lpszClassName,
 		name.c_str(),
@@ -70,38 +70,38 @@ bool Dx9Application::init()
 		NULL
 	);
 
-	// Direct3D ÃÊ±âÈ­
+	// Direct3D ì´ˆê¸°í™”
 	if (!createDeviceD3D(hwnd))
 	{
 		cleanupDeviceD3D();
 		::UnregisterClassW(wc.lpszClassName, wc.hInstance);
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": DirectX ÃÊ±âÈ­¿¡ ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": DirectX ì´ˆê¸°í™”ì— ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
-	// À©µµ¿ì È­¸é ¶ç¿ì±â
+	// ìœˆë„ìš° í™”ë©´ ë„ìš°ê¸°
 	::ShowWindow(hwnd, SW_SHOWDEFAULT);
 	::UpdateWindow(hwnd);
 
-	// ImGui ÄÁÅØ½ºÆ® ÃÊ±âÈ­
+	// ImGui ì»¨í…ìŠ¤íŠ¸ ì´ˆê¸°í™”
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	io = &(ImGui::GetIO());
 	io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;	 // Enable Keyboard Controls
 	io->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;	  // Enable Gamepad Controls
 
-	// ´ÙÅ© ½ºÅ¸ÀÏ
+	// ë‹¤í¬ ìŠ¤íƒ€ì¼
 	ImGui::StyleColorsDark();
 
-	// ÇÑ±¹¾î / ÀÏº»¾î ÆùÆ® ¼¼ÆÃ, ³ª¸ÓÁö ¾ğ¾î´Â ¾Ë¾Æ¼­ Ãß°¡ÇÏ´ø°¡ ÇÏ¸é µÉµí
+	// í•œêµ­ì–´ / ì¼ë³¸ì–´ í°íŠ¸ ì„¸íŒ…, ë‚˜ë¨¸ì§€ ì–¸ì–´ëŠ” ì•Œì•„ì„œ ì¶”ê°€í•˜ë˜ê°€ í•˜ë©´ ë ë“¯
 	const char* fontPath = "GUI_Font.ttf";
 	float fontSize = 14.0f;
 	io->Fonts->AddFontFromFileTTF(fontPath, fontSize, NULL, io->Fonts->GetGlyphRangesKoreanAndJapanese());
 
-	// ini ÆÄÀÏ »ı¼º ¹æÁö
+	// ini íŒŒì¼ ìƒì„± ë°©ì§€
 	io->IniFilename = NULL;
 
-	// ÇÃ·§Æû/·»´õ·¯ ¼¼ÆÃ
+	// í”Œë«í¼/ë Œë”ëŸ¬ ì„¸íŒ…
 	ImGui_ImplWin32_Init(hwnd);
 	ImGui_ImplDX9_Init(pD3dDevice);
 
@@ -113,10 +113,10 @@ void Dx9Application::run()
 {
 	bool done = false;
 
-	// À©µµ¿ì ¹è°æ»öÀº ÁöÁ¤µÈ ´ë·Î ¼¼ÆÃ
+	// ìœˆë„ìš° ë°°ê²½ìƒ‰ì€ ì§€ì •ëœ ëŒ€ë¡œ ì„¸íŒ…
 	ImVec4 bgColor = ImGui::GetStyle().Colors[ImGuiCol_WindowBg];
 
-	// À©µµ¿ì°¡ Æ÷Ä¿½º¸¦ ÀÒ¾úÀ» ¶§µµ Å¸ÀÌÆ² ÅÇ »öÀº µ¿ÀÏÇÏ°Ô
+	// ìœˆë„ìš°ê°€ í¬ì»¤ìŠ¤ë¥¼ ìƒì—ˆì„ ë•Œë„ íƒ€ì´í‹€ íƒ­ ìƒ‰ì€ ë™ì¼í•˜ê²Œ
 	ImGui::GetStyle().Colors[ImGuiCol_TitleBg] = ImGui::GetStyle().Colors[ImGuiCol_TitleBgActive];
 
 	while (!done)
@@ -144,7 +144,7 @@ void Dx9Application::run()
 			isDeviceLost = false;
 		}
 
-		// WM_SIZE ÀÌº¥Æ®·Î ¸®»çÀÌÁîÇÏÁö ¾Ê°í ¿©±â¼­ Á÷Á¢ ¸®»çÀÌÁî Ã³¸®
+		// WM_SIZE ì´ë²¤íŠ¸ë¡œ ë¦¬ì‚¬ì´ì¦ˆí•˜ì§€ ì•Šê³  ì—¬ê¸°ì„œ ì§ì ‘ ë¦¬ì‚¬ì´ì¦ˆ ì²˜ë¦¬
 		if (resizeWidth != 0 && resizeHeight != 0 && (d3dPp.BackBufferWidth != resizeWidth) && (d3dPp.BackBufferHeight != resizeHeight))
 		{
 			states.windowWidth = d3dPp.BackBufferWidth = resizeWidth;
@@ -153,18 +153,18 @@ void Dx9Application::run()
 			resetDevice();
 		}
 
-		// ImGui ÇÁ·¹ÀÓ ÃÊ±âÈ­
+		// ImGui í”„ë ˆì„ ì´ˆê¸°í™”
 		ImGui_ImplDX9_NewFrame();
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
 
-		// ** ½ÇÁ¦ ±âÀÛµé ·»´õ¸µ **
+		// ** ì‹¤ì œ ê¸°ì‘ë“¤ ë Œë”ë§ **
 		render();
 
-		// ImGui ·»´õ¸µ
+		// ImGui ë Œë”ë§
 		ImGui::EndFrame();
 
-		// DirectX 9 ¼¼ÆÃ
+		// DirectX 9 ì„¸íŒ…
 		pD3dDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
 		pD3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 		pD3dDevice->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
@@ -188,20 +188,20 @@ void Dx9Application::run()
 
 void Dx9Application::terminate()
 {
-	// °¢Á¾ ÇÁ·Î¼¼½º Á¤¸®
+	// ê°ì¢… í”„ë¡œì„¸ìŠ¤ ì •ë¦¬
 	terminateProcess();
 
-	// »óÅÂ Á¤¸®
+	// ìƒíƒœ ì •ë¦¬
 	states.chunkTreeNodeContainer.release();
 
-	// ÄÁÅ×ÀÌ³Ê Á¤¸®´Â ¾Ë¾Æ¼­ ¼Ò¸êÇÒÅ×´Ï ÇÒ ÇÊ¿ä ¾øÀ½
+	// ì»¨í…Œì´ë„ˆ ì •ë¦¬ëŠ” ì•Œì•„ì„œ ì†Œë©¸í• í…Œë‹ˆ í•  í•„ìš” ì—†ìŒ
 
-	// ImGUI Á¤¸®
+	// ImGUI ì •ë¦¬
 	ImGui_ImplDX9_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
 
-	// Direct3D Á¤¸®
+	// Direct3D ì •ë¦¬
 	cleanupDeviceD3D();
 	::DestroyWindow(hwnd);
 	::UnregisterClassW(wc.lpszClassName, wc.hInstance);
@@ -214,7 +214,7 @@ bool Dx9Application::createDeviceD3D(HWND hWnd)
 {
 	if ((pD3d = Direct3DCreate9(D3D_SDK_VERSION)) == NULL) { return false; }
 
-	// D3DDevice »ı¼º
+	// D3DDevice ìƒì„±
 	memset(&d3dPp, 0, sizeof(D3DPRESENT_PARAMETERS));
 	d3dPp.Windowed = TRUE;
 	d3dPp.SwapEffect = D3DSWAPEFFECT_DISCARD;

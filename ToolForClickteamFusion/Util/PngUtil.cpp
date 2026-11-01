@@ -1,4 +1,4 @@
-#include "PngUtil.h"
+ï»¿#include "PngUtil.h"
 #include "CommonUtil.h"
 #include <libpng-1.6.37/png.h>
 #include <zlib-1.2.3/zlib.h>
@@ -14,30 +14,30 @@ void pngErrorHandler(png_structp pngPtr, png_const_charp message);
 
 bool CTT::PngUtil::writeToPng(BYTE*& imageBuffer, wstring pngPath, UINT32& width, UINT32& height, UINT32& bitCount, bool isNoneTransparentMode)
 {
-	// pngPtr Æ÷ÀÎÅÍ ¹× °ü·Ã º¯¼ö ÃÊ±âÈ­
+	// pngPtr í¬ì¸í„° ë° ê´€ë ¨ ë³€ìˆ˜ ì´ˆê¸°í™”
 	FILE* pngFilePtr = _wfopen(pngPath.c_str(), L"wb");
 	png_structp pngPtr = NULL;
 	png_infop pngInfoPtr = NULL;
 	png_bytepp pngRowArray = NULL;
 
-	// pngPtr ±â·Ï¿ë ±¸Á¶Ã¼ »ı¼º
+	// pngPtr ê¸°ë¡ìš© êµ¬ì¡°ì²´ ìƒì„±
 	pngPtr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, pngErrorHandler, NULL);
 
-	// pngPtr Á¤º¸ ±¸Á¶Ã¼ »ı¼º
+	// pngPtr ì •ë³´ êµ¬ì¡°ì²´ ìƒì„±
 	pngInfoPtr = png_create_info_struct(pngPtr);
 
-	// ¿¹¿Ü ÇÚµé¸µ
+	// ì˜ˆì™¸ í•¸ë“¤ë§
 	if (setjmp(png_jmpbuf(pngPtr))) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(pngPath) << L": ¿À·ù ¹ß»ı!" << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(pngPath) << L": ì˜¤ë¥˜ ë°œìƒ!" << endl;
 		png_destroy_read_struct(&pngPtr, &pngInfoPtr, NULL);
 		fclose(pngFilePtr);
 		return false;
 	}
 
-	// ±â·ÏÇÒ °÷ ¼¼ÆÃ
+	// ê¸°ë¡í•  ê³³ ì„¸íŒ…
 	png_init_io(pngPtr, pngFilePtr);
 
-	// pngPtr color type ¼¼ÆÃ, µğÆúÆ® -> ´Ü»ö, 32ºñÆ® -> rgba, 24ºñÆ® -> rgb
+	// pngPtr color type ì„¸íŒ…, ë””í´íŠ¸ -> ë‹¨ìƒ‰, 32ë¹„íŠ¸ -> rgba, 24ë¹„íŠ¸ -> rgb
 	UINT32 pngColorType = PNG_COLOR_TYPE_GRAY;
 	if (bitCount == 0x20) {
 		pngColorType = PNG_COLOR_TYPE_RGBA;
@@ -47,15 +47,15 @@ bool CTT::PngUtil::writeToPng(BYTE*& imageBuffer, wstring pngPath, UINT32& width
 	}
 	png_set_IHDR(pngPtr, pngInfoPtr, width, height, 8, pngColorType, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
-	// pngPtr Á¤º¸ ±¸Á¶Ã¼ ±â·Ï
+	// pngPtr ì •ë³´ êµ¬ì¡°ì²´ ê¸°ë¡
 	png_write_info(pngPtr, pngInfoPtr);
 
-	// ÇÈ¼¿´ç ¹ÙÀÌÆ® ¼ö¿Í µ¥ÀÌÅÍ ³»ÀÇ ½ÇÁ¦ ³Êºñ ÇÈ¼¿ ¼ö
+	// í”½ì…€ë‹¹ ë°”ì´íŠ¸ ìˆ˜ì™€ ë°ì´í„° ë‚´ì˜ ì‹¤ì œ ë„ˆë¹„ í”½ì…€ ìˆ˜
 	UINT32 bytesPerPixel = (bitCount / 8);
 	UINT32 widthPixel = (bytesPerPixel * width);
 	widthPixel += (4 - (widthPixel % 4)) % 4;
 
-	// row pointer ¹è¿­ ÇÒ´ç ÈÄ µ¥ÀÌÅÍ ¿Å±â±â
+	// row pointer ë°°ì—´ í• ë‹¹ í›„ ë°ì´í„° ì˜®ê¸°ê¸°
 	pngRowArray = (png_bytep*)malloc(height * sizeof(png_bytep));
 	for (UINT32 y = 0; y < height; y++) {
 		pngRowArray[y] = (png_bytep)malloc(sizeof(png_byte) * bytesPerPixel * width);
@@ -64,7 +64,7 @@ bool CTT::PngUtil::writeToPng(BYTE*& imageBuffer, wstring pngPath, UINT32& width
 			pngRowArray[y][(x * bytesPerPixel) + 2] = _org_data_pnt[(x * bytesPerPixel) + 0];		//*b in org_data 
 			pngRowArray[y][(x * bytesPerPixel) + 1] = _org_data_pnt[(x * bytesPerPixel) + 1];		//*g in org_data
 			pngRowArray[y][(x * bytesPerPixel) + 0] = _org_data_pnt[(x * bytesPerPixel) + 2];		//*r in org_data
-			// ¾ËÆÄ°ªÀÌ ÀÖ´Â °æ¿ì, ¶ÇÇÑ transparent¸¦ ¹«½ÃÇÏ°í ÃßÃâÇÑ´Ù¸é ±×³É 0xFF·Î ¹Ú¾Æ¹ö¸°´Ù
+			// ì•ŒíŒŒê°’ì´ ìˆëŠ” ê²½ìš°, ë˜í•œ transparentë¥¼ ë¬´ì‹œí•˜ê³  ì¶”ì¶œí•œë‹¤ë©´ ê·¸ëƒ¥ 0xFFë¡œ ë°•ì•„ë²„ë¦°ë‹¤
 			if (bytesPerPixel > 3) {
 				if (isNoneTransparentMode) {
 					pngRowArray[y][(x * bytesPerPixel) + 3] = 0xFF;
@@ -76,11 +76,11 @@ bool CTT::PngUtil::writeToPng(BYTE*& imageBuffer, wstring pngPath, UINT32& width
 		}
 	}
 
-	// ÄÃ·¯ µ¥ÀÌÅÍ ±â·Ï
+	// ì»¬ëŸ¬ ë°ì´í„° ê¸°ë¡
 	png_write_image(pngPtr, pngRowArray);
 	png_write_end(pngPtr, NULL);
 
-	// Á¤¸®
+	// ì •ë¦¬
 	png_free_data(pngPtr, pngInfoPtr, PNG_FREE_ALL, -1);
 	png_destroy_write_struct(&pngPtr, (png_infopp)NULL);
 	for (UINT32 y = 0; y < height; y++) {
@@ -94,46 +94,46 @@ bool CTT::PngUtil::writeToPng(BYTE*& imageBuffer, wstring pngPath, UINT32& width
 
 bool CTT::PngUtil::readFromPng(BYTE*& imageBuffer, wstring pngPath, UINT32& width, UINT32& height, UINT32& bitCount)
 {
-	// º¯¼ö ÁØºñ
+	// ë³€ìˆ˜ ì¤€ë¹„
 	FILE* pngFilePtr;
 	png_structp pngPtr = NULL;
 	png_infop pngInfoPtr = NULL;
 	INT32 numberOfPasses = 0;
 	png_bytep* pngRowArray = NULL;
-	char frontHeader[8];		// pngPtr ÆÄÀÏÀÎÁö Á¡°ËÇÒ Çì´õ
+	char frontHeader[8];		// pngPtr íŒŒì¼ì¸ì§€ ì ê²€í•  í—¤ë”
 
-	// pngPtr ÆÄÀÏ ÀĞ¾îµéÀÏ ÁØºñ ¹× Á¡°Ë
+	// pngPtr íŒŒì¼ ì½ì–´ë“¤ì¼ ì¤€ë¹„ ë° ì ê²€
 	pngFilePtr = _wfopen(pngPath.c_str(), L"rb");
 	fread(frontHeader, 1, 8, pngFilePtr);
 	if (png_sig_cmp((png_const_bytep)frontHeader, 0, 8) != 0) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(pngPath) << L": png ÆÄÀÏ·Î ÀÎ½ÄµÇÁö ¾Ê½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(pngPath) << L": png íŒŒì¼ë¡œ ì¸ì‹ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤." << endl;
 		fclose(pngFilePtr);
 		imageBuffer = NULL;
 		width = height = bitCount = 0;
 		return false;
 	}
 
-	// ÀĞ±â Àü¿ë ±¸Á¶Ã¼ »ı¼º
+	// ì½ê¸° ì „ìš© êµ¬ì¡°ì²´ ìƒì„±
 	pngPtr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, pngErrorHandler, NULL);
 
-	// Á¤º¸ ±¸Á¶Ã¼ ÃÊ±âÈ­
+	// ì •ë³´ êµ¬ì¡°ì²´ ì´ˆê¸°í™”
 	pngInfoPtr = png_create_info_struct(pngPtr);
 
-	// ¿¹¿Ü ÇÚµé¸µ
+	// ì˜ˆì™¸ í•¸ë“¤ë§
 	if (setjmp(png_jmpbuf(pngPtr))) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(pngPath) << L": ¿À·ù ¹ß»ı!" << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(pngPath) << L": ì˜¤ë¥˜ ë°œìƒ!" << endl;
 		png_destroy_read_struct(&pngPtr, &pngInfoPtr, NULL);
 		fclose(pngFilePtr);
 		return false;
 	}
 
-	// i/o(?) ¼¼ÆÃ
+	// i/o(?) ì„¸íŒ…
 	png_init_io(pngPtr, pngFilePtr);
 
-	// ½Ã±×³Î ¹ÙÀÌÆ® ¼¼ÆÃ
+	// ì‹œê·¸ë„ ë°”ì´íŠ¸ ì„¸íŒ…
 	png_set_sig_bytes(pngPtr, 8);
 
-	// Á¤º¸ ÀĞ¾îµéÀÌ±â
+	// ì •ë³´ ì½ì–´ë“¤ì´ê¸°
 	png_read_info(pngPtr, pngInfoPtr);
 
 	width = png_get_image_width(pngPtr, pngInfoPtr);
@@ -142,7 +142,7 @@ bool CTT::PngUtil::readFromPng(BYTE*& imageBuffer, wstring pngPath, UINT32& widt
 	UINT32 bitDepth = png_get_bit_depth(pngPtr, pngInfoPtr);
 	numberOfPasses = png_set_interlace_handling(pngPtr);
 
-	// rgba / rgb / µğÆúÆ®(´Ü»ö) ¼¼ÆÃ
+	// rgba / rgb / ë””í´íŠ¸(ë‹¨ìƒ‰) ì„¸íŒ…
 	if (pngColorType == PNG_COLOR_TYPE_RGBA) {
 		bitCount = bitDepth * 4;
 	}
@@ -153,22 +153,22 @@ bool CTT::PngUtil::readFromPng(BYTE*& imageBuffer, wstring pngPath, UINT32& widt
 		bitCount = bitDepth * 3;
 	}
 
-	// ÇÊ¿äÇÑ °ªµé ÀĞ¾îµéÀÌ´Â ÇÑÆí ÇÊ¿äÇÑ Á¤º¸¸¦ ¾÷µ«ÇØÁÖ±â
+	// í•„ìš”í•œ ê°’ë“¤ ì½ì–´ë“¤ì´ëŠ” í•œí¸ í•„ìš”í•œ ì •ë³´ë¥¼ ì—…ëƒí•´ì£¼ê¸°
 	png_read_update_info(pngPtr, pngInfoPtr);
 
-	// µ¥ÀÌÅÍ°¡ µÉ °ø°£ ÇÒ´ç ÈÄ ½ÇÁ¦·Î ÀĞ¾îµéÀÌ±â	
+	// ë°ì´í„°ê°€ ë  ê³µê°„ í• ë‹¹ í›„ ì‹¤ì œë¡œ ì½ì–´ë“¤ì´ê¸°	
 	pngRowArray = (png_bytep*)malloc(sizeof(png_bytep) * height);
 	for (UINT32 y = 0; y < height; y++) {
 		pngRowArray[y] = (png_byte*)malloc(png_get_rowbytes(pngPtr, pngInfoPtr));
 	}
 	png_read_image(pngPtr, pngRowArray);
 
-	// ÇÈ¼¿´ç ¹ÙÀÌÆ® ¼ö¿Í µ¥ÀÌÅÍ ³»ÀÇ ½ÇÁ¦ ³Êºñ ÇÈ¼¿ ¼ö
+	// í”½ì…€ë‹¹ ë°”ì´íŠ¸ ìˆ˜ì™€ ë°ì´í„° ë‚´ì˜ ì‹¤ì œ ë„ˆë¹„ í”½ì…€ ìˆ˜
 	UINT32 bytesPerPixel = (bitCount / 8);
 	UINT32 widthPixel = (bytesPerPixel * height);
 	widthPixel += (4 - (widthPixel % 4)) % 4;
 
-	// °ø°£ ÇÒ´ç ÈÄ ¿Å±â±â
+	// ê³µê°„ í• ë‹¹ í›„ ì˜®ê¸°ê¸°
 	imageBuffer = (BYTE*)malloc(width * height * (bitCount / 8));
 	memset(imageBuffer, 0, (width * height * (bitCount / 8)));
 	for (UINT32 y = 0; y < height; y++) {
@@ -177,14 +177,14 @@ bool CTT::PngUtil::readFromPng(BYTE*& imageBuffer, wstring pngPath, UINT32& widt
 			imageDataPtr[(x * bytesPerPixel) + 0] = pngRowArray[y][(x * bytesPerPixel) + 2];		//*b in org_data 
 			imageDataPtr[(x * bytesPerPixel) + 1] = pngRowArray[y][(x * bytesPerPixel) + 1];		//*g in org_data
 			imageDataPtr[(x * bytesPerPixel) + 2] = pngRowArray[y][(x * bytesPerPixel) + 0];		//*r in org_data
-			// ¾ËÆÄ°ªÀÌ ÀÖ´Â °æ¿ì
+			// ì•ŒíŒŒê°’ì´ ìˆëŠ” ê²½ìš°
 			if (bytesPerPixel > 3) {
 				imageDataPtr[(x * bytesPerPixel) + 3] = pngRowArray[y][(x * bytesPerPixel) + 3];	//*a in org_data
 			}
 		}
 	}
 
-	// Á¤¸®
+	// ì •ë¦¬
 	fclose(pngFilePtr);
 	png_free_data(pngPtr, pngInfoPtr, PNG_FREE_ALL, -1);
 	png_destroy_read_struct(&pngPtr, &pngInfoPtr, (png_infopp)NULL);
@@ -198,18 +198,18 @@ bool CTT::PngUtil::readFromPng(BYTE*& imageBuffer, wstring pngPath, UINT32& widt
 
 
 
-// ¸Ş¸ğ¸®»óÀÇ PNG µ¥ÀÌÅÍ¸¦ ÀĞ¾î¼­ ÅØ½ºÃ³¸¦ ¸¸µå´Â ÇÔ¼ö
+// ë©”ëª¨ë¦¬ìƒì˜ PNG ë°ì´í„°ë¥¼ ì½ì–´ì„œ í…ìŠ¤ì²˜ë¥¼ ë§Œë“œëŠ” í•¨ìˆ˜
 HRESULT CTT::PngUtil::createTextureFromPngMemory(BYTE* pngData, size_t pngSize, LPDIRECT3DDEVICE9 device, LPDIRECT3DTEXTURE9* ppTexture)
 {
-	// pngPtr Æ÷ÀÎÅÍ ¹× °ü·Ã º¯¼ö ÃÊ±âÈ­
+	// pngPtr í¬ì¸í„° ë° ê´€ë ¨ ë³€ìˆ˜ ì´ˆê¸°í™”
 	png_structp pngPtr = NULL;
 	png_infop pngInfoPtr = NULL;
 	png_bytepp pngRowArray = NULL;
 
-	// png ±â·Ï¿ë ±¸Á¶Ã¼ »ı¼º
+	// png ê¸°ë¡ìš© êµ¬ì¡°ì²´ ìƒì„±
 	pngPtr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, pngErrorHandler, NULL);
 
-	// png Á¤º¸ ±¸Á¶Ã¼ »ı¼º
+	// png ì •ë³´ êµ¬ì¡°ì²´ ìƒì„±
 	pngInfoPtr = png_create_info_struct(pngPtr);
 
 	if (setjmp(png_jmpbuf(pngPtr))) {
@@ -217,7 +217,7 @@ HRESULT CTT::PngUtil::createTextureFromPngMemory(BYTE* pngData, size_t pngSize, 
 		return -1;
 	}
 
-	// PNG µ¥ÀÌÅÍ¸¦ ¸Ş¸ğ¸®¿¡¼­ ÀĞ±â À§ÇÑ ¼³Á¤
+	// PNG ë°ì´í„°ë¥¼ ë©”ëª¨ë¦¬ì—ì„œ ì½ê¸° ìœ„í•œ ì„¤ì •
 	png_set_read_fn(pngPtr, &pngData, [](png_structp png, png_bytep data, png_size_t length) {
 		BYTE** pngData = (BYTE**)png_get_io_ptr(png);
 		memcpy(data, *pngData, length);
@@ -226,37 +226,37 @@ HRESULT CTT::PngUtil::createTextureFromPngMemory(BYTE* pngData, size_t pngSize, 
 
 	png_set_compression_level(pngPtr, Z_BEST_COMPRESSION);
 
-	// PNG ÆÄÀÏ ÀĞ±â
+	// PNG íŒŒì¼ ì½ê¸°
 	png_set_sig_bytes(pngPtr, 0);
 	png_read_info(pngPtr, pngInfoPtr);
 
 	int width = png_get_image_width(pngPtr, pngInfoPtr);
 	int height = png_get_image_height(pngPtr, pngInfoPtr);
 
-	// RGBA Æ÷¸ËÀ¸·Î ¼³Á¤
+	// RGBA í¬ë§·ìœ¼ë¡œ ì„¤ì •
 	png_set_expand(pngPtr);
 	png_set_palette_to_rgb(pngPtr);
 	png_set_tRNS_to_alpha(pngPtr);
 	png_set_filler(pngPtr, 0, PNG_FILLER_AFTER);
 	png_read_update_info(pngPtr, pngInfoPtr);
 
-	// ÅØ½ºÃ³ »ı¼º
+	// í…ìŠ¤ì²˜ ìƒì„±
 	HRESULT hr = D3DXCreateTexture(device, width, height, 1, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, ppTexture);
 	if (FAILED(hr)) {
 		png_destroy_read_struct(&pngPtr, &pngInfoPtr, NULL);
 		return hr;
 	}
 
-	// ºñÆ®¸Ê µ¥ÀÌÅÍ ÇÒ´ç
-	BYTE* data = (BYTE*)malloc(width * height * 4); // RGBA µ¥ÀÌÅÍ
+	// ë¹„íŠ¸ë§µ ë°ì´í„° í• ë‹¹
+	BYTE* data = (BYTE*)malloc(width * height * 4); // RGBA ë°ì´í„°
 	pngRowArray = (png_bytep*)malloc(sizeof(png_bytep) * height);
 	for (UINT32 y = 0; y < height; y++) {
-		pngRowArray[y] = data + y * width * 4; // RGBA·Î º¯È¯
+		pngRowArray[y] = data + y * width * 4; // RGBAë¡œ ë³€í™˜
 	}
 
 	png_read_image(pngPtr, pngRowArray);
 
-	// ÅØ½ºÃ³¿¡ µ¥ÀÌÅÍ º¹»ç, ³Êºñ°¡ Á¼À¸¸é pitch°¡ 0x80À¸·Î °íÁ¤µÇ´Â ¸»µµ¾ÈµÇ´Â Çö»óÀÌ ÀÖ¾î¼­ ¾îÂ¿ ¼ö ¾øÀÌ ÁöÁ¤ÇÔ
+	// í…ìŠ¤ì²˜ì— ë°ì´í„° ë³µì‚¬, ë„ˆë¹„ê°€ ì¢ìœ¼ë©´ pitchê°€ 0x80ìœ¼ë¡œ ê³ ì •ë˜ëŠ” ë§ë„ì•ˆë˜ëŠ” í˜„ìƒì´ ìˆì–´ì„œ ì–´ì©” ìˆ˜ ì—†ì´ ì§€ì •í•¨
 	D3DLOCKED_RECT lockedRect;
 	hr = (*ppTexture)->LockRect(0, &lockedRect, NULL, 0);
 	if (SUCCEEDED(hr)) {
@@ -266,7 +266,7 @@ HRESULT CTT::PngUtil::createTextureFromPngMemory(BYTE* pngData, size_t pngSize, 
 		(*ppTexture)->UnlockRect(0);
 	}
 
-	// ¸Ş¸ğ¸® ÇØÁ¦
+	// ë©”ëª¨ë¦¬ í•´ì œ
 	free(data);
 	png_destroy_read_struct(&pngPtr, &pngInfoPtr, NULL);
 
@@ -277,6 +277,6 @@ HRESULT CTT::PngUtil::createTextureFromPngMemory(BYTE* pngData, size_t pngSize, 
 
 
 void pngErrorHandler(png_structp pngPtr, png_const_charp message) {
-	wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << L"PNG ¿À·ù: " << message << endl;
+	wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << L"PNG ì˜¤ë¥˜: " << message << endl;
 	longjmp(png_jmpbuf(pngPtr), 1);
 }

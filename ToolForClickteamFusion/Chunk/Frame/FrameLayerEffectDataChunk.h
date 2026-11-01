@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../DataChunk.h"
 #include "FrameLayerEffect.h"
@@ -9,7 +9,7 @@ namespace CTT {
 
 		class FrameLayerEffectDataChunk : public DataChunk
 		{
-			// ¹Ì¸® ÇÁ·¹ÀÓ ÀÌÆåÆ®ÀÇ ¼ö¸¦ ³Ñ°Ü¹Ş¾Æ¾ß Ã³¸®°¡ °¡´ÉÇÏ´Ù
+			// ë¯¸ë¦¬ í”„ë ˆì„ ì´í™íŠ¸ì˜ ìˆ˜ë¥¼ ë„˜ê²¨ë°›ì•„ì•¼ ì²˜ë¦¬ê°€ ê°€ëŠ¥í•˜ë‹¤
 		public:
 			FrameLayerEffectDataChunk() {
 				frameLayerCount = 0;

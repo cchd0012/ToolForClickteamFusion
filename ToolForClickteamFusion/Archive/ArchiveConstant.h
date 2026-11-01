@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "../Common.h"
 
 namespace CTT {
@@ -23,10 +23,10 @@ namespace CTT {
 
 		enum class EngineType 
 		{
-			ENGINE_NORMAL,			// µðÆúÆ® ¹öÀü
-			ENGINE_MMF_1_5,			// "PAME" ¸é ¹öÀüÀÌ ±×´ë·Î 1.5·Î Àû¿ëµÊ
-			ENGINE_MMF_2,			// "PAME" ÀÏ ¶§¸¸ ¾²¹Ç·Î Áö±ÝÀº ½Å°æ ¾È½áµµ µÇ´Â ¹öÀüÀÏµí
-			ENGINE_MMF_2_5_PLUS,	// Áß°£¿¡ NewObject °ü·Ã chunk°¡ Á¸ÀçÇÑ´Ù¸é ÀÌ ¹öÀüÀ¸·Î º¯°æµÊ
+			ENGINE_NORMAL,			// ë””í´íŠ¸ ë²„ì „
+			ENGINE_MMF_1_5,			// "PAME" ë©´ ë²„ì „ì´ ê·¸ëŒ€ë¡œ 1.5ë¡œ ì ìš©ë¨
+			ENGINE_MMF_2,			// "PAME" ì¼ ë•Œë§Œ ì“°ë¯€ë¡œ ì§€ê¸ˆì€ ì‹ ê²½ ì•ˆì¨ë„ ë˜ëŠ” ë²„ì „ì¼ë“¯
+			ENGINE_MMF_2_5_PLUS,	// ì¤‘ê°„ì— NewObject ê´€ë ¨ chunkê°€ ì¡´ìž¬í•œë‹¤ë©´ ì´ ë²„ì „ìœ¼ë¡œ ë³€ê²½ë¨
 			ENGINE_ANDROID,
 			ENGINE_F3,
 			ENGINE_IOS,

@@ -1,4 +1,4 @@
-#include "Shader.h"
+ï»¿#include "Shader.h"
 #include "../../Archive/Archive.h"
 #include "../../Util/JsonUtil.h"
 #include "../../Util/CommonUtil.h"
@@ -30,13 +30,13 @@ bool Shader::exportData(wstring& dirPath, UINT32 index, bool isFullyExport)
 {
 	DWORD dWrite;
 
-	// ÃßÃâ ÆÄÀÏ °æ·Î »ı¼º
+	// ì¶”ì¶œ íŒŒì¼ ê²½ë¡œ ìƒì„±
 	wstring exportJsonPath = dirPath + L"/" + getExtentionRemovedPath(name) + L"_params.json";
 	wstring exportCompiledShaderPath = dirPath + L"/" + getExtentionRemovedPath(name) + L"_compiled." + getExtention(name);
 
 	wcout << infoPrefix << L"exporting " << exportCompiledShaderPath << L"..." << endl;
 
-	// json µ¥ÀÌÅÍ ÃßÃâ (ÀÏ´Ü ÆĞ·¯¹ÌÅÍ Å¸ÀÔ¸¸ ³Ö¾î¼­ ÇÏ´Â°É·Î ÇÏÀÚ. ¾îÂ÷ÇÇ ±³Ã¼´Â ÇÒ ÇÊ¿ä°¡ ¾øÀ» °Í °°°í)
+	// json ë°ì´í„° ì¶”ì¶œ (ì¼ë‹¨ íŒ¨ëŸ¬ë¯¸í„° íƒ€ì…ë§Œ ë„£ì–´ì„œ í•˜ëŠ”ê±¸ë¡œ í•˜ì. ì–´ì°¨í”¼ êµì²´ëŠ” í•  í•„ìš”ê°€ ì—†ì„ ê²ƒ ê°™ê³ )
 	Json::Value root;
 	Json::Value parameters;
 	for (UINT32 i = 0; i < parameterList.size();i++) {
@@ -75,20 +75,20 @@ bool Shader::exportData(wstring& dirPath, UINT32 index, bool isFullyExport)
 	root["parameters"] = parameters;
 
 	if (!writeIntoJson(root, exportJsonPath)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": json µ¥ÀÌÅÍ¸¦ ±â·ÏÇÏÁö ¸øÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": json ë°ì´í„°ë¥¼ ê¸°ë¡í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
-	// ÄÄÆÄÀÏµÈ shader µ¥ÀÌÅÍ ÃßÃâ
+	// ì»´íŒŒì¼ëœ shader ë°ì´í„° ì¶”ì¶œ
 	HANDLE hCompiledShader = CreateFileW(exportCompiledShaderPath.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hCompiledShader == INVALID_HANDLE_VALUE) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(exportCompiledShaderPath) << L": ÄÄÆÄÀÏµÈ shader¸¦ ÃßÃâÇÏÁö ¸øÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(exportCompiledShaderPath) << L": ì»´íŒŒì¼ëœ shaderë¥¼ ì¶”ì¶œí•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 	WriteFile(hCompiledShader, compiledData, compiledDataSize, &dWrite, NULL);
 	CloseHandle(hCompiledShader);
 
-	// fully export ¸ğµå¶ó¸é µğÄÄÆÄÀÏÇÑ shader µ¥ÀÌÅÍµµ ÃßÃâ
+	// fully export ëª¨ë“œë¼ë©´ ë””ì»´íŒŒì¼í•œ shader ë°ì´í„°ë„ ì¶”ì¶œ
 	if (isFullyExport) {
 	}
 
@@ -104,7 +104,7 @@ bool Shader::importData(wstring& dirPath, UINT32 index)
 
 bool Shader::loadFromBuffer(BYTE*& bufferPnt)
 {
-	// ÃÊ±âÈ­
+	// ì´ˆê¸°í™”
 	memcpy(&header, bufferPnt, sizeof(ShaderHeader));
 
 	if (compiledData != NULL) {
@@ -114,11 +114,11 @@ bool Shader::loadFromBuffer(BYTE*& bufferPnt)
 
 	parameterList.clear();
 
-	// ÀÌ¸§ È®º¸ (string -> wstring)
+	// ì´ë¦„ í™•ë³´ (string -> wstring)
 	string nameAnsi = (char*)(bufferPnt + header.nameOffset);
 	name = getUniStr(nameAnsi, CodePage::CP_UTF_8);
 
-	// µ¥ÀÌÅÍ Å©±â ¹× µ¥ÀÌÅÍ È®º¸, parameterOffset °ªÀÌ 0ÀÌ¸é ÀüÃ¼ Å©±â·ÎºÎÅÍ ÃßÁ¤ÇÑ´Ù
+	// ë°ì´í„° í¬ê¸° ë° ë°ì´í„° í™•ë³´, parameterOffset ê°’ì´ 0ì´ë©´ ì „ì²´ í¬ê¸°ë¡œë¶€í„° ì¶”ì •í•œë‹¤
 	if (header.parameterOffset != 0) {
 		compiledDataSize = header.parameterOffset - header.compiledDataOffset;
 	}
@@ -128,7 +128,7 @@ bool Shader::loadFromBuffer(BYTE*& bufferPnt)
 	compiledData = (BYTE*)malloc(compiledDataSize);
 	memcpy(compiledData, (bufferPnt + header.compiledDataOffset), compiledDataSize);
 
-	// ÆĞ·¯¹ÌÅÍ Á¤º¸ È®º¸
+	// íŒ¨ëŸ¬ë¯¸í„° ì •ë³´ í™•ë³´
 	if (header.parameterOffset != 0) {
 
 		BYTE* parameterBufferBasePnt = (bufferPnt + header.parameterOffset);
@@ -157,7 +157,7 @@ bool Shader::loadFromBuffer(BYTE*& bufferPnt)
 
 	}
 
-	// ¿£Æ®¸®Æ÷ÀÎÆ®´Â Á÷Á¢ µğÄÚ´õ¸¦ ³Ö¾î¾ß ÇÒ°Å °°Àºµ¥...
+	// ì—”íŠ¸ë¦¬í¬ì¸íŠ¸ëŠ” ì§ì ‘ ë””ì½”ë”ë¥¼ ë„£ì–´ì•¼ í• ê±° ê°™ì€ë°...
 
 	return true;
 }
@@ -165,18 +165,18 @@ bool Shader::loadFromBuffer(BYTE*& bufferPnt)
 
 bool Shader::saveIntoBuffer(BYTE*& bufferPnt)
 {
-	// *** ¹Ì±¸Çö ***
+	// *** ë¯¸êµ¬í˜„ ***
 
 	return true;
 }
 
 
-// µ¥ÀÌÅÍ ·»´õ¸µ¿ë ÇÔ¼ö
+// ë°ì´í„° ë Œë”ë§ìš© í•¨ìˆ˜
 void Shader::renderData(UINT32 index)
 {
 	stringstream oss;
 
-	// ÀÎµ¦½º Ç¥Çö
+	// ì¸ë±ìŠ¤ í‘œí˜„
 	oss << "  <" << index << ">{";
 	ImGui::Text(oss.str().c_str());
 	oss.str("");

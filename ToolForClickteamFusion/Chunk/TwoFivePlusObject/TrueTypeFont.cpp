@@ -1,4 +1,4 @@
-#include "TrueTypeFont.h"
+ï»¿#include "TrueTypeFont.h"
 #include "../../Archive/Archive.h"
 #include "../../Util/ZlibUtil.h"
 #include "../../Util/CommonUtil.h"
@@ -26,24 +26,24 @@ bool TrueTypeFont::exportData(wstring& dirPath, UINT32 index, bool isFullyExport
 {
 	DWORD dWrite;
 
-	// ÃßÃâ ÆÄÀÏ °æ·Î »ı¼º
+	// ì¶”ì¶œ íŒŒì¼ ê²½ë¡œ ìƒì„±
 	wostringstream woss;
 	woss << setw(6) << setfill(L'0') << index;
 	wstring exportFilePath = dirPath + L"/" + woss.str() + L".ttf";
 
 	wcout << infoPrefix << L"exporting " << exportFilePath << L"..." << endl;
 
-	// ¾ĞÃàÇ®±â
+	// ì••ì¶•í’€ê¸°
 	BYTE* orgBuffer = NULL;
 	if (!ZlibUtil::decode(value.compressedData, value.compressedSize, orgBuffer, value.orgSize)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": TrueType ÆùÆ® µ¥ÀÌÅÍ µğÄÚµùÀ» ½ÇÆĞÇß½À´Ï´Ù. (buffer)" << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": TrueType í°íŠ¸ ë°ì´í„° ë””ì½”ë”©ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤. (buffer)" << endl;
 		if (orgBuffer != NULL) {
 			free(orgBuffer);
 		}
 		return false;
 	}
 
-	// ÃßÃâ ÈÄ Á¤¸®
+	// ì¶”ì¶œ í›„ ì •ë¦¬
 	HANDLE hWrite = CreateFileW(exportFilePath.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	WriteFile(hWrite, orgBuffer, value.orgSize, &dWrite, NULL);
 	CloseHandle(hWrite);
@@ -57,12 +57,12 @@ bool TrueTypeFont::importData(wstring& dirPath, UINT32 index)
 {
 	DWORD dRead;
 
-	// import ÆÄÀÏ °æ·Î »ı¼º
+	// import íŒŒì¼ ê²½ë¡œ ìƒì„±
 	wostringstream woss;
 	woss << setw(6) << setfill(L'0') << index;
 	wstring importFilePath = dirPath + L"/" + woss.str() + L".ttf";
 
-	// Á¸Àç È®ÀÎ, ¾øÀ¸¸é ±×³É µ¹¾Æ°¨
+	// ì¡´ì¬ í™•ì¸, ì—†ìœ¼ë©´ ê·¸ëƒ¥ ëŒì•„ê°
 	if (isFileOrDir(importFilePath) != FSOType::FSO_FILE) {
 		return true;
 	}
@@ -71,7 +71,7 @@ bool TrueTypeFont::importData(wstring& dirPath, UINT32 index)
 
 	HANDLE hRead = CreateFileW(importFilePath.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hRead == INVALID_HANDLE_VALUE) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(importFilePath) << L": TrueType ÆùÆ® ÆÄÀÏÀ» ÀĞ¾îµéÀÌÁö ¸øÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(importFilePath) << L": TrueType í°íŠ¸ íŒŒì¼ì„ ì½ì–´ë“¤ì´ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
@@ -87,7 +87,7 @@ bool TrueTypeFont::importData(wstring& dirPath, UINT32 index)
 	CloseHandle(hRead);
 
 	if (!ZlibUtil::encode(orgBuffer, value.orgSize, value.compressedData, value.compressedSize)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": TrueType ÆùÆ® µ¥ÀÌÅÍ ÀÎÄÚµùÀ» ½ÇÆĞÇß½À´Ï´Ù. (buffer)" << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": TrueType í°íŠ¸ ë°ì´í„° ì¸ì½”ë”©ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤. (buffer)" << endl;
 		free(orgBuffer);
 		if (value.compressedData != NULL) {
 			free(value.compressedData);
@@ -133,12 +133,12 @@ bool TrueTypeFont::saveIntoBuffer(BYTE*& bufferPnt)
 }
 
 
-// µ¥ÀÌÅÍ ·»´õ¸µ¿ë ÇÔ¼ö
+// ë°ì´í„° ë Œë”ë§ìš© í•¨ìˆ˜
 void TrueTypeFont::renderData(UINT32 index)
 {
 	stringstream oss;
 
-	// ÀÎµ¦½º Ç¥Çö
+	// ì¸ë±ìŠ¤ í‘œí˜„
 	oss << "  <" << index << ">{";
 	ImGui::Text(oss.str().c_str());
 	oss.str("");

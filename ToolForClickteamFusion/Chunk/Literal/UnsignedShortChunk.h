@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../Chunk.h"
 
@@ -11,11 +11,11 @@ namespace CTT {
 		public:
 			UINT16& getValue() { return value; }
 			void setValue(UINT16 value) { this->value = value; }
-			// µ¥ÀÌÅÍ ·»´õ¸µ¿ë ÇÔ¼ö
+			// ë°ì´í„° ë Œë”ë§ìš© í•¨ìˆ˜
 			void renderData();
 		protected:
 			bool loadFromOrgBuffer() {
-				// chunk µ¥ÀÌÅÍ: [4¹ÙÀÌÆ® Á¤¼ö]
+				// chunk ë°ì´í„°: [4ë°”ì´íŠ¸ ì •ìˆ˜]
 				value = *(UINT16*)orgBuffer;
 				free(orgBuffer);
 				orgBuffer = NULL;
@@ -36,7 +36,7 @@ namespace CTT {
 			UINT16 value = 0;
 		};
 
-		// UnsignedShortChunk¸¦ ±×´ë·Î »ó¼Ó¹Ş´Â Å¬·¡½ºµé
+		// UnsignedShortChunkë¥¼ ê·¸ëŒ€ë¡œ ìƒì†ë°›ëŠ” í´ë˜ìŠ¤ë“¤
 		class FrameRandomSeedChunk : public UnsignedShortChunk { ; };
 	}
 

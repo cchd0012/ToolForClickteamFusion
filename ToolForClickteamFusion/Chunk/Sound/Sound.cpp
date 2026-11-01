@@ -1,4 +1,4 @@
-#include "Sound.h"
+ï»¿#include "Sound.h"
 #include "../../Archive/Archive.h"
 #include "../../Util/ZlibUtil.h"
 #include "../../Util/CommonUtil.h"
@@ -34,13 +34,13 @@ Sound::~Sound()
 
 bool Sound::exportData(wstring& dirPath, UINT32 index, bool isFullyExport)
 {
-	// ¾ĞÃà µ¥ÀÌÅÍ¿¡¼­ »ç¿îµå µ¥ÀÌÅÍ »Ì¾Æ³»±â
+	// ì••ì¶• ë°ì´í„°ì—ì„œ ì‚¬ìš´ë“œ ë°ì´í„° ë½‘ì•„ë‚´ê¸°
 	if (!deriveSoundData()) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": »ç¿îµå µ¥ÀÌÅÍ¸¦ ¾òÁö ¸øÇß½À´Ï´Ù. (buffer)" << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ì‚¬ìš´ë“œ ë°ì´í„°ë¥¼ ì–»ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. (buffer)" << endl;
 		return false;
 	}
 
-	// È®ÀåÀÚ´Â ³»ºÎ µ¥ÀÌÅÍ¸¦ °¡Áö°í ÆÇ´ÜÇÑ´Ù
+	// í™•ì¥ìëŠ” ë‚´ë¶€ ë°ì´í„°ë¥¼ ê°€ì§€ê³  íŒë‹¨í•œë‹¤
 	string oggMagic = "OggS";
 	string wavMagic = "RIFF";
 	string mp3Magic = "ID3";
@@ -60,7 +60,7 @@ bool Sound::exportData(wstring& dirPath, UINT32 index, bool isFullyExport)
 		extention = L"unk";
 	}
 
-	// ÃßÃâ ÆÄÀÏ °æ·Î »ı¼º, ³»ºÎ µ¥ÀÌÅÍ¸¦ °¡Áö°í ÆÇ´ÜÇÑ´Ù
+	// ì¶”ì¶œ íŒŒì¼ ê²½ë¡œ ìƒì„±, ë‚´ë¶€ ë°ì´í„°ë¥¼ ê°€ì§€ê³  íŒë‹¨í•œë‹¤
 	wostringstream woss;
 	woss << setw(6) << setfill(L'0') << index;
 	wstring exportFilePath = dirPath + L"/" + woss.str() + L"_" + name + L"." + extention;
@@ -69,16 +69,16 @@ bool Sound::exportData(wstring& dirPath, UINT32 index, bool isFullyExport)
 
 	DWORD dWrite;
 
-	// ±×´ë·Î ±â·Ï
+	// ê·¸ëŒ€ë¡œ ê¸°ë¡
 	HANDLE hSound = CreateFileW(exportFilePath.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hSound == INVALID_HANDLE_VALUE) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(exportFilePath) << L": »ç¿îµå ÆÄÀÏÀ» ÃßÃâÇÏÁö ¸øÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(exportFilePath) << L": ì‚¬ìš´ë“œ íŒŒì¼ì„ ì¶”ì¶œí•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 	WriteFile(hSound, soundData, soundSize, &dWrite, NULL);
 	CloseHandle(hSound);
 
-	// ¸Ş¸ğ¸® °ü¸®¸¦ À§ÇØ soundData ÇØÁ¦
+	// ë©”ëª¨ë¦¬ ê´€ë¦¬ë¥¼ ìœ„í•´ soundData í•´ì œ
 	free(soundData);
 	soundData = NULL;
 
@@ -88,14 +88,14 @@ bool Sound::exportData(wstring& dirPath, UINT32 index, bool isFullyExport)
 
 bool Sound::importData(wstring& dirPath, UINT32 index)
 {
-	// ¾ĞÃà µ¥ÀÌÅÍ¿¡¼­ ÀÌ¸§ µ¥ÀÌÅÍ¸¦ »Ì¾Æ³»±â. ºñÈ¿À²ÀûÀÌÁö¸¸ ´Ù¸¥ ¹æ¹ıÀÌ ¾ø´Ù...
-	// ±×·±µ¥ Áö±İ º¸´Ï±î ³»ºÎ µ¥ÀÌÅÍ¸¦ ºÁ¾ß È®ÀåÀÚ¸¦ ÆÄ¾ÇÇÒ ¼ö°¡ ÀÖ¾î¼­ ¾îÂ÷ÇÇ ÇÊ¿äÇÒ ¼ö¹Û¿¡ ¾øÀ½
+	// ì••ì¶• ë°ì´í„°ì—ì„œ ì´ë¦„ ë°ì´í„°ë¥¼ ë½‘ì•„ë‚´ê¸°. ë¹„íš¨ìœ¨ì ì´ì§€ë§Œ ë‹¤ë¥¸ ë°©ë²•ì´ ì—†ë‹¤...
+	// ê·¸ëŸ°ë° ì§€ê¸ˆ ë³´ë‹ˆê¹Œ ë‚´ë¶€ ë°ì´í„°ë¥¼ ë´ì•¼ í™•ì¥ìë¥¼ íŒŒì•…í•  ìˆ˜ê°€ ìˆì–´ì„œ ì–´ì°¨í”¼ í•„ìš”í•  ìˆ˜ë°–ì— ì—†ìŒ
 	if (!deriveSoundData()) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": name µ¥ÀÌÅÍ¸¦ ¾òÁö ¸øÇß½À´Ï´Ù. (buffer)" << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": name ë°ì´í„°ë¥¼ ì–»ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. (buffer)" << endl;
 		return false;
 	}
 
-	// È®ÀåÀÚ´Â ³»ºÎ µ¥ÀÌÅÍ¸¦ °¡Áö°í ÆÇ´ÜÇÑ´Ù
+	// í™•ì¥ìëŠ” ë‚´ë¶€ ë°ì´í„°ë¥¼ ê°€ì§€ê³  íŒë‹¨í•œë‹¤
 	string oggMagic = "OggS";
 	string wavMagic = "RIFF";
 	string mp3Magic = "ID3";
@@ -115,13 +115,13 @@ bool Sound::importData(wstring& dirPath, UINT32 index)
 		extention = L"unk";
 	}
 
-	// import ÆÄÀÏ °æ·Î »ı¼º
+	// import íŒŒì¼ ê²½ë¡œ ìƒì„±
 	wostringstream woss;
 	woss << setw(6) << setfill(L'0') << index;
 	wstring importFilePath = dirPath + L"/" + woss.str() + L"_" + name + L"." + extention;
 
-	// Á¸Àç È®ÀÎ, ÀÖ´Ù¸é ½ÇÁ¦·Î importÇÏ°í, ¾ø´Ù¸é ±×´ë·Î À¯ÁöÇÑ´Ù
-	// ´Ù¸¥ °Íµé°ú ´Ù¸¥ ÀÌÀ¯´Â ÀÌ »óÅÂ¿¡¼­ ¾ĞÃàµÈ µ¥ÀÌÅÍ°¡ ¾ø°í ¿ø·¡ µ¥ÀÌÅÍ¸¸ ÀÖ±â ¶§¹®ÀÌ´Ù
+	// ì¡´ì¬ í™•ì¸, ìˆë‹¤ë©´ ì‹¤ì œë¡œ importí•˜ê³ , ì—†ë‹¤ë©´ ê·¸ëŒ€ë¡œ ìœ ì§€í•œë‹¤
+	// ë‹¤ë¥¸ ê²ƒë“¤ê³¼ ë‹¤ë¥¸ ì´ìœ ëŠ” ì´ ìƒíƒœì—ì„œ ì••ì¶•ëœ ë°ì´í„°ê°€ ì—†ê³  ì›ë˜ ë°ì´í„°ë§Œ ìˆê¸° ë•Œë¬¸ì´ë‹¤
 	if (isFileOrDir(importFilePath) == FSOType::FSO_FILE) {
 
 		wcout << infoPrefix << L"importing " << importFilePath << L"..." << endl;
@@ -134,10 +134,10 @@ bool Sound::importData(wstring& dirPath, UINT32 index)
 		}
 		soundSize = 0;
 
-		// ±×´ë·Î ÀĞ¾îµéÀÌ±â
+		// ê·¸ëŒ€ë¡œ ì½ì–´ë“¤ì´ê¸°
 		HANDLE hSound = CreateFileW(importFilePath.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 		if (hSound == INVALID_HANDLE_VALUE) {
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(importFilePath) << L": »ç¿îµå ÆÄÀÏÀ» ÀĞ¾îµéÀÌÁö ¸øÇß½À´Ï´Ù." << endl;
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(importFilePath) << L": ì‚¬ìš´ë“œ íŒŒì¼ì„ ì½ì–´ë“¤ì´ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 			return false;
 		}
 		soundSize = GetFileSize(hSound, NULL);
@@ -147,9 +147,9 @@ bool Sound::importData(wstring& dirPath, UINT32 index)
 
 	}
 
-	// »ç¿îµå µ¥ÀÌÅÍ¿¡¼­ ¾ĞÃà µ¥ÀÌÅÍ »Ì¾Æ³»±â
+	// ì‚¬ìš´ë“œ ë°ì´í„°ì—ì„œ ì••ì¶• ë°ì´í„° ë½‘ì•„ë‚´ê¸°
 	if (!deriveCompressedData()) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ¾ĞÃàµÈ µ¥ÀÌÅÍ¸¦ ¾òÁö ¸øÇß½À´Ï´Ù. (buffer)" << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ì••ì¶•ëœ ë°ì´í„°ë¥¼ ì–»ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. (buffer)" << endl;
 		return false;
 	}
 
@@ -199,17 +199,17 @@ bool Sound::saveIntoBuffer(BYTE*& bufferPnt)
 }
 
 
-// µ¥ÀÌÅÍ ·»´õ¸µ¿ë ÇÔ¼ö
+// ë°ì´í„° ë Œë”ë§ìš© í•¨ìˆ˜
 void Sound::renderData(UINT32 index)
 {
 	stringstream oss;
 
-	// ÀÎµ¦½º Ç¥Çö
+	// ì¸ë±ìŠ¤ í‘œí˜„
 	oss << "  <" << index << ">{";
 	ImGui::Text(oss.str().c_str());
 	oss.str("");
 
-	// *** Ãâ·Â *** //
+	// *** ì¶œë ¥ *** //
 	ImGui::Text("  }");
 }
 
@@ -217,7 +217,7 @@ void Sound::renderData(UINT32 index)
 bool Sound::deriveSoundData()
 {
 	if ((compressedData == NULL) || (compressedSize == 0)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": µğÄÚµùÀ» ¼öÇàÇÒ µ¥ÀÌÅÍ°¡ ¾ø½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ë””ì½”ë”©ì„ ìˆ˜í–‰í•  ë°ì´í„°ê°€ ì—†ìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
@@ -227,34 +227,34 @@ bool Sound::deriveSoundData()
 	}
 	soundSize = 0;
 
-	// ¾ĞÃà ÇØÁ¦¿ë º¯¼ö
+	// ì••ì¶• í•´ì œìš© ë³€ìˆ˜
 	UINT32 tmpSize = info.orgSize;
 	BYTE* tmpData = NULL;
 
-	// ¾ĞÃàÇ¬ µ¥ÀÌÅÍ: [wcharÇü ÆÄÀÏ¸í] + [00 00 ~ ] + [»ç¿îµå µ¥ÀÌÅÍ]
-	// ([wcharÇü ÆÄÀÏ¸í] + [00 00 ~ ]) ±æÀÌ´Â nameLength * 2ÀÌ¸ç, ÀÌ °ªÀº 4ÀÇ ¹è¼ö°¡ µÈ´Ù
-	// °í·Î orgSize´Â (nameLength * sizeof(WCHAR)) + [»ç¿îµå µ¥ÀÌÅÍ] ÀÎ ¼ÀÀÌ´Ù
+	// ì••ì¶•í‘¼ ë°ì´í„°: [wcharí˜• íŒŒì¼ëª…] + [00 00 ~ ] + [ì‚¬ìš´ë“œ ë°ì´í„°]
+	// ([wcharí˜• íŒŒì¼ëª…] + [00 00 ~ ]) ê¸¸ì´ëŠ” nameLength * 2ì´ë©°, ì´ ê°’ì€ 4ì˜ ë°°ìˆ˜ê°€ ëœë‹¤
+	// ê³ ë¡œ orgSizeëŠ” (nameLength * sizeof(WCHAR)) + [ì‚¬ìš´ë“œ ë°ì´í„°] ì¸ ì…ˆì´ë‹¤
 	if (!ZlibUtil::decode(compressedData, compressedSize, tmpData, tmpSize)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": »ç¿îµå µ¥ÀÌÅÍ µğÄÚµùÀ» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ì‚¬ìš´ë“œ ë°ì´í„° ë””ì½”ë”©ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		if (tmpData != NULL) {
 			free(tmpData);
 		}
 		return false;
 	}
 
-	// ÀÌ¸§ ¹İ¿µ
+	// ì´ë¦„ ë°˜ì˜
 	name = (WCHAR*)tmpData;
 
-	// soundData ¹İ¿µ
+	// soundData ë°˜ì˜
 	soundSize = (tmpSize - (info.nameLength * sizeof(WCHAR)));
 	soundData = (BYTE*)malloc(soundSize);
 	memcpy(soundData, (tmpData + (info.nameLength * sizeof(WCHAR))), soundSize);
 
-	// ¿ªÇÒ ³¡³­ ÀÓ½Ãº¯¼ö Á¦°Å
+	// ì—­í•  ëë‚œ ì„ì‹œë³€ìˆ˜ ì œê±°
 	free(tmpData);
 
-	// ¸Ş¸ğ¸® °ü¸®¸¦ À§ÇÏ¿© ¾ĞÃà µ¥ÀÌÅÍ Á¦°Å... ÇÏ·Á°í Çß´Âµ¥, ÀÌ·¯´Ï±î µ¥ÀÌÅÍ°¡ ±â·ÏÀÌ ¾ÈµÊ
-	// ¾îÂ¿ ¼ö ¾øÀÌ °¡Áö°í ÀÖ¾î¾ß ÇÑ´Ù
+	// ë©”ëª¨ë¦¬ ê´€ë¦¬ë¥¼ ìœ„í•˜ì—¬ ì••ì¶• ë°ì´í„° ì œê±°... í•˜ë ¤ê³  í–ˆëŠ”ë°, ì´ëŸ¬ë‹ˆê¹Œ ë°ì´í„°ê°€ ê¸°ë¡ì´ ì•ˆë¨
+	// ì–´ì©” ìˆ˜ ì—†ì´ ê°€ì§€ê³  ìˆì–´ì•¼ í•œë‹¤
 	free(compressedData);
 	compressedData = NULL;
 	compressedSize = 0;
@@ -266,7 +266,7 @@ bool Sound::deriveSoundData()
 bool Sound::deriveCompressedData()
 {
 	if ((soundData == NULL) || (soundSize == 0)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ÀÎÄÚµùÀ» ¼öÇàÇÒ µ¥ÀÌÅÍ°¡ ¾ø½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ì¸ì½”ë”©ì„ ìˆ˜í–‰í•  ë°ì´í„°ê°€ ì—†ìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
@@ -279,27 +279,27 @@ bool Sound::deriveCompressedData()
 	UINT32 tmpSize = 0;
 	BYTE* tmpData = NULL;
 
-	// ÀÌ¸§ ±æÀÌ ¼¼ÆÃ (4ÀÇ ¹è¼ö°¡ µÇµµ·Ï)
+	// ì´ë¦„ ê¸¸ì´ ì„¸íŒ… (4ì˜ ë°°ìˆ˜ê°€ ë˜ë„ë¡)
 	info.nameLength = ((UINT32)(name.size() / 4) + 1) * 4;
 
-	// ¿øº» Å©±â ¼¼ÆÃ
+	// ì›ë³¸ í¬ê¸° ì„¸íŒ…
 	info.orgSize = (info.nameLength * sizeof(WCHAR)) + soundSize;
 
-	// ÀÌ¸§°ú soundData¸¦ ±×´ë·Î º¹»çÇØ¼­ ¼¼ÆÃÇÑ ÈÄ ¾ĞÃà ¼öÇà
+	// ì´ë¦„ê³¼ soundDataë¥¼ ê·¸ëŒ€ë¡œ ë³µì‚¬í•´ì„œ ì„¸íŒ…í•œ í›„ ì••ì¶• ìˆ˜í–‰
 	tmpSize = info.orgSize;
 	tmpData = (BYTE*)malloc(tmpSize);
 	memset(tmpData, 0, tmpSize);
 	memcpy(tmpData, name.c_str(), (name.size() * sizeof(WCHAR)));
 	memcpy(tmpData + (tmpSize - soundSize), soundData, soundSize);
 	if (!ZlibUtil::encode(tmpData, tmpSize, compressedData, compressedSize)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": »ç¿îµå µ¥ÀÌÅÍ ÀÎÄÚµùÀ» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ì‚¬ìš´ë“œ ë°ì´í„° ì¸ì½”ë”©ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
-	// ÇÊ¿ä¾ø´Â ¹öÆÛµé Ãß°¡ ÇØÁ¦
+	// í•„ìš”ì—†ëŠ” ë²„í¼ë“¤ ì¶”ê°€ í•´ì œ
 	free(tmpData);
 
-	// ¸Ş¸ğ¸® °ü¸®¸¦ À§ÇÏ¿© »ç¿îµå µ¥ÀÌÅÍ Á¦°Å
+	// ë©”ëª¨ë¦¬ ê´€ë¦¬ë¥¼ ìœ„í•˜ì—¬ ì‚¬ìš´ë“œ ë°ì´í„° ì œê±°
 	free(soundData);
 	soundData = NULL;
 	soundSize = 0;

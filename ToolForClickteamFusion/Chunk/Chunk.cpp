@@ -1,4 +1,4 @@
-#include "Chunk.h"
+ï»¿#include "Chunk.h"
 #include "ChunkStructure.h"
 #include "../Application/Application.h"
 #include "../Application/Dx9Application.h"
@@ -7,7 +7,7 @@
 #include "../Util/ZlibUtil.h"
 #include "../Util/CommonUtil.h"
 
-// ** allocateChunk ¶§¹®¿¡ ÇÊ¿äÇÏ´Ù **
+// ** allocateChunk ë•Œë¬¸ì— í•„ìš”í•˜ë‹¤ **
 #include "AppInfo/Headers.h"
 #include "Font/Headers.h"
 #include "Frame/Headers.h"
@@ -23,12 +23,12 @@ using namespace CTT::DecryptionUtil;
 using namespace CTT::ZlibUtil;
 using namespace CTT::CommonUtil;
 
-// ¾ĞÃà/¾ÏÈ£È­ ¸ğµå¿¡ µû¸¥ Ã³¸®
-// ChunkÀÇ ±¸Á¶ : [¿ø·¡ µ¥ÀÌÅÍ]
-// ChunkÀÇ ±¸Á¶ (¾ĞÃà) : [¿ø·¡ Å©±â 4¹ÙÀÌÆ®] [zlib ¾ĞÃà Å©±â 4¹ÙÀÌÆ®] [zlib ¾ĞÃà µ¥ÀÌÅÍ]
-// ChunkÀÇ ±¸Á¶ (¾ÏÈ£) : encryped-[¿ø·¡ µ¥ÀÌÅÍ]
-// ChunkÀÇ ±¸Á¶ (¾ÏÈ£+¾ĞÃà) : [¿ø·¡ Å©±â 4¹ÙÀÌÆ®] encryped-[[zlib ¾ĞÃà Å©±â 4¹ÙÀÌÆ®] [zlib ¾ĞÃà µ¥ÀÌÅÍ]]
-// buildVersionÀÌ 284¸¦ ³ÑÀ¸¸é decryptÇÏ±â Àü xorÀ» Ãß°¡·Î ÇØÁà¾ß ÇÑ´Ù
+// ì••ì¶•/ì•”í˜¸í™” ëª¨ë“œì— ë”°ë¥¸ ì²˜ë¦¬
+// Chunkì˜ êµ¬ì¡° : [ì›ë˜ ë°ì´í„°]
+// Chunkì˜ êµ¬ì¡° (ì••ì¶•) : [ì›ë˜ í¬ê¸° 4ë°”ì´íŠ¸] [zlib ì••ì¶• í¬ê¸° 4ë°”ì´íŠ¸] [zlib ì••ì¶• ë°ì´í„°]
+// Chunkì˜ êµ¬ì¡° (ì•”í˜¸) : encryped-[ì›ë˜ ë°ì´í„°]
+// Chunkì˜ êµ¬ì¡° (ì•”í˜¸+ì••ì¶•) : [ì›ë˜ í¬ê¸° 4ë°”ì´íŠ¸] encryped-[[zlib ì••ì¶• í¬ê¸° 4ë°”ì´íŠ¸] [zlib ì••ì¶• ë°ì´í„°]]
+// buildVersionì´ 284ë¥¼ ë„˜ìœ¼ë©´ decryptí•˜ê¸° ì „ xorì„ ì¶”ê°€ë¡œ í•´ì¤˜ì•¼ í•œë‹¤
 
 
 Chunk::Chunk() 
@@ -55,16 +55,16 @@ bool Chunk::readFromArchive(HANDLE hArchive)
 
 	ReadFile(hArchive, &info, sizeof(ChunkInfo), &dRead, NULL);
 	if (dRead != sizeof(ChunkInfo)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": chunk µ¥ÀÌÅÍ Çì´õ°¡ ±úÁ³½À´Ï´Ù." 
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": chunk ë°ì´í„° í—¤ë”ê°€ ê¹¨ì¡ŒìŠµë‹ˆë‹¤." 
 			<< " (offset: 0x" << SetFilePointer(hArchive, 0, NULL, FILE_CURRENT) << L")" << endl;
 		return false;
 	}
 
-	// Å©±â¿¡ µû¶ó¼­ ÀĞ´Â µ¿ÀÛ ³ª´©±â
+	// í¬ê¸°ì— ë”°ë¼ì„œ ì½ëŠ” ë™ì‘ ë‚˜ëˆ„ê¸°
 	BYTE* rawBuffer = (BYTE*)malloc(info.size);
 	if (info.size > SEGMENT_SIZE) {
 		if (!segmentedReadFile(hArchive, rawBuffer, info.size)) {
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": chunk µ¥ÀÌÅÍ¸¦ ÀĞ¾î¿ÀÁö ¸øÇß½À´Ï´Ù."
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": chunk ë°ì´í„°ë¥¼ ì½ì–´ì˜¤ì§€ ëª»í–ˆìŠµë‹ˆë‹¤."
 				<< " (offset: 0x" << uppercase << hex << SetFilePointer(hArchive, 0, NULL, FILE_CURRENT) << L")" << endl;
 			free(rawBuffer);
 			return false;
@@ -73,37 +73,37 @@ bool Chunk::readFromArchive(HANDLE hArchive)
 	else {
 		ReadFile(hArchive, rawBuffer, info.size, &dRead, NULL);
 		if (dRead != info.size) {
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": chunk µ¥ÀÌÅÍ¸¦ ÀĞ¾î¿ÀÁö ¸øÇß½À´Ï´Ù."
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": chunk ë°ì´í„°ë¥¼ ì½ì–´ì˜¤ì§€ ëª»í–ˆìŠµë‹ˆë‹¤."
 				<< " (offset: 0x" << uppercase << hex << SetFilePointer(hArchive, 0, NULL, FILE_CURRENT) << L")" << endl;
 			free(rawBuffer);
 			return false;
 		}
 	}
 
-	// rawBuffer, info -> orgBuffer, orgSize ¼¼ÆÃ
+	// rawBuffer, info -> orgBuffer, orgSize ì„¸íŒ…
 	if (!importRawData(rawBuffer)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": chunk µ¥ÀÌÅÍ import¸¦ ½ÇÆĞÇß½À´Ï´Ù."
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": chunk ë°ì´í„° importë¥¼ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤."
 			<< " (offset: 0x" << uppercase << hex << SetFilePointer(hArchive, 0, NULL, FILE_CURRENT) << L")" << endl;
 		free(rawBuffer);
 		return false;
 	}
 
-	// orgBuffer¿Í orgSize·ÎºÎÅÍ µ¥ÀÌÅÍ ¼¼ÆÃ
+	// orgBufferì™€ orgSizeë¡œë¶€í„° ë°ì´í„° ì„¸íŒ…
 	return loadFromOrgBuffer();
 }
 
 bool Chunk::readFromBufferAndChunkInfo (BYTE*& rawBuffer, ChunkInfo& info)
 {
-	// chunkInfo º¹»ç
+	// chunkInfo ë³µì‚¬
 	memcpy(&this->info, &info, sizeof(ChunkInfo));
 
-	// rawBuffer, info -> orgBuffer, orgSize ¼¼ÆÃ
+	// rawBuffer, info -> orgBuffer, orgSize ì„¸íŒ…
 	if (!importRawData(rawBuffer)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": chunk µ¥ÀÌÅÍ¸¦ ÀĞ¾î¿ÀÁö ¸øÇß½À´Ï´Ù. (buffer)" << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": chunk ë°ì´í„°ë¥¼ ì½ì–´ì˜¤ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. (buffer)" << endl;
 		return false;
 	}
 
-	// orgBuffer¿Í orgSize·ÎºÎÅÍ µ¥ÀÌÅÍ ¼¼ÆÃ
+	// orgBufferì™€ orgSizeë¡œë¶€í„° ë°ì´í„° ì„¸íŒ…
 	return loadFromOrgBuffer();
 }
 
@@ -113,18 +113,18 @@ bool Chunk::writeIntoArchive(HANDLE hArchive)
 
 	DWORD dWrite;
 
-	// orgBuffer¿Í orgSize¿¡ ±â·Ï
+	// orgBufferì™€ orgSizeì— ê¸°ë¡
 	if (!saveIntoOrgBuffer()) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": chunk µ¥ÀÌÅÍ¸¦ ¹öÆÛ¿¡ ±â·ÏÇÏÁö ¸øÇß½À´Ï´Ù."
-			<< " (ÆÄÀÏ offset: 0x" << uppercase << hex << SetFilePointer(hArchive, 0, NULL, FILE_CURRENT) << L")" << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": chunk ë°ì´í„°ë¥¼ ë²„í¼ì— ê¸°ë¡í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤."
+			<< " (íŒŒì¼ offset: 0x" << uppercase << hex << SetFilePointer(hArchive, 0, NULL, FILE_CURRENT) << L")" << endl;
 		return false;
 	}
 
-	// orgBuffer, orgSize -> rawBuffer, info ¼¼ÆÃ
+	// orgBuffer, orgSize -> rawBuffer, info ì„¸íŒ…
 	BYTE* rawBuffer = NULL;
 	if (!exportRawData(rawBuffer)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": chunk µ¥ÀÌÅÍ¸¦ ÆÄÀÏ¿¡ ±â·ÏÇÏÁö ¸øÇß½À´Ï´Ù."
-			<< " (ÆÄÀÏ offset: 0x" << uppercase << hex << SetFilePointer(hArchive, 0, NULL, FILE_CURRENT) << L")" << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": chunk ë°ì´í„°ë¥¼ íŒŒì¼ì— ê¸°ë¡í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤."
+			<< " (íŒŒì¼ offset: 0x" << uppercase << hex << SetFilePointer(hArchive, 0, NULL, FILE_CURRENT) << L")" << endl;
 		if (rawBuffer != NULL) {
 			free(rawBuffer);
 			rawBuffer = NULL;
@@ -132,7 +132,7 @@ bool Chunk::writeIntoArchive(HANDLE hArchive)
 		return false;
 	}
 
-	// Á¤º¸ ¹× °¡°øµÈ µ¥ÀÌÅÍ¸¦ ÇÚµé¿¡ ±â·Ï ÈÄ ÇØÁ¦, Å©±â¿¡ µû¶ó¼­ ³ª´©±â
+	// ì •ë³´ ë° ê°€ê³µëœ ë°ì´í„°ë¥¼ í•¸ë“¤ì— ê¸°ë¡ í›„ í•´ì œ, í¬ê¸°ì— ë”°ë¼ì„œ ë‚˜ëˆ„ê¸°
 	WriteFile(hArchive, &info, sizeof(ChunkInfo), &dWrite, NULL);
 	if (info.size > SEGMENT_SIZE) {
 		segmentedWriteFile(hArchive, rawBuffer, info.size);
@@ -147,15 +147,15 @@ bool Chunk::writeIntoArchive(HANDLE hArchive)
 
 bool Chunk::writeIntoBufferAndChunkInfo(BYTE*& rawBuffer, ChunkInfo& info)
 {
-	// orgBuffer¿Í orgSize¿¡ ±â·Ï
+	// orgBufferì™€ orgSizeì— ê¸°ë¡
 	if (!saveIntoOrgBuffer()) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": chunk µ¥ÀÌÅÍ¸¦ ¹öÆÛ¿¡ ±â·ÏÇÏÁö ¸øÇß½À´Ï´Ù. (buffer)" << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": chunk ë°ì´í„°ë¥¼ ë²„í¼ì— ê¸°ë¡í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. (buffer)" << endl;
 		return false;
 	}
 
-	// orgBuffer, orgSize -> rawBuffer, info.size ¼¼ÆÃ
+	// orgBuffer, orgSize -> rawBuffer, info.size ì„¸íŒ…
 	if (!exportRawData(rawBuffer)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": chunk µ¥ÀÌÅÍ¸¦ ±â·ÏÇÏÁö ¸øÇß½À´Ï´Ù. (buffer)" << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": chunk ë°ì´í„°ë¥¼ ê¸°ë¡í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. (buffer)" << endl;
 		if (rawBuffer != NULL) {
 			free(rawBuffer);
 			rawBuffer = NULL;
@@ -163,7 +163,7 @@ bool Chunk::writeIntoBufferAndChunkInfo(BYTE*& rawBuffer, ChunkInfo& info)
 		return false;
 	}
 
-	// info º¹»ç
+	// info ë³µì‚¬
 	memcpy(&info, &this->info, sizeof(ChunkInfo));
 
 	return true;
@@ -172,7 +172,7 @@ bool Chunk::writeIntoBufferAndChunkInfo(BYTE*& rawBuffer, ChunkInfo& info)
 
 bool Chunk::importRawData(BYTE* &rawBuffer)
 {
-	// »çÀü Á¡°Ë
+	// ì‚¬ì „ ì ê²€
 	if (orgBuffer != NULL) {
 		free(orgBuffer);
 		orgBuffer = NULL;
@@ -189,15 +189,15 @@ bool Chunk::importRawData(BYTE* &rawBuffer)
 		UINT32 originalSize = *(UINT32*)(rawBuffer);
 		UINT32 compressedSize = *(UINT32*)(rawBuffer + sizeof(UINT32));
 		if (info.size != (compressedSize + (sizeof(UINT32) * 2))) {
-			// ³ªÁß¿¡ ¸ÅÇÎ½ÃÄÑ¼­ Ãâ·Â¹®ÀÚ¿­À» ÀÚÀ¯·Ó°Ô º¯°æÇØ¾ß ÇÒµí
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Chunk: chunk µ¥ÀÌÅÍ°¡ ±úÁ³½À´Ï´Ù." << endl;
+			// ë‚˜ì¤‘ì— ë§¤í•‘ì‹œì¼œì„œ ì¶œë ¥ë¬¸ìì—´ì„ ììœ ë¡­ê²Œ ë³€ê²½í•´ì•¼ í• ë“¯
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Chunk: chunk ë°ì´í„°ê°€ ê¹¨ì¡ŒìŠµë‹ˆë‹¤." << endl;
 			return false;
 		}
 		BYTE* compressedData = (rawBuffer + (sizeof(UINT32) * 2));
 		BYTE* originalData = NULL;
 		if (!ZlibUtil::decode(compressedData, compressedSize, originalData, originalSize)) {
-			// ³ªÁß¿¡ ¸ÅÇÎ½ÃÄÑ¼­ Ãâ·Â¹®ÀÚ¿­À» ÀÚÀ¯·Ó°Ô º¯°æÇØ¾ß ÇÒµí
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Chunk: chunk µ¥ÀÌÅÍ¸¦ µğÄÚµùÇÏÁö ¸øÇß½À´Ï´Ù." << endl;
+			// ë‚˜ì¤‘ì— ë§¤í•‘ì‹œì¼œì„œ ì¶œë ¥ë¬¸ìì—´ì„ ììœ ë¡­ê²Œ ë³€ê²½í•´ì•¼ í• ë“¯
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Chunk: chunk ë°ì´í„°ë¥¼ ë””ì½”ë”©í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 			free(originalData);
 			return false;
 		}
@@ -230,7 +230,7 @@ bool Chunk::exportRawData(BYTE*& rawBuffer)
 		BYTE* compressedData = NULL;
 		UINT32 compressedSize = 0;
 		if (!ZlibUtil::encode(orgBuffer, orgSize, compressedData, compressedSize)) {
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Chunk: chunk µ¥ÀÌÅÍ¸¦ ÀÎÄÚµùÇÏÁö ¸øÇß½À´Ï´Ù." << endl;
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Chunk: chunk ë°ì´í„°ë¥¼ ì¸ì½”ë”©í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 			return false;
 		}
 		info.size = (sizeof(UINT32) * 2) + compressedSize;
@@ -264,17 +264,17 @@ bool Chunk::exportRawData(BYTE*& rawBuffer)
 }
 
 
-// EndChunk µ¥ÀÌÅÍ ·»´õ¸µ¿ë
+// EndChunk ë°ì´í„° ë Œë”ë§ìš©
 void EndChunk::renderData()
 {
 	ImGui::TextDisabled(u8"--");
 }
 
 
-// ÀÏ¹İÀûÀÏ ¶§ µ¥ÀÌÅÍ ·»´õ¸µ¿ë
+// ì¼ë°˜ì ì¼ ë•Œ ë°ì´í„° ë Œë”ë§ìš©
 void UnknownChunk::renderData()
 {
-	// 60 ¹ÙÀÌÆ® ¼±¿¡¼­ ÄÆ
+	// 60 ë°”ì´íŠ¸ ì„ ì—ì„œ ì»·
 	stringstream oss;
 	UINT32 maxCount = (valueSize > 60) ? 60 : valueSize;
 	oss << "[";
@@ -295,17 +295,17 @@ void UnknownChunk::renderData()
 
 
 
-// ** chunkType¿¡ µû¶ó chunk¸¦ ÇÒ´çÇØ¼­ ¹İÈ¯ÇØ ÁÖ´Â ÇÔ¼ö **
+// ** chunkTypeì— ë”°ë¼ chunkë¥¼ í• ë‹¹í•´ì„œ ë°˜í™˜í•´ ì£¼ëŠ” í•¨ìˆ˜ **
 CTT::Chunk::Chunk* CTT::Chunk::allocateChunk(ChunkType chunkType, bool& isAppInfo)
 {
-	// ±âº»ÀûÀ¸·Î app Á¤º¸°¡ ¾Æ´Ñ °ÍÀ¸·Î ¼¼ÆÃ ÈÄ, ÇÊ¿äÇÒ ¶§¸¸ true·Î ¼¼ÆÃÇÑ´Ù
+	// ê¸°ë³¸ì ìœ¼ë¡œ app ì •ë³´ê°€ ì•„ë‹Œ ê²ƒìœ¼ë¡œ ì„¸íŒ… í›„, í•„ìš”í•  ë•Œë§Œ trueë¡œ ì„¸íŒ…í•œë‹¤
 	isAppInfo = false;
 
-	// setApplicationInfo()À» ÅëÇØ¼­ ÀÌ¹Ì ÀĞÀº °ªµéÀº ¾ÆÄ«ÀÌºêÀÇ Chunk¸¦ ¹İÈ¯ÇØ ÁØ´Ù
+	// setApplicationInfo()ì„ í†µí•´ì„œ ì´ë¯¸ ì½ì€ ê°’ë“¤ì€ ì•„ì¹´ì´ë¸Œì˜ Chunkë¥¼ ë°˜í™˜í•´ ì¤€ë‹¤
 	switch (chunkType)
 	{
 		// --------------------
-		// app °ü·Ã chunk
+		// app ê´€ë ¨ chunk
 		case ChunkType::CHUNK_APP_HEADER:
 		{
 			isAppInfo = true;
@@ -324,7 +324,7 @@ CTT::Chunk::Chunk* CTT::Chunk::allocateChunk(ChunkType chunkType, bool& isAppInf
 		{
 			return new ExtentionPathChunk();
 		}
-		// ±×³É ¿ÀºêÁ§Æ® ÇÁ·ÎÆÛÆ¼ (Çì´õ, ÀÌ¸§, Ä¿¸Õ, unknown, ÀÌÆåÆ® µî ÀüºÎ Æ÷ÇÔ)
+		// ê·¸ëƒ¥ ì˜¤ë¸Œì íŠ¸ í”„ë¡œí¼í‹° (í—¤ë”, ì´ë¦„, ì»¤ë¨¼, unknown, ì´í™íŠ¸ ë“± ì „ë¶€ í¬í•¨)
 		/*
 		case ChunkType::CHUNK_OBJECT_PROPERTIES:
 		{
@@ -392,7 +392,7 @@ CTT::Chunk::Chunk* CTT::Chunk::allocateChunk(ChunkType chunkType, bool& isAppInf
 			return getArchive()->getShaderListChunk();
 		}
 		// --------------------
-		// ÀÌ appÀÇ ÄÚµåÆäÀÌÁö
+		// ì´ appì˜ ì½”ë“œí˜ì´ì§€
 		case ChunkType::CHUNK_APP_CODEPAGE:
 		{
 			isAppInfo = true;
@@ -405,28 +405,28 @@ CTT::Chunk::Chunk* CTT::Chunk::allocateChunk(ChunkType chunkType, bool& isAppInf
 		}
 		*/
 		// --------------------
-		// 4¹ÙÀÌÆ® Á¤¼ö 2°³, ¾ÕÀÇ °ªÀº 0, µÚÀÇ °ªÀº product version
+		// 4ë°”ì´íŠ¸ ì •ìˆ˜ 2ê°œ, ì•ì˜ ê°’ì€ 0, ë’¤ì˜ ê°’ì€ product version
 		case ChunkType::CHUNK_PRODUCT_VERSION_INFO:
 		{
 			isAppInfo = true;
 			return getArchive()->getProductVersionInfoChunk();
 		}
 		// --------------------
-		// Á¤¼ö°¡ 3°³ ÀÖ´Â °ªÀÎ°Å °°Àºµ¥...
+		// ì •ìˆ˜ê°€ 3ê°œ ìˆëŠ” ê°’ì¸ê±° ê°™ì€ë°...
 		case ChunkType::CHUNK_PRODUCT_BUILD_VERSION_INFO:
 		{
 			isAppInfo = true;
 			return getArchive()->getProductBuildVersionInfoChunk();
 		}
 		// --------------------
-		// ÀÌ appÀÇ ·ÎÄÉÀÏ id
+		// ì´ appì˜ ë¡œì¼€ì¼ id
 		case ChunkType::CHUNK_APP_LOCALE_ID:
 		{
 			isAppInfo = true;
 			return getArchive()->getAppLocaleIdChunk();
 		}
 		// --------------------
-		// +2.5 ¹öÀü ¿ÀºêÁ§Æ® °ü·Ã chunkµé
+		// +2.5 ë²„ì „ ì˜¤ë¸Œì íŠ¸ ê´€ë ¨ chunkë“¤
 		/*
 		case ChunkType::CHUNK_2_5_PLUS_OBJECT_HEADERS:
 		{
@@ -447,12 +447,12 @@ CTT::Chunk::Chunk* CTT::Chunk::allocateChunk(ChunkType chunkType, bool& isAppInf
 			return L"2.5+ object data";
 		}
 		*/
-		// +2.5 ¹öÀü ¿ÀÇÁÁ§Æ®ÀÇ ¿ÀÇÁ¼ÂÀ» ´ãÀº Á¤º¸ÀÎµ¥, ¾ĞÃàµÈ°Ô ÀÖ°í ¾Æ´Ñ°Ô ÀÖ¾î¼­ build ¹öÀü Á» È®ÀÎÇØºÁ¾ß ÇÒµí
+		// +2.5 ë²„ì „ ì˜¤í”„ì íŠ¸ì˜ ì˜¤í”„ì…‹ì„ ë‹´ì€ ì •ë³´ì¸ë°, ì••ì¶•ëœê²Œ ìˆê³  ì•„ë‹Œê²Œ ìˆì–´ì„œ build ë²„ì „ ì¢€ í™•ì¸í•´ë´ì•¼ í• ë“¯
 		case ChunkType::CHUNK_2_5_PLUS_OBJECT_OFFSETS:
 		{
 			return new ObjectOffsetsChunk();
 		}
-		// ¿©±â ²¸ÀÖ´Â°Å º¸´Ï±î ÀÌ ÆùÆ®µéÀº object 2.5+ ÀÌ»ó¿¡¼­¸¸ ¾²´Â°Ç°¡º½...
+		// ì—¬ê¸° ê»´ìˆëŠ”ê±° ë³´ë‹ˆê¹Œ ì´ í°íŠ¸ë“¤ì€ object 2.5+ ì´ìƒì—ì„œë§Œ ì“°ëŠ”ê±´ê°€ë´„...
 		case ChunkType::CHUNK_2_5_TTF_INFO_LIST:
 		{
 			return new TrueTypeFontInfoDataChunk();
@@ -476,7 +476,7 @@ CTT::Chunk::Chunk* CTT::Chunk::allocateChunk(ChunkType chunkType, bool& isAppInf
 		}
 		*/
 		// --------------------
-		// ÇÁ·¹ÀÓ °ü·Ã chun (FrameChunk´Â ±×³É UnknownChunk·Î Ã³¸®ÇÏ´Â °Ô ÆíÇÏ´Ù)
+		// í”„ë ˆì„ ê´€ë ¨ chun (FrameChunkëŠ” ê·¸ëƒ¥ UnknownChunkë¡œ ì²˜ë¦¬í•˜ëŠ” ê²Œ í¸í•˜ë‹¤)
 		case ChunkType::CHUNK_FRAME_HEADER:
 		{
 			return new FrameHeaderChunk();
@@ -590,7 +590,7 @@ CTT::Chunk::Chunk* CTT::Chunk::allocateChunk(ChunkType chunkType, bool& isAppInf
 			return new FrameIndexChunk();
 		}
 		// --------------------
-		// ±×³É ¿ÀºêÁ§Æ® °ü·Ã chunk
+		// ê·¸ëƒ¥ ì˜¤ë¸Œì íŠ¸ ê´€ë ¨ chunk
 		/*
 		case ChunkType::CHUNK_OBJECT_HEADER:
 		{
@@ -618,7 +618,7 @@ CTT::Chunk::Chunk* CTT::Chunk::allocateChunk(ChunkType chunkType, bool& isAppInf
 		}
 		*/
 		// --------------------
-		// ¿ÀÇÁ¼Â Á¤º¸
+		// ì˜¤í”„ì…‹ ì •ë³´
 		case ChunkType::CHUNK_IMAGE_OFFSETS:
 		{
 			return new ImageOffsetsChunk();
@@ -636,7 +636,7 @@ CTT::Chunk::Chunk* CTT::Chunk::allocateChunk(ChunkType chunkType, bool& isAppInf
 			return new MusicOffsetsChunk();
 		}
 		// --------------------
-		// µ¥ÀÌÅÍ Á¤º¸
+		// ë°ì´í„° ì •ë³´
 		case ChunkType::CHUNK_IMAGE_DATA:
 		{
 			return new ImageDataChunk();
@@ -651,7 +651,7 @@ CTT::Chunk::Chunk* CTT::Chunk::allocateChunk(ChunkType chunkType, bool& isAppInf
 		}
 		case ChunkType::CHUNK_MUSIC_DATA:
 		{
-			// ÀÌ°Ç ½ÇÁ¦·Î ÀÖ´ÂÁöµµ Àß ¸ğ¸£°ÚÀ½
+			// ì´ê±´ ì‹¤ì œë¡œ ìˆëŠ”ì§€ë„ ì˜ ëª¨ë¥´ê² ìŒ
 			return new UnknownChunk();
 		}
 		// --------------------
@@ -660,7 +660,7 @@ CTT::Chunk::Chunk* CTT::Chunk::allocateChunk(ChunkType chunkType, bool& isAppInf
 			return new EndChunk();
 		}
 		// --------------------
-		// ±×³É ±ÍÂúÀº°Ç UnknownChunk·Î ¶¯Ä¡ÀÚ
+		// ê·¸ëƒ¥ ê·€ì°®ì€ê±´ UnknownChunkë¡œ ë•¡ì¹˜ì
 		default:
 		{
 			return new UnknownChunk();
@@ -669,7 +669,7 @@ CTT::Chunk::Chunk* CTT::Chunk::allocateChunk(ChunkType chunkType, bool& isAppInf
 }
 
 
-// ** ÇØ´ç chunkTypeÀÌ À§Ä¡ÇÑ ¿ÀÇÁ¼ÂÀ» ¼¼ÆÃÇØ ÁÖ´Â ÇÔ¼ö, ¼º°øÇÏ¸é true **
+// ** í•´ë‹¹ chunkTypeì´ ìœ„ì¹˜í•œ ì˜¤í”„ì…‹ì„ ì„¸íŒ…í•´ ì£¼ëŠ” í•¨ìˆ˜, ì„±ê³µí•˜ë©´ true **
 bool CTT::Chunk::moveArchiveHandleToChunk(HANDLE hArchive, ChunkType chunkType)
 {
 	DWORD dRead;
@@ -677,29 +677,29 @@ bool CTT::Chunk::moveArchiveHandleToChunk(HANDLE hArchive, ChunkType chunkType)
 
 	memset(&chunkInfo, 0, sizeof(ChunkInfo));
 
-	// chunkTypeÀÌ EndChunk¸é È®ÀÎ ¾ÈÇÏ°í ±×³É false ¸®ÅÏ
+	// chunkTypeì´ EndChunkë©´ í™•ì¸ ì•ˆí•˜ê³  ê·¸ëƒ¥ false ë¦¬í„´
 	if (chunkType == ChunkType::CHUNK_END) {
 		return false;
 	}
 
 	while (1) {
 		
-		// chunk¸¦ ÀĞ¾îµéÀÏ ¶§¸¦ ´ëºñÇØ À§Ä¡ ¹é¾÷ ÇÊ¿ä
+		// chunkë¥¼ ì½ì–´ë“¤ì¼ ë•Œë¥¼ ëŒ€ë¹„í•´ ìœ„ì¹˜ ë°±ì—… í•„ìš”
 		UINT32 backupOffset = SetFilePointer(hArchive, 0, NULL, FILE_CURRENT);
 		ReadFile(hArchive, &chunkInfo, sizeof(ChunkInfo), &dRead, NULL);
 		SetFilePointer(hArchive, backupOffset, NULL, FILE_BEGIN);
 		
-		// ÀĞ¾î¿Â ±æÀÌ°¡ 0ÀÌ¶ó¸é ±×³É ¸®ÅÏÇÑ´Ù
+		// ì½ì–´ì˜¨ ê¸¸ì´ê°€ 0ì´ë¼ë©´ ê·¸ëƒ¥ ë¦¬í„´í•œë‹¤
 		if (dRead != sizeof(ChunkInfo)) {
 			return false;
 		}
 
-		// ¿øÇÏ´Â À§Ä¡¸¦ Ã£¾ÒÀ¸¸é µÇµ¹¸®°í ¸®ÅÏÇØÁØ´Ù
+		// ì›í•˜ëŠ” ìœ„ì¹˜ë¥¼ ì°¾ì•˜ìœ¼ë©´ ë˜ëŒë¦¬ê³  ë¦¬í„´í•´ì¤€ë‹¤
 		if (chunkInfo.type == chunkType) {
 			return true;
 		}
 
-		// À§Ä¡ ÀÌµ¿
+		// ìœ„ì¹˜ ì´ë™
 		SetFilePointer(hArchive, sizeof(ChunkInfo) + chunkInfo.size, NULL, FILE_CURRENT);
 
 	}

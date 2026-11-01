@@ -1,4 +1,4 @@
-#include "Lz4Util.h"
+ï»¿#include "Lz4Util.h"
 #include "CommonUtil.h"
 #include <liblz4/lz4.h>
 #include <liblz4/lz4hc.h>
@@ -18,7 +18,7 @@ bool CTT::Lz4Util::decode(BYTE* encodedData, UINT32 encodedSize, BYTE*& decodedD
 	if (realDecodedSize >= 0) {
 		if (realDecodedSize != tempDecodedSize) {
 			if (isStrict) {
-				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": µğÄÚµùµÈ Å©±â°¡ ´Ù¸¨´Ï´Ù ("
+				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ë””ì½”ë”©ëœ í¬ê¸°ê°€ ë‹¤ë¦…ë‹ˆë‹¤ ("
 					<< L"expected: 0x" << uppercase << hex << decodedSize
 					<< L", result: 0x" << uppercase << hex << realDecodedSize
 					<< L")" << endl;
@@ -36,7 +36,7 @@ bool CTT::Lz4Util::decode(BYTE* encodedData, UINT32 encodedSize, BYTE*& decodedD
 		return true;
 	}
 	else {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": µğÄÚµù ½ÇÆĞ" << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ë””ì½”ë”© ì‹¤íŒ¨" << endl;
 		free(tempDecodedData);
 		return false;
 	}
@@ -49,7 +49,7 @@ bool CTT::Lz4Util::encode(BYTE* decodedData, UINT32 decodedSize, BYTE*& encodedD
 	BYTE* tempEncodedData = (BYTE*)malloc(tempEncodedSize);
 	int realEncodedSize = LZ4_compress_HC((char*)decodedData, (char*)tempEncodedData, decodedSize, tempEncodedSize, LZ4HC_CLEVEL_MAX);
 	if (realEncodedSize >= 0) {
-		// Àß ÀÎÄÚµùµÇ¸é Å©±â ¸ÂÃç¼­ ¹İÈ¯
+		// ì˜ ì¸ì½”ë”©ë˜ë©´ í¬ê¸° ë§ì¶°ì„œ ë°˜í™˜
 		encodedSize = realEncodedSize;
 		encodedData = (BYTE*)malloc(encodedSize);
 		memcpy(encodedData, tempEncodedData, encodedSize);
@@ -57,7 +57,7 @@ bool CTT::Lz4Util::encode(BYTE* decodedData, UINT32 decodedSize, BYTE*& encodedD
 		return true;
 	}
 	else {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ÀÎÄÚµù ½ÇÆĞ" << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ì¸ì½”ë”© ì‹¤íŒ¨" << endl;
 		free(tempEncodedData);
 		return false;
 	}

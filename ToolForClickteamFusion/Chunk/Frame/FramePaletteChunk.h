@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../Chunk.h"
 #include "../../Util/CommonStructure.h"
@@ -15,13 +15,13 @@ namespace CTT {
 		public:
 			FramePaletteChunk();
 			~FramePaletteChunk();
-			// µ¥ÀÌÅÍ ·»´õ¸µ¿ë ÇÔ¼ö
+			// ë°ì´í„° ë Œë”ë§ìš© í•¨ìˆ˜
 			void renderData();
 		protected:
 			bool loadFromOrgBuffer();
 			bool saveIntoOrgBuffer();
 		private:
-			// Å©±â´Â 0x101·Î °íÁ¤ÀÎ °Í °°´Ù
+			// í¬ê¸°ëŠ” 0x101ë¡œ ê³ ì •ì¸ ê²ƒ ê°™ë‹¤
 			vector<Color> value;
 			ImVec4 colorPalette[0x101];
 		};

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../Chunk.h"
 #include "../BaseData.h"
@@ -27,7 +27,7 @@ namespace CTT {
 			bool exportJson(Json::Value& exportValue, vector<UINT32>& offsetList);
 			bool importJson(Json::Value& importValue, vector<UINT32>& offsetList);
 
-			// µ¥ÀÌÅÍ ·»´õ¸µ¿ë ÇÔ¼ö
+			// ë°ì´í„° ë Œë”ë§ìš© í•¨ìˆ˜
 			void renderData(UINT32 index);
 
 		private:

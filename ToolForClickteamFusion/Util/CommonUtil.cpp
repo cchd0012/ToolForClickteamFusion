@@ -1,4 +1,4 @@
-#include "CommonUtil.h"
+ï»¿#include "CommonUtil.h"
 
 using namespace CTT::CommonUtil;
 
@@ -202,7 +202,7 @@ bool CTT::CommonUtil::contains(const vector<UINT32>& valueList, const UINT32 val
 }
 
 
-// ¹®ÀÚ¿­ ¾çÂÊÀÇ °ø¹éÀ» Á¦°ÅÇÏ´Â ÇïÆÛ ÇÔ¼ö
+// ë¬¸ìì—´ ì–‘ìª½ì˜ ê³µë°±ì„ ì œê±°í•˜ëŠ” í—¬í¼ í•¨ìˆ˜
 wstring CTT::CommonUtil::trim(const wstring& str) 
 {
 	if (str.empty()) { return str; }
@@ -216,32 +216,32 @@ vector<wstring> CTT::CommonUtil::split(const wstring& str)
 	return CTT::CommonUtil::split(str, L",");
 }
 
-// ±¸ºĞÀÚ¸¦ ÀÌ¿ëÇØ ¹®ÀÚ¿­À» ºĞÇÒÇÏ´Â ÇÔ¼ö
+// êµ¬ë¶„ìë¥¼ ì´ìš©í•´ ë¬¸ìì—´ì„ ë¶„í• í•˜ëŠ” í•¨ìˆ˜
 vector<wstring> CTT::CommonUtil::split(const wstring& str, const wstring& delimiters) {
 	vector<wstring> tokens;
 	wstring token;
 	size_t start = 0;
-	// ·çÇÁ µ¹±â
+	// ë£¨í”„ ëŒê¸°
 	while (start < str.length()) {
-		// ±¸ºĞÀÚ¸¦ Ã£¾Æ¼­ ±× À§Ä¡¸¦ end¿¡ ÀúÀå
+		// êµ¬ë¶„ìë¥¼ ì°¾ì•„ì„œ ê·¸ ìœ„ì¹˜ë¥¼ endì— ì €ì¥
 		size_t end = str.find_first_of(delimiters, start);
-		// ±¸ºĞÀÚ¸¦ Ã£Áö ¸øÇÏ¸é ¹®ÀÚ¿­ÀÇ ³¡
+		// êµ¬ë¶„ìë¥¼ ì°¾ì§€ ëª»í•˜ë©´ ë¬¸ìì—´ì˜ ë
 		if (end == wstring::npos) {
 			token = str.substr(start);
-			token = trim(token); // ¾çÂÊ °ø¹é Á¦°Å
+			token = trim(token); // ì–‘ìª½ ê³µë°± ì œê±°
 			if (!token.empty()) {
 				tokens.push_back(token);
 			}
-			break; // ·çÇÁ Á¾·á
+			break; // ë£¨í”„ ì¢…ë£Œ
 		}
-		// ±¸ºĞÀÚ ÀüÀÇ ¹®ÀÚ¿­À» token¿¡ ÀúÀå
+		// êµ¬ë¶„ì ì „ì˜ ë¬¸ìì—´ì„ tokenì— ì €ì¥
 		token = str.substr(start, end - start);
-		token = trim(token); // ¾çÂÊ °ø¹é Á¦°Å
-		// ±æÀÌ°¡ 0ÀÌ ¾Æ´Ò¶§¸¸ ³Ö±â
+		token = trim(token); // ì–‘ìª½ ê³µë°± ì œê±°
+		// ê¸¸ì´ê°€ 0ì´ ì•„ë‹ë•Œë§Œ ë„£ê¸°
 		if (!token.empty()) {
 			tokens.push_back(token);
 		}
-		// ´ÙÀ½ °Ë»ö ½ÃÀÛ À§Ä¡¸¦ ±¸ºĞÀÚ ´ÙÀ½À¸·Î ¼³Á¤
+		// ë‹¤ìŒ ê²€ìƒ‰ ì‹œì‘ ìœ„ì¹˜ë¥¼ êµ¬ë¶„ì ë‹¤ìŒìœ¼ë¡œ ì„¤ì •
 		start = end + 1;
 	}
 	return tokens;
@@ -287,12 +287,12 @@ void CTT::CommonUtil::splitTwice(const wstring& str, wstring& first, wstring& se
 }
 
 
-// ¸ğµç ÅØ½ºÆ®¸¦ ±³Ã¼ÇØÁÖ´Â ÇÔ¼ö
+// ëª¨ë“  í…ìŠ¤íŠ¸ë¥¼ êµì²´í•´ì£¼ëŠ” í•¨ìˆ˜
 wstring CTT::CommonUtil::replaceAll(wstring& str, const wstring& from, const wstring& to) {
 	size_t start_pos = 0;
 	while ((start_pos = str.find(from, start_pos)) != std::wstring::npos)
 	{
-		// Áßº¹°Ë»ç¸¦ ÇÇÇÏ°í from.length() > to.length()ÀÎ °æ¿ì¸¦ À§ÇØ¼­
+		// ì¤‘ë³µê²€ì‚¬ë¥¼ í”¼í•˜ê³  from.length() > to.length()ì¸ ê²½ìš°ë¥¼ ìœ„í•´ì„œ
 		str.replace(start_pos, from.length(), to);
 		start_pos += to.length();
 	}
@@ -300,21 +300,21 @@ wstring CTT::CommonUtil::replaceAll(wstring& str, const wstring& from, const wst
 }
 
 
-//*ÆÄÀÏÀÌ¸é 1, µğ·ºÅä¸®¸é 0, ÀÌ¿Ü¿¡´Â -1 ¹İÈ¯ (À¯´ÏÄÚµå)
+//*íŒŒì¼ì´ë©´ 1, ë””ë ‰í† ë¦¬ë©´ 0, ì´ì™¸ì—ëŠ” -1 ë°˜í™˜ (ìœ ë‹ˆì½”ë“œ)
 FSOType CTT::CommonUtil::isFileOrDir(wstring& path) {
 	_wfinddatai64_t c_file;
 	intptr_t hFile;
 	FSOType result;
 
-	// ÆÄÀÏ ¶Ç´Â µğ·ºÅä¸®°¡ ¾øÀ¸¸é -1 ¹İÈ¯
+	// íŒŒì¼ ë˜ëŠ” ë””ë ‰í† ë¦¬ê°€ ì—†ìœ¼ë©´ -1 ë°˜í™˜
 	if ((hFile = _wfindfirsti64(path.c_str(), &c_file)) == -1L) {
 		result = FSOType::FSO_NONE;
 	}
-	// µğ·ºÅä¸®¸é 0 ¹İÈ¯
+	// ë””ë ‰í† ë¦¬ë©´ 0 ë°˜í™˜
 	else if (c_file.attrib & _A_SUBDIR) {
 		result = FSOType::FSO_DIRECTORY;
 	}
-	// ±×¹ÛÀÇ °æ¿ì´Â "Á¸ÀçÇÏ´Â ÆÄÀÏ"ÀÌ±â¿¡ 1 ¹İÈ¯
+	// ê·¸ë°–ì˜ ê²½ìš°ëŠ” "ì¡´ì¬í•˜ëŠ” íŒŒì¼"ì´ê¸°ì— 1 ë°˜í™˜
 	else {
 		result = FSOType::FSO_FILE;
 	}
@@ -324,29 +324,29 @@ FSOType CTT::CommonUtil::isFileOrDir(wstring& path) {
 }
 
 
-// µğ·ºÅä¸® °æ·Î Àç±Í »ı¼º
+// ë””ë ‰í† ë¦¬ ê²½ë¡œ ì¬ê·€ ìƒì„±
 bool CTT::CommonUtil::createDirectoryRecursively(const wstring& path) {
 	size_t pos = 0;
 	wstring currentPath;
 
 	while ((pos = path.find_first_of(L"\\/", pos)) != wstring::npos) {
 		currentPath = path.substr(0, pos);
-		// µğ·ºÅä¸®°¡ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é »ı¼º
+		// ë””ë ‰í† ë¦¬ê°€ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´ ìƒì„±
 		if (!currentPath.empty()) {
 			if (CreateDirectoryW(currentPath.c_str(), NULL) || GetLastError() == ERROR_ALREADY_EXISTS) {
-				// µğ·ºÅä¸®°¡ ¼º°øÀûÀ¸·Î »ı¼ºµÇ¾ú°Å³ª ÀÌ¹Ì Á¸ÀçÇÔ
+				// ë””ë ‰í† ë¦¬ê°€ ì„±ê³µì ìœ¼ë¡œ ìƒì„±ë˜ì—ˆê±°ë‚˜ ì´ë¯¸ ì¡´ì¬í•¨
 			}
 			else {
-				wcout << errPrefix << L"°æ·Î »ı¼ºÀ» ½ÇÆĞÇß½À´Ï´Ù: " << path << L": " << GetLastError() << endl;
+				wcout << errPrefix << L"ê²½ë¡œ ìƒì„±ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤: " << path << L": " << GetLastError() << endl;
 				return false;
 			}
 		}
 		pos++;
 	}
 
-	// ¸¶Áö¸· °æ·Î »ı¼º
+	// ë§ˆì§€ë§‰ ê²½ë¡œ ìƒì„±
 	if (!CreateDirectoryW(path.c_str(), NULL) && GetLastError() != ERROR_ALREADY_EXISTS) {
-		wcout << errPrefix << L"°æ·Î »ı¼ºÀ» ½ÇÆĞÇß½À´Ï´Ù: " << path << L": " << GetLastError() << endl;
+		wcout << errPrefix << L"ê²½ë¡œ ìƒì„±ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤: " << path << L": " << GetLastError() << endl;
 		return false;
 	}
 
@@ -366,7 +366,7 @@ bool CTT::CommonUtil::segmentedReadFile(HANDLE hRead, BYTE* buffer, UINT32 size)
 	while (leftSize > SEGMENT_SIZE) {
 		ReadFile(hRead, tmpPartBuffer, SEGMENT_SIZE, &dRead, NULL);
 		if (dRead != SEGMENT_SIZE) {
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": µ¥ÀÌÅÍ¸¦ ÀüºÎ ÀĞ¾î¿ÀÁö ¸øÇß½À´Ï´Ù" << endl;
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ë°ì´í„°ë¥¼ ì „ë¶€ ì½ì–´ì˜¤ì§€ ëª»í–ˆìŠµë‹ˆë‹¤" << endl;
 			return false;
 		}
 		memcpy(bufferPnt, tmpPartBuffer, SEGMENT_SIZE);
@@ -376,7 +376,7 @@ bool CTT::CommonUtil::segmentedReadFile(HANDLE hRead, BYTE* buffer, UINT32 size)
 
 	ReadFile(hRead, tmpPartBuffer, leftSize, &dRead, NULL);
 	if (dRead != leftSize) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": µ¥ÀÌÅÍ¸¦ ÀüºÎ ÀĞ¾î¿ÀÁö ¸øÇß½À´Ï´Ù" << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ë°ì´í„°ë¥¼ ì „ë¶€ ì½ì–´ì˜¤ì§€ ëª»í–ˆìŠµë‹ˆë‹¤" << endl;
 		return false;
 	}
 	memcpy(bufferPnt, tmpPartBuffer, leftSize);
@@ -417,7 +417,7 @@ bool CTT::CommonUtil::segmentedTransferData(HANDLE hSrc, HANDLE hDest, UINT32 si
 	while (leftSize > SEGMENT_SIZE) {
 		ReadFile(hSrc, tmpPartBuffer, SEGMENT_SIZE, &dRead, NULL);
 		if (dRead != SEGMENT_SIZE) {
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ¿øº» ÆÄÀÏ¿¡¼­ µ¥ÀÌÅÍ¸¦ ÀüºÎ ÀĞ¾î¿ÀÁö ¸øÇß½À´Ï´Ù" << endl;
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ì›ë³¸ íŒŒì¼ì—ì„œ ë°ì´í„°ë¥¼ ì „ë¶€ ì½ì–´ì˜¤ì§€ ëª»í–ˆìŠµë‹ˆë‹¤" << endl;
 			free(tmpPartBuffer);
 			return false;
 		}
@@ -427,7 +427,7 @@ bool CTT::CommonUtil::segmentedTransferData(HANDLE hSrc, HANDLE hDest, UINT32 si
 
 	ReadFile(hSrc, tmpPartBuffer, leftSize, &dRead, NULL);
 	if (dRead != leftSize) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ¿øº» ÆÄÀÏ¿¡¼­ µ¥ÀÌÅÍ¸¦ ÀüºÎ ÀĞ¾î¿ÀÁö ¸øÇß½À´Ï´Ù" << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ì›ë³¸ íŒŒì¼ì—ì„œ ë°ì´í„°ë¥¼ ì „ë¶€ ì½ì–´ì˜¤ì§€ ëª»í–ˆìŠµë‹ˆë‹¤" << endl;
 		free(tmpPartBuffer);
 		return false;
 	}

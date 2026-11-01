@@ -1,4 +1,4 @@
-#include "FrameLayer.h"
+ï»¿#include "FrameLayer.h"
 #include "../../Archive/Archive.h"
 #include "../../Util/CommonUtil.h"
 
@@ -6,7 +6,7 @@ using namespace CTT::Chunk;
 using namespace CTT::Archive;
 using namespace CTT::CommonUtil;
 
-// ºñÆ® À§Ä¡º°·Î Æ÷ÇÔµÇ´Â Á¤º¸
+// ë¹„íŠ¸ ìœ„ì¹˜ë³„ë¡œ í¬í•¨ë˜ëŠ” ì •ë³´
 wstring frameLayerFlagStr[] = {
 	L"XCoefficient",
 	L"YCoefficient",
@@ -55,7 +55,7 @@ FrameLayer::~FrameLayer() {
 
 bool FrameLayer::exportJson(Json::Value& exportValue, vector<UINT32>& offsetList)
 {
-	// value·Î ÃßÃâ
+	// valueë¡œ ì¶”ì¶œ
 
 	exportValue["name"] = getAnsiStr(name, CodePage::CP_UTF_8);
 
@@ -77,7 +77,7 @@ bool FrameLayer::exportJson(Json::Value& exportValue, vector<UINT32>& offsetList
 
 bool FrameLayer::importJson(Json::Value& importValue, vector<UINT32>& offsetList)
 {
-	// value·ÎºÎÅÍ ÀĞ¾îµéÀÌ±â
+	// valueë¡œë¶€í„° ì½ì–´ë“¤ì´ê¸°
 
 	string nameAnsi = importValue["name"].asCString();
 	name = getUniStr(nameAnsi, CodePage::CP_UTF_8);
@@ -108,11 +108,11 @@ bool FrameLayer::importJson(Json::Value& importValue, vector<UINT32>& offsetList
 
 bool FrameLayer::loadFromBuffer(BYTE*& bufferPnt)
 {
-	// info È®º¸
+	// info í™•ë³´
 	memcpy(&info, bufferPnt, sizeof(FrameLayerInfo));
 	bufferPnt += sizeof(FrameLayerInfo);
 
-	// ÀÌ¸§ È®º¸
+	// ì´ë¦„ í™•ë³´
 	name = (WCHAR*)(bufferPnt);
 	bufferPnt += ((name.length() + 1) * sizeof(WCHAR));
 
@@ -122,11 +122,11 @@ bool FrameLayer::loadFromBuffer(BYTE*& bufferPnt)
 
 bool FrameLayer::saveIntoBuffer(BYTE*& bufferPnt)
 {
-	// info ±â·Ï
+	// info ê¸°ë¡
 	memcpy(bufferPnt, &info, sizeof(FrameLayerInfo));
 	bufferPnt += sizeof(FrameLayerInfo);
 
-	// ÀÌ¸§ ±â·Ï
+	// ì´ë¦„ ê¸°ë¡
 	memcpy(bufferPnt, name.data(), (name.length() * sizeof(WCHAR)));
 	bufferPnt += ((name.length() + 1) * sizeof(WCHAR));
 
@@ -134,12 +134,12 @@ bool FrameLayer::saveIntoBuffer(BYTE*& bufferPnt)
 }
 
 
-// µ¥ÀÌÅÍ ·»´õ¸µ¿ë ÇÔ¼ö
+// ë°ì´í„° ë Œë”ë§ìš© í•¨ìˆ˜
 void FrameLayer::renderData(UINT32 index)
 {
 	stringstream oss;
 
-	// ÀÎµ¦½º Ç¥Çö
+	// ì¸ë±ìŠ¤ í‘œí˜„
 	oss << "  <" << index << ">{";
 	ImGui::Text(oss.str().c_str());
 	oss.str("");

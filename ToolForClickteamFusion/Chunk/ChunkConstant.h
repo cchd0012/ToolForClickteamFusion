@@ -1,10 +1,10 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../Common.h"
 
-// script·Î º¸´ø°Ô »ç½Ç 2.5+ object
-// script 2·Î º¸´ø°Ô »ç½Ç ±×³É objectÀÎµí
-// 2.5+´Â New ºÙ¿©¼­, ±×³ÉÀº Old ºÙ¿©¼­ ±¸ºÐÇØ¾ß°ÚÀ½
+// scriptë¡œ ë³´ë˜ê²Œ ì‚¬ì‹¤ 2.5+ object
+// script 2ë¡œ ë³´ë˜ê²Œ ì‚¬ì‹¤ ê·¸ëƒ¥ objectì¸ë“¯
+// 2.5+ëŠ” New ë¶™ì—¬ì„œ, ê·¸ëƒ¥ì€ Old ë¶™ì—¬ì„œ êµ¬ë¶„í•´ì•¼ê² ìŒ
 
 namespace CTT {
 
@@ -24,7 +24,7 @@ namespace CTT {
 			CHUNK_APP_MENU = 0x2226,
 			CHUNK_APP_EXTENTION_PATH = 0x2227,
 			CHUNK_APP_EXTENTIONS = 0x2228,
-			CHUNK_OBJECT_PROPERTIES = 0x2229,		// ±×³É ¿ÀºêÁ§Æ® ÇÁ·ÎÆÛÆ¼ (Çì´õ, ÀÌ¸§, Ä¿¸Õ, unknown, ÀÌÆåÆ® µî ÀüºÎ Æ÷ÇÔ)
+			CHUNK_OBJECT_PROPERTIES = 0x2229,		// ê·¸ëƒ¥ ì˜¤ë¸Œì íŠ¸ í”„ë¡œí¼í‹° (í—¤ë”, ì´ë¦„, ì»¤ë¨¼, unknown, ì´íŽ™íŠ¸ ë“± ì „ë¶€ í¬í•¨)
 			CHUNK_APP_GLOBAL_EVENTS = 0x222A,
 			CHUNK_APP_FRAME_HANDLES = 0x222B,
 			CHUNK_APP_EXTENTION_DATA = 0x222C,
@@ -53,58 +53,58 @@ namespace CTT {
 			CHUNK_SHADER_LIST = 0x2243,
 			//
 			CHUNK_EXTENTED_HEADER = 0x2245,
-			CHUNK_APP_CODEPAGE = 0x2246,		// ÀÌ appÀÇ ÄÚµåÆäÀÌÁö
+			CHUNK_APP_CODEPAGE = 0x2246,		// ì´ appì˜ ì½”ë“œíŽ˜ì´ì§€
 			CHUNK_FRAME_OFFSET = 0x2247,
 			CHUNK_AD_MOB_ID = 0x2248,
 			//
 			CHUNK_ANDROID_MENU = 0x224B,
 			//
-			CHUNK_PRODUCT_VERSION_INFO = 0x224D,		// 4¹ÙÀÌÆ® Á¤¼ö 2°³, ¾ÕÀÇ °ªÀº 0, µÚÀÇ °ªÀº product version, ±Ùµ¥ ¾ÕÀÇ °ªÀÌ 2, µÚÀÇ °ªÀÌ 2ÀÎ °æ¿ìµµ ÀÖÀ½. ÀÌ°É ±âÁØÀ¸·Î ÀÌ¹ÌÁö¸¦ ºÐÇØÇØ¾ß ÇÏ³ª?
+			CHUNK_PRODUCT_VERSION_INFO = 0x224D,		// 4ë°”ì´íŠ¸ ì •ìˆ˜ 2ê°œ, ì•žì˜ ê°’ì€ 0, ë’¤ì˜ ê°’ì€ product version, ê·¼ë° ì•žì˜ ê°’ì´ 2, ë’¤ì˜ ê°’ì´ 2ì¸ ê²½ìš°ë„ ìžˆìŒ. ì´ê±¸ ê¸°ì¤€ìœ¼ë¡œ ì´ë¯¸ì§€ë¥¼ ë¶„í•´í•´ì•¼ í•˜ë‚˜?
 			//
-			CHUNK_PRODUCT_BUILD_VERSION_INFO = 0x224F,	// 4¹ÙÀÌÆ® Á¤¼ö 3°³, Ã¹¹øÂ° °ªÀº product build version, µÎ¹øÂ° °ªÀº 0x16, ¼¼¹øÂ° °ªÀº 0x1ÀÎµ¥ Á¤È®ÇÏ°Ô´Â Àß ¸ð¸£°ÚÀ½
+			CHUNK_PRODUCT_BUILD_VERSION_INFO = 0x224F,	// 4ë°”ì´íŠ¸ ì •ìˆ˜ 3ê°œ, ì²«ë²ˆì§¸ ê°’ì€ product build version, ë‘ë²ˆì§¸ ê°’ì€ 0x16, ì„¸ë²ˆì§¸ ê°’ì€ 0x1ì¸ë° ì •í™•í•˜ê²ŒëŠ” ìž˜ ëª¨ë¥´ê² ìŒ
 			//
-			CHUNK_APP_LOCALE_ID = 0x2251,		// ÀÌ appÀÇ ·ÎÄÉÀÏ id
+			CHUNK_APP_LOCALE_ID = 0x2251,		// ì´ appì˜ ë¡œì¼€ì¼ id
 			//
-			CHUNK_2_5_PLUS_OBJECT_HEADERS = 0x2253,		// +2.5 ¹öÀü ¿ÀºêÁ§Æ® °ü·Ã chunkµé
+			CHUNK_2_5_PLUS_OBJECT_HEADERS = 0x2253,		// +2.5 ë²„ì „ ì˜¤ë¸Œì íŠ¸ ê´€ë ¨ chunkë“¤
 			CHUNK_2_5_PLUS_OBJECT_NAMES = 0x2254,
 			CHUNK_2_5_PLUS_OBJECT_SHADERS = 0x2255,
 			CHUNK_2_5_PLUS_OBJECT_DATA = 0x2256,
-			CHUNK_2_5_PLUS_OBJECT_OFFSETS = 0x2257,		// +2.5 ¹öÀü ¿ÀÇÁÁ§Æ®ÀÇ ¿ÀÇÁ¼ÂÀ» ´ãÀº Á¤º¸ÀÎµ¥, ¾ÐÃàµÈ°Ô ÀÖ°í ¾Æ´Ñ°Ô ÀÖ¾î¼­ build ¹öÀü Á» È®ÀÎÇØºÁ¾ß ÇÒµí
-			CHUNK_2_5_TTF_INFO_LIST = 0x2258,			// ¿©±â ²¸ÀÖ´Â°Å º¸´Ï±î ÀÌ ÆùÆ®µéÀº object 2.5+ ÀÌ»ó¿¡¼­¸¸ ¾²´Â°Ç°¡º½...
+			CHUNK_2_5_PLUS_OBJECT_OFFSETS = 0x2257,		// +2.5 ë²„ì „ ì˜¤í”„ì íŠ¸ì˜ ì˜¤í”„ì…‹ì„ ë‹´ì€ ì •ë³´ì¸ë°, ì••ì¶•ëœê²Œ ìžˆê³  ì•„ë‹Œê²Œ ìžˆì–´ì„œ build ë²„ì „ ì¢€ í™•ì¸í•´ë´ì•¼ í• ë“¯
+			CHUNK_2_5_TTF_INFO_LIST = 0x2258,			// ì—¬ê¸° ê»´ìžˆëŠ”ê±° ë³´ë‹ˆê¹Œ ì´ í°íŠ¸ë“¤ì€ object 2.5+ ì´ìƒì—ì„œë§Œ ì“°ëŠ”ê±´ê°€ë´„...
 			CHUNK_2_5_TTF_DATA_LIST = 0x2259,
 			CHUNK_2_5_PLUS_SHADER_DATA = 0x225A,
 			//
-			CHUNK_2_5_UNKNOWN_1 = 0x225C,				// Á¤È®È÷ ¹ºÁö ¸ð¸£°Ú´Âµ¥, ÀÏ´Ü ÈçÈ÷ ¾²´Â °ªµéÀº ¾Æ´Ñ °Í °°À½, unknown2´Â input°ú °ü·Ã ÀÖ¾î º¸ÀÌ±ä ÇÏ´Âµ¥ ±× ÀÌ»ó ¾Ë ¼ö ¾ø´Ù
-			CHUNK_2_5_UNKNOWN_2 = 0x225D,				// unknown1Àº ±×³É 00 ÀÌ 0x10°³ ÀÖÀ» »ÓÀÌ°í...
+			CHUNK_2_5_UNKNOWN_1 = 0x225C,				// ì •í™•ížˆ ë­”ì§€ ëª¨ë¥´ê² ëŠ”ë°, ì¼ë‹¨ í”ížˆ ì“°ëŠ” ê°’ë“¤ì€ ì•„ë‹Œ ê²ƒ ê°™ìŒ, unknown2ëŠ” inputê³¼ ê´€ë ¨ ìžˆì–´ ë³´ì´ê¸´ í•˜ëŠ”ë° ê·¸ ì´ìƒ ì•Œ ìˆ˜ ì—†ë‹¤
+			CHUNK_2_5_UNKNOWN_2 = 0x225D,				// unknown1ì€ ê·¸ëƒ¥ 00 ì´ 0x10ê°œ ìžˆì„ ë¿ì´ê³ ...
 
-			CHUNK_FRAME = 0x3333,		// ÇÁ·¹ÀÓ chunk
+			CHUNK_FRAME = 0x3333,		// í”„ë ˆìž„ chunk
 			CHUNK_FRAME_HEADER = 0x3334,
 			CHUNK_FRAME_NAME = 0x3335,
-			CHUNK_FRAME_PASSWORD = 0x3336,						// »ý·«?
+			CHUNK_FRAME_PASSWORD = 0x3336,						// ìƒëžµ?
 			CHUNK_FRAME_PALETTE = 0x3337,
 			CHUNK_FRAME_OBJECT_INSTANCE = 0x3338,
-			CHUNK_FRAME_FADE_IN_FRAME = 0x3339,					// »ý·«?
-			CHUNK_FRAME_FADE_OUT_FRAME = 0x333A,				// »ý·«?
+			CHUNK_FRAME_FADE_IN_FRAME = 0x3339,					// ìƒëžµ?
+			CHUNK_FRAME_FADE_OUT_FRAME = 0x333A,				// ìƒëžµ?
 			CHUNK_FRAME_FADE_IN = 0x333B,
 			CHUNK_FRAME_FADE_OUT = 0x333C,
 			CHUNK_FRAME_EVENTS = 0x333D,
-			CHUNK_FRAME_PLAY_HEADER = 0x333E,					// »ý·«?
-			CHUNK_FRAME_ADDITIONAL_ITEM = 0x333F,				// »ý·«?
-			CHUNK_FRAME_ADDITIONAL_ITEM_INSTANCE = 0x3340,		// »ý·«?
+			CHUNK_FRAME_PLAY_HEADER = 0x333E,					// ìƒëžµ?
+			CHUNK_FRAME_ADDITIONAL_ITEM = 0x333F,				// ìƒëžµ?
+			CHUNK_FRAME_ADDITIONAL_ITEM_INSTANCE = 0x3340,		// ìƒëžµ?
 			CHUNK_FRAME_LAYERS = 0x3341,
 			CHUNK_FRAME_VIRTUAL_RECT = 0x3342,
 			CHUNK_FRAME_DEMO_FILE_PATH = 0x3343,
 			CHUNK_FRAME_RANDOM_SEED = 0x3344,
 			CHUNK_FRAME_LAYER_EFFECTS = 0x3345,
-			CHUNK_FRAME_BLU_LAY_OPTIONS = 0x3346,				// »ý·«?
+			CHUNK_FRAME_BLU_LAY_OPTIONS = 0x3346,				// ìƒëžµ?
 			CHUNK_FRAME_MVT_TIMER_BASE = 0x3347,
-			CHUNK_FRAME_MOSIAC_IMAGE_TABLE = 0x3348,			// »ý·«?
+			CHUNK_FRAME_MOSIAC_IMAGE_TABLE = 0x3348,			// ìƒëžµ?
 			CHUNK_FRAME_EFFECTS = 0x3349,
-			CHUNK_FRAME_IPHONE_OPTIONS = 0x334A,				// »ý·«? ¾ÆÀÌÆùÀÌ ¾Æ´Ï¶ó¼­?
-			CHUNK_FRAME_UNKNOWN_1 = 0x334B,						// »ý·«?
+			CHUNK_FRAME_IPHONE_OPTIONS = 0x334A,				// ìƒëžµ? ì•„ì´í°ì´ ì•„ë‹ˆë¼ì„œ?
+			CHUNK_FRAME_UNKNOWN_1 = 0x334B,						// ìƒëžµ?
 			CHUNK_FRAME_INDEX = 0x334C,
 
-			CHUNK_OBJECT_HEADER = 0x4444,		// ±×³É ¿ÀºêÁ§Æ® °ü·Ã chunk
+			CHUNK_OBJECT_HEADER = 0x4444,		// ê·¸ëƒ¥ ì˜¤ë¸Œì íŠ¸ ê´€ë ¨ chunk
 			CHUNK_OBJECT_NAME = 0x4445,
 			CHUNK_OBJECT_COMMON = 0x4446,
 			CHUNK_OBJECT_UNKNOWN = 0x4447,
@@ -112,12 +112,12 @@ namespace CTT {
 			//
 			CHUNK_OBJECT_SHAPES = 0x4450,
 
-			CHUNK_IMAGE_OFFSETS = 0x5555,		// ¿ÀÇÁ¼Â Á¤º¸
+			CHUNK_IMAGE_OFFSETS = 0x5555,		// ì˜¤í”„ì…‹ ì •ë³´
 			CHUNK_LOG_FONT_OFFSETS = 0x5556,
 			CHUNK_SOUND_OFFSETS = 0x5557,
 			CHUNK_MUSIC_OFFSETS = 0x5558,
 
-			CHUNK_IMAGE_DATA = 0x6666,		// µ¥ÀÌÅÍ Á¤º¸
+			CHUNK_IMAGE_DATA = 0x6666,		// ë°ì´í„° ì •ë³´
 			CHUNK_LOG_FONT_DATA = 0x6667,
 			CHUNK_SOUND_DATA = 0x6668,
 			CHUNK_MUSIC_DATA = 0x6669,
@@ -135,13 +135,13 @@ namespace CTT {
 			switch (chunkType)
 			{
 				// --------------------
-				// ÇÁ¸®ºä? °ü·Ã chunk
+				// í”„ë¦¬ë·°? ê´€ë ¨ chunk
 				case ChunkType::CHUNK_PREVIEW:
 				{
 					return "preview";
 				}
 				// --------------------
-				// app °ü·Ã chunk
+				// app ê´€ë ¨ chunk
 				case ChunkType::CHUNK_APP_MINI_HEADER:
 				{
 					return "app mini header";
@@ -170,7 +170,7 @@ namespace CTT {
 				{
 					return "app extentions";
 				}
-				// ±×³É ¿ÀºêÁ§Æ® ÇÁ·ÎÆÛÆ¼ (Çì´õ, ÀÌ¸§, Ä¿¸Õ, unknown, ÀÌÆåÆ® µî ÀüºÎ Æ÷ÇÔ)
+				// ê·¸ëƒ¥ ì˜¤ë¸Œì íŠ¸ í”„ë¡œí¼í‹° (í—¤ë”, ì´ë¦„, ì»¤ë¨¼, unknown, ì´íŽ™íŠ¸ ë“± ì „ë¶€ í¬í•¨)
 				case ChunkType::CHUNK_OBJECT_PROPERTIES:
 				{
 					return "object properties";
@@ -281,7 +281,7 @@ namespace CTT {
 				{
 					return "extended header";
 				}
-				// ÀÌ appÀÇ ÄÚµåÆäÀÌÁö
+				// ì´ appì˜ ì½”ë“œíŽ˜ì´ì§€
 				case ChunkType::CHUNK_APP_CODEPAGE:
 				{
 					return "codepage";
@@ -300,25 +300,25 @@ namespace CTT {
 					return "android menu";
 				}
 				// --------------------
-				// 4¹ÙÀÌÆ® Á¤¼ö 2°³, ¾ÕÀÇ °ªÀº 0, µÚÀÇ °ªÀº product version
+				// 4ë°”ì´íŠ¸ ì •ìˆ˜ 2ê°œ, ì•žì˜ ê°’ì€ 0, ë’¤ì˜ ê°’ì€ product version
 				case ChunkType::CHUNK_PRODUCT_VERSION_INFO:
 				{
 					return "product version info";
 				}
 				// --------------------
-				// Á¤¼ö°¡ 3°³ ÀÖ´Â °ªÀÎ°Å °°Àºµ¥...
+				// ì •ìˆ˜ê°€ 3ê°œ ìžˆëŠ” ê°’ì¸ê±° ê°™ì€ë°...
 				case ChunkType::CHUNK_PRODUCT_BUILD_VERSION_INFO:
 				{
 					return "product build version info";
 				}
 				// --------------------
-				// ÀÌ appÀÇ ·ÎÄÉÀÏ id
+				// ì´ appì˜ ë¡œì¼€ì¼ id
 				case ChunkType::CHUNK_APP_LOCALE_ID:
 				{
 					return "locale id";
 				}
 				// --------------------
-				// +2.5 ¹öÀü ¿ÀºêÁ§Æ® °ü·Ã chunkµé
+				// +2.5 ë²„ì „ ì˜¤ë¸Œì íŠ¸ ê´€ë ¨ chunkë“¤
 				case ChunkType::CHUNK_2_5_PLUS_OBJECT_HEADERS:
 				{
 					return "2.5+ object headers";
@@ -335,12 +335,12 @@ namespace CTT {
 				{
 					return "2.5+ object data";
 				}
-				// +2.5 ¹öÀü ¿ÀÇÁÁ§Æ®ÀÇ ¿ÀÇÁ¼ÂÀ» ´ãÀº Á¤º¸ÀÎµ¥, ¾ÐÃàµÈ°Ô ÀÖ°í ¾Æ´Ñ°Ô ÀÖ¾î¼­ build ¹öÀü Á» È®ÀÎÇØºÁ¾ß ÇÒµí
+				// +2.5 ë²„ì „ ì˜¤í”„ì íŠ¸ì˜ ì˜¤í”„ì…‹ì„ ë‹´ì€ ì •ë³´ì¸ë°, ì••ì¶•ëœê²Œ ìžˆê³  ì•„ë‹Œê²Œ ìžˆì–´ì„œ build ë²„ì „ ì¢€ í™•ì¸í•´ë´ì•¼ í• ë“¯
 				case ChunkType::CHUNK_2_5_PLUS_OBJECT_OFFSETS:
 				{
 					return "2.5+ object offsets";
 				}
-				// ¿©±â ²¸ÀÖ´Â°Å º¸´Ï±î ÀÌ ÆùÆ®µéÀº object 2.5+ ÀÌ»ó¿¡¼­¸¸ ¾²´Â°Ç°¡º½...
+				// ì—¬ê¸° ê»´ìžˆëŠ”ê±° ë³´ë‹ˆê¹Œ ì´ í°íŠ¸ë“¤ì€ object 2.5+ ì´ìƒì—ì„œë§Œ ì“°ëŠ”ê±´ê°€ë´„...
 				case ChunkType::CHUNK_2_5_TTF_INFO_LIST:
 				{
 					return "2.5+ object TTF info";
@@ -357,13 +357,13 @@ namespace CTT {
 				{
 					return "2.5+ (unknown 1)";
 				}
-				// ÀÏ´Ü ÀÌÂÊÀº ÀÌÁß¹®ÀÚ¿­ ¹­À½ÀÎ °Ç °ÅÀÇ È®½ÇÇØ º¸ÀÓ
+				// ì¼ë‹¨ ì´ìª½ì€ ì´ì¤‘ë¬¸ìžì—´ ë¬¶ìŒì¸ ê±´ ê±°ì˜ í™•ì‹¤í•´ ë³´ìž„
 				case ChunkType::CHUNK_2_5_UNKNOWN_2:
 				{
 					return "2.5+ (unknown 2)";
 				}
 				// --------------------
-				// ÇÁ·¹ÀÓ °ü·Ã chunk
+				// í”„ë ˆìž„ ê´€ë ¨ chunk
 				case ChunkType::CHUNK_FRAME:
 				{
 					return "frame";
@@ -469,7 +469,7 @@ namespace CTT {
 					return "frame index";
 				}
 				// --------------------
-				// ±×³É ¿ÀºêÁ§Æ® °ü·Ã chunk
+				// ê·¸ëƒ¥ ì˜¤ë¸Œì íŠ¸ ê´€ë ¨ chunk
 				case ChunkType::CHUNK_OBJECT_HEADER:
 				{
 					return "object header";
@@ -495,7 +495,7 @@ namespace CTT {
 					return "object shapes";
 				}
 				// --------------------
-				// ¿ÀÇÁ¼Â Á¤º¸
+				// ì˜¤í”„ì…‹ ì •ë³´
 				case ChunkType::CHUNK_IMAGE_OFFSETS:
 				{
 					return "image offsets";
@@ -513,7 +513,7 @@ namespace CTT {
 					return "music offsets";
 				}
 				// --------------------
-				// µ¥ÀÌÅÍ Á¤º¸
+				// ë°ì´í„° ì •ë³´
 				case ChunkType::CHUNK_IMAGE_DATA:
 				{
 					return "image data";
@@ -559,13 +559,13 @@ namespace CTT {
 			switch (chunkType)
 			{
 				// --------------------
-				// ÇÁ¸®ºä? °ü·Ã chunk
+				// í”„ë¦¬ë·°? ê´€ë ¨ chunk
 				case ChunkType::CHUNK_PREVIEW:
 				{
 					return L"preview";
 				}
 				// --------------------
-				// app °ü·Ã chunk
+				// app ê´€ë ¨ chunk
 				case ChunkType::CHUNK_APP_MINI_HEADER:
 				{
 					return L"app mini header";
@@ -594,7 +594,7 @@ namespace CTT {
 				{
 					return L"app extentions";
 				}
-				// ±×³É ¿ÀºêÁ§Æ® ÇÁ·ÎÆÛÆ¼ (Çì´õ, ÀÌ¸§, Ä¿¸Õ, unknown, ÀÌÆåÆ® µî ÀüºÎ Æ÷ÇÔ)
+				// ê·¸ëƒ¥ ì˜¤ë¸Œì íŠ¸ í”„ë¡œí¼í‹° (í—¤ë”, ì´ë¦„, ì»¤ë¨¼, unknown, ì´íŽ™íŠ¸ ë“± ì „ë¶€ í¬í•¨)
 				case ChunkType::CHUNK_OBJECT_PROPERTIES:
 				{
 					return L"object properties";
@@ -705,7 +705,7 @@ namespace CTT {
 				{
 					return L"extended header";
 				}
-				// ÀÌ appÀÇ ÄÚµåÆäÀÌÁö
+				// ì´ appì˜ ì½”ë“œíŽ˜ì´ì§€
 				case ChunkType::CHUNK_APP_CODEPAGE:
 				{
 					return L"codepage";
@@ -724,25 +724,25 @@ namespace CTT {
 					return L"android menu";
 				}
 				// --------------------
-				// 4¹ÙÀÌÆ® Á¤¼ö 2°³, ¾ÕÀÇ °ªÀº 0, µÚÀÇ °ªÀº product version
+				// 4ë°”ì´íŠ¸ ì •ìˆ˜ 2ê°œ, ì•žì˜ ê°’ì€ 0, ë’¤ì˜ ê°’ì€ product version
 				case ChunkType::CHUNK_PRODUCT_VERSION_INFO:
 				{
 					return L"product version info";
 				}
 				// --------------------
-				// Á¤¼ö°¡ 3°³ ÀÖ´Â °ªÀÎ°Å °°Àºµ¥...
+				// ì •ìˆ˜ê°€ 3ê°œ ìžˆëŠ” ê°’ì¸ê±° ê°™ì€ë°...
 				case ChunkType::CHUNK_PRODUCT_BUILD_VERSION_INFO:
 				{
 					return L"product build version info";
 				}
 				// --------------------
-				// ÀÌ appÀÇ ·ÎÄÉÀÏ id
+				// ì´ appì˜ ë¡œì¼€ì¼ id
 				case ChunkType::CHUNK_APP_LOCALE_ID:
 				{
 					return L"locale id";
 				}
 				// --------------------
-				// +2.5 ¹öÀü ¿ÀºêÁ§Æ® °ü·Ã chunkµé
+				// +2.5 ë²„ì „ ì˜¤ë¸Œì íŠ¸ ê´€ë ¨ chunkë“¤
 				case ChunkType::CHUNK_2_5_PLUS_OBJECT_HEADERS:
 				{
 					return L"2.5+ object headers";
@@ -759,12 +759,12 @@ namespace CTT {
 				{
 					return L"2.5+ object data";
 				}
-				// +2.5 ¹öÀü ¿ÀÇÁÁ§Æ®ÀÇ ¿ÀÇÁ¼ÂÀ» ´ãÀº Á¤º¸ÀÎµ¥, ¾ÐÃàµÈ°Ô ÀÖ°í ¾Æ´Ñ°Ô ÀÖ¾î¼­ build ¹öÀü Á» È®ÀÎÇØºÁ¾ß ÇÒµí
+				// +2.5 ë²„ì „ ì˜¤í”„ì íŠ¸ì˜ ì˜¤í”„ì…‹ì„ ë‹´ì€ ì •ë³´ì¸ë°, ì••ì¶•ëœê²Œ ìžˆê³  ì•„ë‹Œê²Œ ìžˆì–´ì„œ build ë²„ì „ ì¢€ í™•ì¸í•´ë´ì•¼ í• ë“¯
 				case ChunkType::CHUNK_2_5_PLUS_OBJECT_OFFSETS:
 				{
 					return L"2.5+ object offsets";
 				}
-				// ¿©±â ²¸ÀÖ´Â°Å º¸´Ï±î ÀÌ ÆùÆ®µéÀº object 2.5+ ÀÌ»ó¿¡¼­¸¸ ¾²´Â°Ç°¡º½...
+				// ì—¬ê¸° ê»´ìžˆëŠ”ê±° ë³´ë‹ˆê¹Œ ì´ í°íŠ¸ë“¤ì€ object 2.5+ ì´ìƒì—ì„œë§Œ ì“°ëŠ”ê±´ê°€ë´„...
 				case ChunkType::CHUNK_2_5_TTF_INFO_LIST:
 				{
 					return L"2.5+ object TTF info";
@@ -786,7 +786,7 @@ namespace CTT {
 					return L"2.5+ (unknown 2)";
 				}
 				// --------------------
-				// ÇÁ·¹ÀÓ °ü·Ã chunk
+				// í”„ë ˆìž„ ê´€ë ¨ chunk
 				case ChunkType::CHUNK_FRAME:
 				{
 					return L"frame";
@@ -892,7 +892,7 @@ namespace CTT {
 					return L"frame index";
 				}
 				// --------------------
-				// ±×³É ¿ÀºêÁ§Æ® °ü·Ã chunk
+				// ê·¸ëƒ¥ ì˜¤ë¸Œì íŠ¸ ê´€ë ¨ chunk
 				case ChunkType::CHUNK_OBJECT_HEADER:
 				{
 					return L"object header";
@@ -918,7 +918,7 @@ namespace CTT {
 					return L"object shapes";
 				}
 				// --------------------
-				// ¿ÀÇÁ¼Â Á¤º¸
+				// ì˜¤í”„ì…‹ ì •ë³´
 				case ChunkType::CHUNK_IMAGE_OFFSETS:
 				{
 					return L"image offsets";
@@ -936,7 +936,7 @@ namespace CTT {
 					return L"music offsets";
 				}
 				// --------------------
-				// µ¥ÀÌÅÍ Á¤º¸
+				// ë°ì´í„° ì •ë³´
 				case ChunkType::CHUNK_IMAGE_DATA:
 				{
 					return L"image data";

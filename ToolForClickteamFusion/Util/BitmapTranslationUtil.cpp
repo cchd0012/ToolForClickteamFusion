@@ -1,4 +1,4 @@
-#include "BitmapTranslationUtil.h"
+ï»¿#include "BitmapTranslationUtil.h"
 #include "CommonUtil.h"
 #include "CommonStructure.h"
 #include <libpng-1.6.37/png.h>
@@ -10,7 +10,7 @@ using namespace CTT::CommonUtil;
 bool CTT::BitmapTranslationUtil::Normal32BitImageToRGBA(BYTE* translatingData, UINT32 translatingSize, BYTE*& bitmapData, UINT32& bitmapSize,
 	UINT32 width, UINT32 height, bool isAlphaSeparated, Color& transparent)
 {
-	// 32ºñÆ® -> 32ºñÆ® º¯È¯
+	// 32ë¹„íŠ¸ -> 32ë¹„íŠ¸ ë³€í™˜
 
 	UINT32 bitmapPitch = width * 4;
 	UINT32 translationWidthPixel = width * 4;
@@ -43,7 +43,7 @@ bool CTT::BitmapTranslationUtil::Normal32BitImageToRGBA(BYTE* translatingData, U
 bool CTT::BitmapTranslationUtil::RGBAToNormal32BitImage(BYTE* bitmapData, UINT32 bitmapSize, BYTE*& translatingData, UINT32& translatingSize,
 	UINT32 width, UINT32 height, bool isAlphaSeparated, Color& transparent)
 {
-	// ¾ËÆÄ µ¥ÀÌÅÍ°¡ ºĞ¸®µÇ¾î ÀÖÀ¸¸é ±×¿¡ ¸ÂÃç¼­ Ãß°¡·Î µ¥ÀÌÅÍ ÇÒ´ç
+	// ì•ŒíŒŒ ë°ì´í„°ê°€ ë¶„ë¦¬ë˜ì–´ ìˆìœ¼ë©´ ê·¸ì— ë§ì¶°ì„œ ì¶”ê°€ë¡œ ë°ì´í„° í• ë‹¹
 
 	UINT32 bitmapPitch = width * 4;
 	UINT32 translationWidthPixel = width * 4;
@@ -51,7 +51,7 @@ bool CTT::BitmapTranslationUtil::RGBAToNormal32BitImage(BYTE* bitmapData, UINT32
 	UINT32 translationPitch = (width + translationPixelGap) * 4;
 	UINT32 alphaPitch = width + ((4 - (width % 4)) % 4);
 
-	// 32ºñÆ®¸¸ Çã¿ë
+	// 32ë¹„íŠ¸ë§Œ í—ˆìš©
 	if (bitmapSize < (bitmapPitch * height)) {
 		return false;
 	}
@@ -60,7 +60,7 @@ bool CTT::BitmapTranslationUtil::RGBAToNormal32BitImage(BYTE* bitmapData, UINT32
 	translatingData = (BYTE*)malloc(translatingSize);
 	memset(translatingData, 0, translatingSize);
 
-	// *** ¿Ö ¿ª¼øÀ¸·Î ÇÏ¸é »öÀÌ ´Ş¶óÁöÁö? ÀÌ°Íµµ ¹İ´ë·Î ÇØ¾ß ¸ÂÀ»°Å °°Àºµ¥...
+	// *** ì™œ ì—­ìˆœìœ¼ë¡œ í•˜ë©´ ìƒ‰ì´ ë‹¬ë¼ì§€ì§€? ì´ê²ƒë„ ë°˜ëŒ€ë¡œ í•´ì•¼ ë§ì„ê±° ê°™ì€ë°...
 	for (UINT32 i = 0; i < height; i++) {
 		UINT32 translationStartPos = (translationPitch * i);
 		UINT32 bitmapStartPos = (bitmapPitch * i);
@@ -79,7 +79,7 @@ bool CTT::BitmapTranslationUtil::RGBAToNormal32BitImage(BYTE* bitmapData, UINT32
 bool CTT::BitmapTranslationUtil::Normal24BitImageToRGBA(BYTE* translatingData, UINT32 translatingSize, BYTE* &bitmapData, UINT32 &bitmapSize,
 	UINT32 width, UINT32 height, bool isAlphaSeparated, Color& transparent)
 {
-	// °­Á¦·Î 24 -> 32ºñÆ® º¯È¯
+	// ê°•ì œë¡œ 24 -> 32ë¹„íŠ¸ ë³€í™˜
 
 	UINT32 bitmapPitch = width * 4;
 	UINT32 translationWidthPixel = width * 3;
@@ -137,7 +137,7 @@ bool CTT::BitmapTranslationUtil::Normal24BitImageToRGBA(BYTE* translatingData, U
 bool CTT::BitmapTranslationUtil::RGBAToNormal24BitImage(BYTE* bitmapData, UINT32 bitmapSize, BYTE*& translatingData, UINT32& translatingSize,
 	UINT32 width, UINT32 height, bool isAlphaSeparated, Color& transparent)
 {
-	// ¾ËÆÄ µ¥ÀÌÅÍ°¡ ºĞ¸®µÇ¾î ÀÖÀ¸¸é ±×¿¡ ¸ÂÃç¼­ Ãß°¡·Î µ¥ÀÌÅÍ ÇÒ´ç
+	// ì•ŒíŒŒ ë°ì´í„°ê°€ ë¶„ë¦¬ë˜ì–´ ìˆìœ¼ë©´ ê·¸ì— ë§ì¶°ì„œ ì¶”ê°€ë¡œ ë°ì´í„° í• ë‹¹
 
 	UINT32 bitmapPitch = width * 4;
 	UINT32 translationWidthPixel = width * 3;
@@ -145,7 +145,7 @@ bool CTT::BitmapTranslationUtil::RGBAToNormal24BitImage(BYTE* bitmapData, UINT32
 	UINT32 translationPitch = (width + translationPixelGap) * 3;
 	UINT32 alphaPitch = width + ((4 - (width % 4)) % 4);
 
-	// 32ºñÆ®¸¸ Çã¿ë
+	// 32ë¹„íŠ¸ë§Œ í—ˆìš©
 	if (bitmapSize < (bitmapPitch * height)) {
 		return false;
 	}
@@ -252,7 +252,7 @@ bool CTT::BitmapTranslationUtil::RGBAToNormal15BitImage(BYTE* bitmapData, UINT32
 	UINT32 translationPixelGap = (2 - (translationWidthPixel % 2)) % 2;
 	UINT32 translationPitch = (width + translationPixelGap) * 3;
 
-	// 32ºñÆ®¸¸ Çã¿ë
+	// 32ë¹„íŠ¸ë§Œ í—ˆìš©
 	if (bitmapSize < (bitmapPitch * height)) {
 		return false;
 	}
@@ -334,7 +334,7 @@ bool CTT::BitmapTranslationUtil::RGBAToNormal16BitImage(BYTE* bitmapData, UINT32
 	UINT32 translationPixelGap = (2 - (translationWidthPixel % 2)) % 2;
 	UINT32 translationPitch = (width + translationPixelGap) * 3;
 
-	// 32ºñÆ®¸¸ Çã¿ë
+	// 32ë¹„íŠ¸ë§Œ í—ˆìš©
 	if (bitmapSize < (bitmapPitch * height)) {
 		return false;
 	}
@@ -369,7 +369,7 @@ bool CTT::BitmapTranslationUtil::RGBAToNormal16BitImage(BYTE* bitmapData, UINT32
 bool CTT::BitmapTranslationUtil::twoFivePlusImageToRGBA(BYTE* translatingData, UINT32 translatingSize, BYTE*& bitmapData, UINT32& bitmapSize,
 	UINT32 width, UINT32 height, bool isAlphaSeparated, bool isRGBAData, Color& transparent)
 {
-	// isAlphaSeparated¿Í isRGBAData°¡ µÑ ´Ù ÂüÀÎ °æ¿ì°¡ ÀÖÀ½...
+	// isAlphaSeparatedì™€ isRGBADataê°€ ë‘˜ ë‹¤ ì°¸ì¸ ê²½ìš°ê°€ ìˆìŒ...
 
 	UINT32 bitmapPitch = width * 4;
 	UINT32 translationPitch = width * 4;
@@ -399,11 +399,11 @@ bool CTT::BitmapTranslationUtil::twoFivePlusImageToRGBA(BYTE* translatingData, U
 			bitmapData[bitmapStartPos + (j * 4) + 1] = translatingData[translationStartPos + (j * 4) + 1];
 			bitmapData[bitmapStartPos + (j * 4) + 2] = translatingData[translationStartPos + (j * 4) + 2];
 			if (isRGBAData) {
-				// µ¥ÀÌÅÍ ÀÚÃ¼°¡ rgba¶ó¸é ±×³É ¾ËÆÄµ¥ÀÌÅÍ¸¦ ¼¼ÆÃ
+				// ë°ì´í„° ìì²´ê°€ rgbaë¼ë©´ ê·¸ëƒ¥ ì•ŒíŒŒë°ì´í„°ë¥¼ ì„¸íŒ…
 				bitmapData[bitmapStartPos + (j * 4) + 3] = translatingData[translationStartPos + (j * 4) + 3];
 			}
 			else if (!isAlphaSeparated) {
-				// rgba µ¥ÀÌÅÍ´Â ¾Æ´ÏÁö¸¸ ¾ËÆÄµ¥ÀÌÅÍ°¡ ºĞ¸®µÇ¾îÀÖÁö ¾Ê´Ù¸é transparent¸¦ ±âÁØÀ¸·Î ÆÇ´Ü
+				// rgba ë°ì´í„°ëŠ” ì•„ë‹ˆì§€ë§Œ ì•ŒíŒŒë°ì´í„°ê°€ ë¶„ë¦¬ë˜ì–´ìˆì§€ ì•Šë‹¤ë©´ transparentë¥¼ ê¸°ì¤€ìœ¼ë¡œ íŒë‹¨
 				if ((bitmapData[bitmapStartPos + (j * 4) + 0] == transparent.b)
 					&& (bitmapData[bitmapStartPos + (j * 4) + 1] == transparent.g)
 					&& (bitmapData[bitmapStartPos + (j * 4) + 2] == transparent.r)) {
@@ -416,7 +416,7 @@ bool CTT::BitmapTranslationUtil::twoFivePlusImageToRGBA(BYTE* translatingData, U
 		}
 	}
 
-	// rgba µ¥ÀÌÅÍ°¡ ¾Æ´ÏÁö¸¸ ¾ËÆÄµ¥ÀÌÅÍ°¡ ºĞ¸®µÇ¾î ÀÖÀ¸¸é, Áï rgb + ¾ËÆÄµ¥ÀÌÅÍ¸é ºĞ¸®µÈ ¾ËÆÄµ¥ÀÌÅÍ¸¦ ³Ö¾îÁØ´Ù
+	// rgba ë°ì´í„°ê°€ ì•„ë‹ˆì§€ë§Œ ì•ŒíŒŒë°ì´í„°ê°€ ë¶„ë¦¬ë˜ì–´ ìˆìœ¼ë©´, ì¦‰ rgb + ì•ŒíŒŒë°ì´í„°ë©´ ë¶„ë¦¬ëœ ì•ŒíŒŒë°ì´í„°ë¥¼ ë„£ì–´ì¤€ë‹¤
 	if (isAlphaSeparated && !isRGBAData) {
 		for (UINT32 i = 0; i < height; i++) {
 			UINT32 bitmapStartPos = (bitmapPitch * i);
@@ -434,13 +434,13 @@ bool CTT::BitmapTranslationUtil::twoFivePlusImageToRGBA(BYTE* translatingData, U
 bool CTT::BitmapTranslationUtil::RGBAToTwoFivePlusImage(BYTE* bitmapData, UINT32 bitmapSize, BYTE* &translatingData, UINT32 &translatingSize,
 	UINT32 width, UINT32 height, bool isAlphaSeparated, bool isRGBAData, Color& transparent)
 {
-	// ¾ËÆÄ µ¥ÀÌÅÍ°¡ ºĞ¸®µÇ¾î ÀÖÀ¸¸é ±×¿¡ ¸ÂÃç¼­ Ãß°¡·Î µ¥ÀÌÅÍ ÇÒ´ç
+	// ì•ŒíŒŒ ë°ì´í„°ê°€ ë¶„ë¦¬ë˜ì–´ ìˆìœ¼ë©´ ê·¸ì— ë§ì¶°ì„œ ì¶”ê°€ë¡œ ë°ì´í„° í• ë‹¹
 
 	UINT32 bitmapPitch = width * 4;
 	UINT32 translationPitch = width * 4;
 	UINT32 alphaPitch = width + ((4 - (width % 4)) % 4);
 
-	// 32ºñÆ®¸¸ Çã¿ë
+	// 32ë¹„íŠ¸ë§Œ í—ˆìš©
 	if (bitmapSize < (bitmapPitch * height)) {
 		return false;
 	}
@@ -468,11 +468,11 @@ bool CTT::BitmapTranslationUtil::RGBAToTwoFivePlusImage(BYTE* bitmapData, UINT32
 			translatingData[translationStartPos + (j * 4) + 1] = bitmapData[bitmapStartPos + (j * 4) + 1];
 			translatingData[translationStartPos + (j * 4) + 2] = bitmapData[bitmapStartPos + (j * 4) + 2];
 			if (isRGBAData) {
-				// µ¥ÀÌÅÍ ÀÚÃ¼°¡ rgba¶ó¸é ±×³É ¾ËÆÄµ¥ÀÌÅÍ¸¦ ¼¼ÆÃ
+				// ë°ì´í„° ìì²´ê°€ rgbaë¼ë©´ ê·¸ëƒ¥ ì•ŒíŒŒë°ì´í„°ë¥¼ ì„¸íŒ…
 				translatingData[translationStartPos + (j * 4) + 3] = bitmapData[bitmapStartPos + (j * 4) + 3];
 			}
 			else if (!isAlphaSeparated) {
-				// rgba µ¥ÀÌÅÍ´Â ¾Æ´ÏÁö¸¸ ¾ËÆÄµ¥ÀÌÅÍ°¡ ºĞ¸®µÇ¾îÀÖÁö ¾Ê´Ù¸é transparent¸¦ ±âÁØÀ¸·Î 00 È¤Àº FF ¼¼ÆÃ
+				// rgba ë°ì´í„°ëŠ” ì•„ë‹ˆì§€ë§Œ ì•ŒíŒŒë°ì´í„°ê°€ ë¶„ë¦¬ë˜ì–´ìˆì§€ ì•Šë‹¤ë©´ transparentë¥¼ ê¸°ì¤€ìœ¼ë¡œ 00 í˜¹ì€ FF ì„¸íŒ…
 				if (bitmapData[bitmapStartPos + (j * 4) + 3] = 0x00) {
 					translatingData[translationStartPos + (j * 4) + 0] = transparent.r;
 					translatingData[translationStartPos + (j * 4) + 1] = transparent.g;
@@ -486,7 +486,7 @@ bool CTT::BitmapTranslationUtil::RGBAToTwoFivePlusImage(BYTE* bitmapData, UINT32
 		}
 	}
 
-	// rgba µ¥ÀÌÅÍ°¡ ¾Æ´ÏÁö¸¸ ¾ËÆÄµ¥ÀÌÅÍ°¡ ºĞ¸®µÇ¾î ÀÖÀ¸¸é, Áï rgb + ¾ËÆÄµ¥ÀÌÅÍ¸é ºĞ¸®µÈ ¾ËÆÄµ¥ÀÌÅÍ¸¦ ³Ö¾îÁØ´Ù
+	// rgba ë°ì´í„°ê°€ ì•„ë‹ˆì§€ë§Œ ì•ŒíŒŒë°ì´í„°ê°€ ë¶„ë¦¬ë˜ì–´ ìˆìœ¼ë©´, ì¦‰ rgb + ì•ŒíŒŒë°ì´í„°ë©´ ë¶„ë¦¬ëœ ì•ŒíŒŒë°ì´í„°ë¥¼ ë„£ì–´ì¤€ë‹¤
 	if (isAlphaSeparated && !isRGBAData) {
 		for (UINT32 i = 0; i < height; i++) {
 			UINT32 alphaStartPos = (alphaPitch * i);

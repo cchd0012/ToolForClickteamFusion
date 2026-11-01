@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "ArchiveStructure.h"
 #include "../Application/ApplicationState.h"
@@ -26,48 +26,48 @@ namespace CTT {
 
 			HANDLE getArchiveHandle() { return hArchive; }
 
-			// application Á¤º¸
+			// application ì •ë³´
 			ArchiveType getArchiveType()  { return archiveType; }
 			EngineType getEngineType() { return engineType; }
 			UINT32 getBuildVersion() { return backHeader.productBuildVersion; }
 			wstring& getArchivePath()  { return archivePath; }
 
-			// ÀÌ Á¤º¸´Â È®½ÇÄ¡ ¾ÊÀ½
+			// ì´ ì •ë³´ëŠ” í™•ì‹¤ì¹˜ ì•ŠìŒ
 			bool isTwoPointFiveImage() {
 				UINT32 imgVersion = productVersionInfo.getValue()[1];
 				return (engineType == EngineType::ENGINE_MMF_2_5_PLUS) && (imgVersion >= 3);
 			}
 
-			// application Á¤º¸ - ·ÎÄÉÀÏ °ª
+			// application ì •ë³´ - ë¡œì¼€ì¼ ê°’
 			bool isAppLocaleIdRead() { return appLocaleId.hasRead(); }
 			UINT32 getAppLocaleId() { return appLocaleId.getValue(); }
 			bool isAppCodepageRead() { return appCodepage.hasRead(); }
 			UINT32 getAppCodepage() { return appCodepage.getValue(); }
 
-			// application Á¤º¸ - protection °ü·Ã °ª
+			// application ì •ë³´ - protection ê´€ë ¨ ê°’
 			wstring& getAppName() { return appName.getValue(); }
 			wstring& getEditorFileName() { return editorFileName.getValue(); }
 			wstring& getCopyright() { return copyright.getValue(); }
 
-			// application Á¤º¸ - frame ¿¬µ¿
+			// application ì •ë³´ - frame ì—°ë™
 			UINT32 getFrameCount() { return appHeader.getValue().numberOfFrames; }
 			void setFrameCount(UINT32 frameCount) { appHeader.getValue().numberOfFrames = frameCount; }
 
-			// ¾ÆÄ«ÀÌºê ¿ÜºÎ·ÎºÎÅÍ µ¥ÀÌÅÍ¸¦ ÀÔ·Â¹Ş¾Æ ¼¼ÆÃ
+			// ì•„ì¹´ì´ë¸Œ ì™¸ë¶€ë¡œë¶€í„° ë°ì´í„°ë¥¼ ì…ë ¥ë°›ì•„ ì„¸íŒ…
 			void setAppNameFromEditor(wstring appNameValue);
 			void setAppLocaleIdFromEditor(UINT32 localeIdValue);
 			void setAppCodepageFromEditor(UINT32 codepageValue);
 
-			// ¾ÆÄ«ÀÌºê¿¡¼­ ¿øÇÏ´Â µ¥ÀÌÅÍµéÀ» ÃßÃâÇÏ´Â ÇÔ¼ö
+			// ì•„ì¹´ì´ë¸Œì—ì„œ ì›í•˜ëŠ” ë°ì´í„°ë“¤ì„ ì¶”ì¶œí•˜ëŠ” í•¨ìˆ˜
 			bool exportFromArchive(vector<wstring>& extractingDataTypes);
 
-			// ¾ÆÄ«ÀÌºê¿¡¼­ ÃßÃâÇÒ µ¥ÀÌÅÍ¸¦ Ä«¿îÆ®ÇØ ¼¼ÆÃÇÏ´Â ÇÔ¼ö
+			// ì•„ì¹´ì´ë¸Œì—ì„œ ì¶”ì¶œí•  ë°ì´í„°ë¥¼ ì¹´ìš´íŠ¸í•´ ì„¸íŒ…í•˜ëŠ” í•¨ìˆ˜
 			void setDataCount(vector<wstring>& extractingDataTypes);
 
-			// º¯°æµÈ µ¥ÀÌÅÍµéÀ» Àû¿ëÇØ »õ ¾ÆÄ«ÀÌºê¸¦ ¸¸µå´Â ÇÔ¼ö
+			// ë³€ê²½ëœ ë°ì´í„°ë“¤ì„ ì ìš©í•´ ìƒˆ ì•„ì¹´ì´ë¸Œë¥¼ ë§Œë“œëŠ” í•¨ìˆ˜
 			bool rewriteNewArchive(vector<wstring> &replacingDataTypes);
 
-			// application Á¤º¸ - chunk ¹İÈ¯¿ë, shader Á¤º¸´Â (frame/object/object 2.5+¿¡ ¾²ÀÓ)
+			// application ì •ë³´ - chunk ë°˜í™˜ìš©, shader ì •ë³´ëŠ” (frame/object/object 2.5+ì— ì“°ì„)
 			AppNameChunk* getAppNameChunk() { return &appName; }
 			EditorFileNameChunk* getEditorFileNameChunk() { return &editorFileName; }
 			CopyrightChunk* getCopyrightChunk() { return &copyright; }
@@ -92,7 +92,7 @@ namespace CTT {
 
 			UINT32 chunkStartOffset;
 
-			// application Á¤º¸
+			// application ì •ë³´
 			AppNameChunk appName;
 			EditorFileNameChunk editorFileName;
 			CopyrightChunk copyright;
@@ -103,21 +103,21 @@ namespace CTT {
 			AppLocaleIdChunk appLocaleId;
 			AppCodepageChunk appCodepage;
 
-			// application µ¥ÀÌÅÍ - ³»ºÎ µ¥ÀÌÅÍ °øÀ¯¿ë, shaderList´Â ÃßÃâ¸¸ °¡´É
+			// application ë°ì´í„° - ë‚´ë¶€ ë°ì´í„° ê³µìœ ìš©, shaderListëŠ” ì¶”ì¶œë§Œ ê°€ëŠ¥
 			BinaryFileDataChunk binaryFileData;
 			ShaderListChunk shaderList;
 
-			// ÇÁ·¹ÀÓ ÀÌº¥Æ® ÅØ½ºÆ® ¹ø¿ª Ç¥ (ÃßÃâÇÒ ¶§ ¸ğÀ¸°í, ±³Ã¼ÇÒ ¶§ ÀĞ¾î µéÀÎ´Ù)
+			// í”„ë ˆì„ ì´ë²¤íŠ¸ í…ìŠ¤íŠ¸ ë²ˆì—­ í‘œ (ì¶”ì¶œí•  ë•Œ ëª¨ìœ¼ê³ , êµì²´í•  ë•Œ ì½ì–´ ë“¤ì¸ë‹¤)
 			FrameEventTextTable frameEventTextTable;
 
-			// application ¹öÀü µîÀ» Æ÷ÇÔÇÑ Á¤º¸ ¼¼ÆÃ
+			// application ë²„ì „ ë“±ì„ í¬í•¨í•œ ì •ë³´ ì„¸íŒ…
 			bool setApplicationInfo();
 
 		private:
-			// ¸ğµç chunk¸¦ Àç¾ÏÈ£È­ÇÏ¿© ±â·ÏÇÏ´Â ÇÔ¼ö
+			// ëª¨ë“  chunkë¥¼ ì¬ì•”í˜¸í™”í•˜ì—¬ ê¸°ë¡í•˜ëŠ” í•¨ìˆ˜
 			bool rewriteAllChunk(HANDLE hNewArchive, vector<wstring>& replacingDataTypes);
 
-			// °¢ chunk ±â·ÏÇÔ¼ö (º¹¼öÇü: DataChunk) (ttfOffsetList: TTF ¿ÀÇÁ¼ÂÀ» °øÀ¯¿ë º¯¼ö)
+			// ê° chunk ê¸°ë¡í•¨ìˆ˜ (ë³µìˆ˜í˜•: DataChunk) (ttfOffsetList: TTF ì˜¤í”„ì…‹ì„ ê³µìœ ìš© ë³€ìˆ˜)
 			bool rewriteBinaryFilesChunk(HANDLE hNewArchive);
 			bool rewriteFrameChunk(HANDLE hNewArchive, vector<wstring>& replacingDataTypes);
 			bool rewriteProtectionChunk(HANDLE hNewArchive);
@@ -128,18 +128,18 @@ namespace CTT {
 			bool rewriteLogFontsChunk(HANDLE hNewArchive);
 			bool rewriteUnknownChunk(HANDLE hNewArchive);
 
-			// ÇÁ·ÎÅØ¼Ç Ã¼Å©¼¶ °è»ê ÇÔ¼ö (ÇÁ·ÎÅØ¼Ç Ã¼Å© ½ÇÆĞ½Ã false)
+			// í”„ë¡œí…ì…˜ ì²´í¬ì„¬ ê³„ì‚° í•¨ìˆ˜ (í”„ë¡œí…ì…˜ ì²´í¬ ì‹¤íŒ¨ì‹œ false)
 			bool caculateProtectionChecksum(HANDLE hTargetArchive, UINT32& protectionChecksum, bool notNeedToCheckProtectionChunk = false);
 		};
 
-		// ¿­·ÁÀÖ´Â ¾ÆÄ«ÀÌºê Å¬·¡½º Æ÷ÀÎÅÍ ¹İÈ¯ ÇÔ¼ö
+		// ì—´ë ¤ìˆëŠ” ì•„ì¹´ì´ë¸Œ í´ë˜ìŠ¤ í¬ì¸í„° ë°˜í™˜ í•¨ìˆ˜
 		Archive* getArchive();
 
-		// app »óÅÂ Æ÷ÀÎÅÍ ¹İÈ¯ ÇÔ¼ö
+		// app ìƒíƒœ í¬ì¸í„° ë°˜í™˜ í•¨ìˆ˜
 		ApplicationState* getStates();
 
-		// ¿¡·¯ Æ®¸®°Å ÇÔ¼ö
-		// closeAllModalÀÌ true¸é ÇöÀç ¿­¸° ¸ğµç modalÀ» ´İµµ·Ï Á¶Ä¡ÇÑ´Ù. default´Â false
+		// ì—ëŸ¬ íŠ¸ë¦¬ê±° í•¨ìˆ˜
+		// closeAllModalì´ trueë©´ í˜„ì¬ ì—´ë¦° ëª¨ë“  modalì„ ë‹«ë„ë¡ ì¡°ì¹˜í•œë‹¤. defaultëŠ” false
 		void triggerError(const char* errTitle, const char* errMsg, bool closeAllModal = false);
 
 	}

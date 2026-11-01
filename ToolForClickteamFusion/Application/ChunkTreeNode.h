@@ -1,42 +1,42 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../Chunk/Chunk.h"
 
 using namespace CTT::Chunk;
 
-// Chunk¸¦ Ä¿½ºÅÒÇÏ°Ô Ç¥ÇöÇÏ±â À§ÇÑ ³ëµå Å¬·¡½º
+// Chunkë¥¼ ì»¤ìŠ¤í…€í•˜ê²Œ í‘œí˜„í•˜ê¸° ìœ„í•œ ë…¸ë“œ í´ë˜ìŠ¤
 class ChunkTreeNode
 {
 private:
 	string idStr;
-	ChunkInfo value;					// chunkÀÇ Á¤º¸
-	UINT32 offset;						// ¾ÆÄ«ÀÌºê »óÀÇ ¿ÀÇÁ¼Â
+	ChunkInfo value;					// chunkì˜ ì •ë³´
+	UINT32 offset;						// ì•„ì¹´ì´ë¸Œ ìƒì˜ ì˜¤í”„ì…‹
 	ChunkTreeNode* parent;
 	vector<ChunkTreeNode*> children;
 	bool isSelected;
 
 public:
-	// »ı¼ºÀÚ
+	// ìƒì„±ì
 	ChunkTreeNode()
 	{
-		// end chunk·Î ÃÊ±âÈ­ (´õ¹Ì¿ë)
+		// end chunkë¡œ ì´ˆê¸°í™” (ë”ë¯¸ìš©)
 		idStr = "";
 		value.type = ChunkType::CHUNK_END;
 		value.flag = 0;
 		value.size = 0;
 		offset = 0;
-		// parent ÃÊ±âÈ­
+		// parent ì´ˆê¸°í™”
 		parent = NULL;
-		// children ÃÊ±âÈ­
+		// children ì´ˆê¸°í™”
 		children.clear();
-		// ¼±ÅÃ¿©ºÎ ÃÊ±âÈ­
+		// ì„ íƒì—¬ë¶€ ì´ˆê¸°í™”
 		isSelected = false;
 	}
 
-	// ¼Ò¸êÀÚ
+	// ì†Œë©¸ì
 	~ChunkTreeNode()
 	{
-		// ºÎ¸ğ ³ëµåÀÇ Æ÷ÀÎÅÍ¿¡µµ null ·Î ¹Ú¾Æ¹ö·Á¾ß ÇÒ°Í °°´Ù
+		// ë¶€ëª¨ ë…¸ë“œì˜ í¬ì¸í„°ì—ë„ null ë¡œ ë°•ì•„ë²„ë ¤ì•¼ í• ê²ƒ ê°™ë‹¤
 		if (parent != NULL) {
 			vector<ChunkTreeNode*> parentChildrenPointer = parent->getChildren();
 			for (UINT32 i = 0; i < parentChildrenPointer.size(); i++) {
@@ -112,7 +112,7 @@ public:
 		this->isSelected = isSelected;
 	}
 
-	// ¸ğµç ³ëµåÀÇ ¼±ÅÃ»óÅÂ¸¦ ÀÏ°ı º¯°æ
+	// ëª¨ë“  ë…¸ë“œì˜ ì„ íƒìƒíƒœë¥¼ ì¼ê´„ ë³€ê²½
 	void setAllNodeSelected(bool isSelected)
 	{
 		this->setSelected(isSelected);
@@ -123,38 +123,38 @@ public:
 };
 
 
-// ChunkTreeNode¸¦ °ü¸®ÇÏ±â À§ÇÑ Å¬·¡½º
+// ChunkTreeNodeë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í´ë˜ìŠ¤
 class ChunkTreeNodeContainer
 {
 private:
-	// ·çÆ® ³ëµå
+	// ë£¨íŠ¸ ë…¸ë“œ
 	ChunkTreeNode* root;
-	// ÇöÀç °¡¸®Å°´Â ³ëµå (³ëµå Æ®¸® ±¸¼º½Ã¿¡¸¸ ¾²ÀÓ)
+	// í˜„ì¬ ê°€ë¦¬í‚¤ëŠ” ë…¸ë“œ (ë…¸ë“œ íŠ¸ë¦¬ êµ¬ì„±ì‹œì—ë§Œ ì“°ì„)
 	ChunkTreeNode* currentNodePointer;
-	// ÇöÀç ¼±ÅÃµÈ ³ëµå
+	// í˜„ì¬ ì„ íƒëœ ë…¸ë“œ
 	ChunkTreeNode* selectedNode;
 
 public:
-	// »ı¼ºÀÚ
+	// ìƒì„±ì
 	ChunkTreeNodeContainer()
 	{
 		root = currentNodePointer = selectedNode = NULL;
 	}
 
-	// ¼Ò¸êÀÚ
+	// ì†Œë©¸ì
 	~ChunkTreeNodeContainer()
 	{
 		release();
 	}
 
-	// µ¥ÀÌÅÍ ÃÊ±âÈ­ ÇÔ¼ö
+	// ë°ì´í„° ì´ˆê¸°í™” í•¨ìˆ˜
 	void init()
 	{
 		root = new ChunkTreeNode();
 		currentNodePointer = root;
 	}
 
-	// µ¥ÀÌÅÍ ÇØÁ¦ ÇÔ¼ö
+	// ë°ì´í„° í•´ì œ í•¨ìˆ˜
 	void release()
 	{
 		if (root != NULL) {
@@ -163,39 +163,39 @@ public:
 		root = currentNodePointer = selectedNode = NULL;
 	}
 
-	// µ¥ÀÌÅÍ Å¬¸®¾î ÇÔ¼ö
+	// ë°ì´í„° í´ë¦¬ì–´ í•¨ìˆ˜
 	void clear()
 	{
 		release();
 		init();
 	}
 
-	// depth ±íÀÌ¸¦ Ãß°¡ÇÏ´Â ÇÔ¼ö
+	// depth ê¹Šì´ë¥¼ ì¶”ê°€í•˜ëŠ” í•¨ìˆ˜
 	void plusDepth()
 	{
 		vector<ChunkTreeNode*> currentNodeChildren = currentNodePointer->getChildren();
-		// ÀÚ½Ä³ëµå ¸®½ºÆ®°¡ ÀÖÀ¸¸é ±×Áß ¸Ç ¸¶Áö¸· ³ëµå¸¦ ÇöÀç °¡¸®Å°´Â ³ëµå·Î ÁöÁ¤
+		// ìì‹ë…¸ë“œ ë¦¬ìŠ¤íŠ¸ê°€ ìˆìœ¼ë©´ ê·¸ì¤‘ ë§¨ ë§ˆì§€ë§‰ ë…¸ë“œë¥¼ í˜„ì¬ ê°€ë¦¬í‚¤ëŠ” ë…¸ë“œë¡œ ì§€ì •
 		if (currentNodeChildren.size() != 0) {
 			currentNodePointer = currentNodeChildren[currentNodeChildren.size() - 1];
 		}
 	}
 
-	// depth ±íÀÌ¸¦ ´ú¾î³»´Â ÇÔ¼ö
+	// depth ê¹Šì´ë¥¼ ëœì–´ë‚´ëŠ” í•¨ìˆ˜
 	void minusDepth()
 	{
-		// ºÎ¸ğ°¡ ÀÖ´Ù¸é ºÎ¸ğ ³ëµå¸¦ ÇöÀç °¡¸®Å°´Â ³ëµå·Î ÁöÁ¤, ¾øÀ¸¸é ±×´ë·Î
+		// ë¶€ëª¨ê°€ ìˆë‹¤ë©´ ë¶€ëª¨ ë…¸ë“œë¥¼ í˜„ì¬ ê°€ë¦¬í‚¤ëŠ” ë…¸ë“œë¡œ ì§€ì •, ì—†ìœ¼ë©´ ê·¸ëŒ€ë¡œ
 		if (currentNodePointer->getParent() != NULL) {
 			currentNodePointer = currentNodePointer->getParent();
 		}
 	}
 
-	// ·çÆ® ³ëµå Æ÷ÀÎÅÍ¸¦ ¹İÈ¯ÇÏ´Â ÇÔ¼ö
+	// ë£¨íŠ¸ ë…¸ë“œ í¬ì¸í„°ë¥¼ ë°˜í™˜í•˜ëŠ” í•¨ìˆ˜
 	ChunkTreeNode* getRootNodePointer()
 	{
 		return root;
 	}
 
-	// ÇöÀç °¡¸®Å°´Â ³ëµå¿¡ child Ãß°¡
+	// í˜„ì¬ ê°€ë¦¬í‚¤ëŠ” ë…¸ë“œì— child ì¶”ê°€
 	void appendChildToCurrentNode(ChunkTreeNode* child)
 	{
 		currentNodePointer->appendChild(child);

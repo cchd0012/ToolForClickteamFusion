@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../Chunk.h"
 #include "../../Util/CommonStructure.h"
@@ -41,7 +41,7 @@ namespace CTT {
 			PlayerControl controls[4];
 			Color borderColor;
 			UINT32 numberOfFrames;
-			// ÀÌÇÏ °ªÀº 1.5¹öÀü ÀÌÇÏ¿¡ Á¸ÀçÇÏÁö ¾ÊÀ¸³ª, ¾ÖÃÊ¿¡ 1.5¹öÀü ÀÌÇÏ´Â Áö¿ø ´ë»óÀÌ ¾Æ´Ï¹Ç·Î ±×³É ÀĞ¾îµéÀÎ´Ù
+			// ì´í•˜ ê°’ì€ 1.5ë²„ì „ ì´í•˜ì— ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë‚˜, ì• ì´ˆì— 1.5ë²„ì „ ì´í•˜ëŠ” ì§€ì› ëŒ€ìƒì´ ì•„ë‹ˆë¯€ë¡œ ê·¸ëƒ¥ ì½ì–´ë“¤ì¸ë‹¤
 			UINT32 frameRate;
 			UINT32 windowMenuIndex;
 		} AppHeader;

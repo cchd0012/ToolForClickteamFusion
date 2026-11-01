@@ -1,4 +1,4 @@
-#include "FrameVirtualRectChunk.h"
+Ôªø#include "FrameVirtualRectChunk.h"
 #include "../../Archive/Archive.h"
 #include "../../ImGUI/Headers.h"
 
@@ -19,7 +19,7 @@ FrameVirtualRectChunk::~FrameVirtualRectChunk()
 
 bool FrameVirtualRectChunk::loadFromOrgBuffer()
 {
-	// chunk µ•¿Ã≈Õ: [FrameVirtualRect]
+	// chunk Îç∞Ïù¥ÌÑ∞: [FrameVirtualRect]
 	memcpy(&value, orgBuffer, sizeof(FrameVirtualRect));
 	free(orgBuffer);
 	orgBuffer = NULL;
@@ -40,7 +40,7 @@ bool FrameVirtualRectChunk::saveIntoOrgBuffer()
 }
 
 
-// µ•¿Ã≈Õ ∑ª¥ı∏µøÎ
+// Îç∞Ïù¥ÌÑ∞ Î†åÎçîÎßÅÏö©
 void FrameVirtualRectChunk::renderData()
 {
 	stringstream oss;

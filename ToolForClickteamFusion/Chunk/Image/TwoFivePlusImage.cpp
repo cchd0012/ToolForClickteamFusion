@@ -1,4 +1,4 @@
-#include "TwoFivePlusImage.h"
+ï»¿#include "TwoFivePlusImage.h"
 #include "../../Archive/Archive.h"
 #include "../../Util/CommonUtil.h"
 #include "../../Util/Lz4Util.h"
@@ -23,9 +23,9 @@ TwoFivePlusImage::~TwoFivePlusImage()
 
 bool TwoFivePlusImage::loadFromBuffer(BYTE*& bufferPnt)
 {
-	// ÀÌ¹ÌÁö¸¦ ±×´ë·Î ´Ù °¡Áö°í ÀÖ±â¿¡´Â ¿ë·®ÀÌ ³Ê¹« Å©±â ¶§¹®¿¡
-	// [±¸Á¶Ã¼] + [¾ĞÃàµ¥ÀÌÅÍ] Á¤µµ·Î¸¸ °¡Áö°í ÀÖ´Ù°¡
-	// ÀÌ¹ÌÁö¸¦ ÃßÃâÇÒ ¶§ ÀÏ½ÃÀûÀ¸·Î ¾ĞÃàÀ» Çª´Â ½ÄÀ¸·Î ¿î¿ëÇÏ´Â °Ô ÁÁ°Ú´Ù
+	// ì´ë¯¸ì§€ë¥¼ ê·¸ëŒ€ë¡œ ë‹¤ ê°€ì§€ê³  ìˆê¸°ì—ëŠ” ìš©ëŸ‰ì´ ë„ˆë¬´ í¬ê¸° ë•Œë¬¸ì—
+	// [êµ¬ì¡°ì²´] + [ì••ì¶•ë°ì´í„°] ì •ë„ë¡œë§Œ ê°€ì§€ê³  ìˆë‹¤ê°€
+	// ì´ë¯¸ì§€ë¥¼ ì¶”ì¶œí•  ë•Œ ì¼ì‹œì ìœ¼ë¡œ ì••ì¶•ì„ í‘¸ëŠ” ì‹ìœ¼ë¡œ ìš´ìš©í•˜ëŠ” ê²Œ ì¢‹ê² ë‹¤
 
 	memcpy(&additional, bufferPnt, sizeof(AdditionalImageInfo));
 	bufferPnt += sizeof(AdditionalImageInfo);
@@ -48,9 +48,9 @@ bool TwoFivePlusImage::loadFromBuffer(BYTE*& bufferPnt)
 
 bool TwoFivePlusImage::saveIntoBuffer(BYTE*& bufferPnt)
 {
-	// ¾ĞÃà¹öÆÛÀÇ Å©±â ¹× ±âÅ¸ µ¥ÀÌÅÍ´Â ÀÌ¹Ì ´Ù ¹İ¿µµÈ »óÅÂ·Î °¡Á¤ÇÑ´Ù
-	// handle °ªÀº À§Ä¡¸¸ Àß º¸Á¤ÇØÁÖ¸é Å« ¹®Á¦´Â ¾øÀ»°Å°°°í,
-	// unknown2´Â ÀÌ¹ø¿£ 0x9F¶ó°í µÇ¾îÀÖ¾î¼­ Á» ¾Ö¸ÅÇÔ...
+	// ì••ì¶•ë²„í¼ì˜ í¬ê¸° ë° ê¸°íƒ€ ë°ì´í„°ëŠ” ì´ë¯¸ ë‹¤ ë°˜ì˜ëœ ìƒíƒœë¡œ ê°€ì •í•œë‹¤
+	// handle ê°’ì€ ìœ„ì¹˜ë§Œ ì˜ ë³´ì •í•´ì£¼ë©´ í° ë¬¸ì œëŠ” ì—†ì„ê±°ê°™ê³ ,
+	// unknown2ëŠ” ì´ë²ˆì—” 0x9Fë¼ê³  ë˜ì–´ìˆì–´ì„œ ì¢€ ì• ë§¤í•¨...
 
 	memcpy(bufferPnt, &additional, sizeof(AdditionalImageInfo));
 	((AdditionalImageInfo*)bufferPnt)->handle += 1;
@@ -69,17 +69,17 @@ bool TwoFivePlusImage::saveIntoBuffer(BYTE*& bufferPnt)
 }
 
 
-// µ¥ÀÌÅÍ ·»´õ¸µ¿ë ÇÔ¼ö
+// ë°ì´í„° ë Œë”ë§ìš© í•¨ìˆ˜
 void TwoFivePlusImage::renderData(UINT32 index)
 {
 	stringstream oss;
 
-	// ÀÎµ¦½º Ç¥Çö
+	// ì¸ë±ìŠ¤ í‘œí˜„
 	oss << "  <" << index << ">{";
 	ImGui::Text(oss.str().c_str());
 	oss.str("");
 
-	// *** Ãâ·Â *** //
+	// *** ì¶œë ¥ *** //
 	ImGui::Text("  }");
 }
 
@@ -87,7 +87,7 @@ void TwoFivePlusImage::renderData(UINT32 index)
 bool TwoFivePlusImage::deriveTranslatingData()
 {
 	if ((compressedData == NULL) || (compressedSize == 0)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": µğÄÚµùÀ» ¼öÇàÇÒ µ¥ÀÌÅÍ°¡ ¾ø½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ë””ì½”ë”©ì„ ìˆ˜í–‰í•  ë°ì´í„°ê°€ ì—†ìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
@@ -97,11 +97,11 @@ bool TwoFivePlusImage::deriveTranslatingData()
 	}
 
 	if (!Lz4Util::decode(compressedData, compressedSize, translatingData, translatingSize)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ÀÌ¹ÌÁö µ¥ÀÌÅÍ µğÄÚµùÀ» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ì´ë¯¸ì§€ ë°ì´í„° ë””ì½”ë”©ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
-	// ¸Ş¸ğ¸® °ü¸®¸¦ À§ÇÏ¿© ¾ĞÃà µ¥ÀÌÅÍ Á¦°Å
+	// ë©”ëª¨ë¦¬ ê´€ë¦¬ë¥¼ ìœ„í•˜ì—¬ ì••ì¶• ë°ì´í„° ì œê±°
 	free(compressedData);
 	compressedData = NULL;
 	compressedSize = 0;
@@ -113,7 +113,7 @@ bool TwoFivePlusImage::deriveTranslatingData()
 bool TwoFivePlusImage::deriveCompressedData()
 {
 	if ((translatingData == NULL) || (translatingSize == 0)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ÀÎÄÚµùÀ» ¼öÇàÇÒ µ¥ÀÌÅÍ°¡ ¾ø½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ì¸ì½”ë”©ì„ ìˆ˜í–‰í•  ë°ì´í„°ê°€ ì—†ìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
@@ -124,14 +124,14 @@ bool TwoFivePlusImage::deriveCompressedData()
 	compressedSize = 0;
 
 	if (!Lz4Util::encode(translatingData, translatingSize, compressedData, compressedSize)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ÀÌ¹ÌÁö µ¥ÀÌÅÍ ÀÎÄÚµùÀ» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ì´ë¯¸ì§€ ë°ì´í„° ì¸ì½”ë”©ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
-	// info.size Àç¼¼ÆÃ
+	// info.size ì¬ì„¸íŒ…
 	info.size = sizeof(UINT32) + compressedSize;
 
-	// ¸Ş¸ğ¸® °ü¸®¸¦ À§ÇÏ¿© º¯È¯ µ¥ÀÌÅÍ Á¦°Å, translatingSize´Â ¹öÆÛ ±â·Ï½Ã ÇÊ¿äÇÏ¹Ç·Î ÃÊ±âÈ­ÇÏÁö ¾Ê´Â´Ù
+	// ë©”ëª¨ë¦¬ ê´€ë¦¬ë¥¼ ìœ„í•˜ì—¬ ë³€í™˜ ë°ì´í„° ì œê±°, translatingSizeëŠ” ë²„í¼ ê¸°ë¡ì‹œ í•„ìš”í•˜ë¯€ë¡œ ì´ˆê¸°í™”í•˜ì§€ ì•ŠëŠ”ë‹¤
 	free(translatingData);
 	translatingData = NULL;
 	//translatingSize = 0;

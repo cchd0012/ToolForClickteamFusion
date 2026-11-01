@@ -1,4 +1,4 @@
-#include "TextureUtil.h"
+ï»¿#include "TextureUtil.h"
 #include "PngUtil.h"
 #include "CommonUtil.h"
 
@@ -12,21 +12,21 @@ using namespace CTT::CommonUtil;
 
 HRESULT CTT::TextureUtil::CreateTextureFromPngResource(LPDIRECT3DDEVICE9 device, HMODULE hModule, LPCWSTR resourceId, LPDIRECT3DTEXTURE9* ppTexture)
 {
-	// ¸®¼Ò½º Ã£±â
+	// ë¦¬ì†ŒìŠ¤ ì°¾ê¸°
 	HRSRC hResource = FindResourceW(hModule, resourceId, L"PNG");
 	if (!hResource)
 	{
 		return -1;
 	}
 
-	// ¸®¼Ò½º ·Îµå
+	// ë¦¬ì†ŒìŠ¤ ë¡œë“œ
 	HGLOBAL hLoadedResource = LoadResource(hModule, hResource);
 	if (!hLoadedResource)
 	{
 		return -1;
 	}
 
-	// ¸®¼Ò½º µ¥ÀÌÅÍ Àá±İ
+	// ë¦¬ì†ŒìŠ¤ ë°ì´í„° ì ê¸ˆ
 	LPVOID pResourceData = LockResource(hLoadedResource);
 	DWORD resourceSize = SizeofResource(hModule, hResource);
 	if (!pResourceData)
@@ -34,6 +34,6 @@ HRESULT CTT::TextureUtil::CreateTextureFromPngResource(LPDIRECT3DDEVICE9 device,
 		return -1;
 	}
 
-	// ÀÌ¶§ µ¥ÀÌÅÍ´Â png µ¥ÀÌÅÍÀÌ¹Ç·Î ±×´ë·Î ÅØ½ºÃ³·Î ¼¼ÆÃÇÏµµ·Ï ÇÑ´Ù
+	// ì´ë•Œ ë°ì´í„°ëŠ” png ë°ì´í„°ì´ë¯€ë¡œ ê·¸ëŒ€ë¡œ í…ìŠ¤ì²˜ë¡œ ì„¸íŒ…í•˜ë„ë¡ í•œë‹¤
 	return createTextureFromPngMemory((BYTE*)pResourceData, resourceSize, device, ppTexture);
 }

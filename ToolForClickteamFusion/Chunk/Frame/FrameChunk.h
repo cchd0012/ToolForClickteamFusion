@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../Chunk.h"
 #include "FrameEvent/FrameEventText.h"
@@ -12,12 +12,12 @@ namespace CTT {
 		public:
 			FrameChunk();
 			~FrameChunk();
-			// ¿ÀÁ÷ Á¤º¸ ÀĞ±â¿ë
+			// ì˜¤ì§ ì •ë³´ ì½ê¸°ìš©
 			bool readChunkTreeInfoFromArchive(HANDLE hArchive);
-			// ÇÁ·¹ÀÓ ÀÌº¥Æ®ÀÇ ÅØ½ºÆ® ÃßÃâ / ±³Ã¼
+			// í”„ë ˆì„ ì´ë²¤íŠ¸ì˜ í…ìŠ¤íŠ¸ ì¶”ì¶œ / êµì²´
 			bool extractEventText(UINT32 frameIndex, FrameEventTextTable& table);
 			bool replaceEventText(const FrameEventTextTable& table, UINT32& replacedCount);
-			// µ¥ÀÌÅÍ ·»´õ¸µ¿ë ÇÔ¼ö
+			// ë°ì´í„° ë Œë”ë§ìš© í•¨ìˆ˜
 			void renderData();
 		protected:
 			bool loadFromOrgBuffer();

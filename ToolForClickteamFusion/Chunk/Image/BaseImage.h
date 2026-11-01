@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../Chunk.h"
 #include "../BaseData.h"
@@ -15,24 +15,24 @@ namespace CTT {
 
 		typedef struct _common_image_info
 		{
-			UINT32 checksum;	// Ã¼Å©¼¶, 0ÀÌ¾îµµ »ó°ü¾ø´Âµí?
-			UINT32 reference;	// ´ëÃæ 1ÀÌ¸é µÉµí
-			UINT32 size;		// *¿øº»Å©±â°¡ ¾Æ´Ï¶ó [¾ĞÃàÅ©±â 4byte] + [¾ĞÃàµ¥ÀÌÅÍ] Å©±âÀÓ
-			UINT16 width;		// *³Êºñ
-			UINT16 height;		// *³ôÀÌ
-			BYTE graphicMode;	// NormalImage / TwoFivePlusImage º°·Î ´Ş¶óÁü
-			BYTE flags;			// NormalImage / TwoFivePlusImage º°·Î ´Ş¶óÁü
-			UINT16 unknown2;	// ¹ºÁö ¸ğ¸£´Â °ªÀÌ±ä ÇÑµ¥ 0ÀÌ¶óµµ »ó°ü¾ø´Âµí
-			UINT16 hotSpotX;	// 0ÀÌ¶óµµ »ó°ü¾ø´Âµí
-			UINT16 hotSpotY;	// 0ÀÌ¶óµµ »ó°ü¾ø´Âµí
-			UINT16 actionX;		// 0ÀÌ¶óµµ »ó°ü¾ø´Âµí
-			UINT16 actionY;		// 0ÀÌ¶óµµ »ó°ü¾ø´Âµí
-			Color transparent;	// ÀÏ¹İÀûÀ¸·Î #FF00FF¿¡ alpha°¡ 0ÀÌ¸é µÉµí
+			UINT32 checksum;	// ì²´í¬ì„¬, 0ì´ì–´ë„ ìƒê´€ì—†ëŠ”ë“¯?
+			UINT32 reference;	// ëŒ€ì¶© 1ì´ë©´ ë ë“¯
+			UINT32 size;		// *ì›ë³¸í¬ê¸°ê°€ ì•„ë‹ˆë¼ [ì••ì¶•í¬ê¸° 4byte] + [ì••ì¶•ë°ì´í„°] í¬ê¸°ì„
+			UINT16 width;		// *ë„ˆë¹„
+			UINT16 height;		// *ë†’ì´
+			BYTE graphicMode;	// NormalImage / TwoFivePlusImage ë³„ë¡œ ë‹¬ë¼ì§
+			BYTE flags;			// NormalImage / TwoFivePlusImage ë³„ë¡œ ë‹¬ë¼ì§
+			UINT16 unknown2;	// ë­”ì§€ ëª¨ë¥´ëŠ” ê°’ì´ê¸´ í•œë° 0ì´ë¼ë„ ìƒê´€ì—†ëŠ”ë“¯
+			UINT16 hotSpotX;	// 0ì´ë¼ë„ ìƒê´€ì—†ëŠ”ë“¯
+			UINT16 hotSpotY;	// 0ì´ë¼ë„ ìƒê´€ì—†ëŠ”ë“¯
+			UINT16 actionX;		// 0ì´ë¼ë„ ìƒê´€ì—†ëŠ”ë“¯
+			UINT16 actionY;		// 0ì´ë¼ë„ ìƒê´€ì—†ëŠ”ë“¯
+			Color transparent;	// ì¼ë°˜ì ìœ¼ë¡œ #FF00FFì— alphaê°€ 0ì´ë©´ ë ë“¯
 		} CommonImageInfo;
 
-		// ÇÕ¼ºÇÒ ¶§ Æ¯ÀÌÁ¡
-		// graphicMode - NormalImage : 4/6/7 (ÀÏ¹İÀûÀ¸·Î´Â 4?), TwoFivePlusImage : 8
-		// flags - NormalImage : 0, TwoFivePlusImage : 0x08, 0x80, 0x88 (ÀÏ¹İÀûÀ¸·Î´Â 0x80?)
+		// í•©ì„±í•  ë•Œ íŠ¹ì´ì 
+		// graphicMode - NormalImage : 4/6/7 (ì¼ë°˜ì ìœ¼ë¡œëŠ” 4?), TwoFivePlusImage : 8
+		// flags - NormalImage : 0, TwoFivePlusImage : 0x08, 0x80, 0x88 (ì¼ë°˜ì ìœ¼ë¡œëŠ” 0x80?)
 
 		class BaseImage : public BaseData
 		{

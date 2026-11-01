@@ -1,4 +1,4 @@
-#include "FrameObject.h"
+Ôªø#include "FrameObject.h"
 #include "../../Archive/Archive.h"
 #include "../../Util/CommonUtil.h"
 
@@ -18,7 +18,7 @@ FrameObject::~FrameObject() {
 
 bool FrameObject::exportJson(Json::Value& exportValue, vector<UINT32>& offsetList)
 {
-	// value∑Œ √ﬂ√‚
+	// valueÎ°ú Ï∂îÏ∂ú
 
 	exportValue["handle"] = info.handle;
 	exportValue["object_info"] = info.objectInfo;
@@ -35,7 +35,7 @@ bool FrameObject::exportJson(Json::Value& exportValue, vector<UINT32>& offsetLis
 
 bool FrameObject::importJson(Json::Value& importValue, vector<UINT32>& offsetList)
 {
-	// value∑Œ∫Œ≈Õ ¿–æÓµÈ¿Ã±‚
+	// valueÎ°úÎ∂ÄÌÑ∞ ÏùΩÏñ¥Îì§Ïù¥Í∏∞
 
 	info.handle = (UINT16)importValue["handle"].asUInt();
 	info.objectInfo = (UINT16)importValue["object_info"].asUInt();
@@ -52,7 +52,7 @@ bool FrameObject::importJson(Json::Value& importValue, vector<UINT32>& offsetLis
 
 bool FrameObject::loadFromBuffer(BYTE*& bufferPnt)
 {
-	// info »Æ∫∏
+	// info ÌôïÎ≥¥
 	memcpy(&info, bufferPnt, sizeof(FrameObjectInfo));
 	bufferPnt += sizeof(FrameObjectInfo);
 	return true;
@@ -61,19 +61,19 @@ bool FrameObject::loadFromBuffer(BYTE*& bufferPnt)
 
 bool FrameObject::saveIntoBuffer(BYTE*& bufferPnt)
 {
-	// info ±‚∑œ
+	// info Í∏∞Î°ù
 	memcpy(bufferPnt, &info, sizeof(FrameObjectInfo));
 	bufferPnt += sizeof(FrameObjectInfo);
 	return true;
 }
 
 
-// µ•¿Ã≈Õ ∑ª¥ı∏µøÎ «‘ºˆ
+// Îç∞Ïù¥ÌÑ∞ Î†åÎçîÎßÅÏö© Ìï®Ïàò
 void FrameObject::renderData(UINT32 index)
 {
 	stringstream oss;
 
-	// ¿Œµ¶Ω∫ «•«ˆ
+	// Ïù∏Îç±Ïä§ ÌëúÌòÑ
 	oss << "  <" << index << ">{";
 	ImGui::Text(oss.str().c_str());
 	oss.str("");

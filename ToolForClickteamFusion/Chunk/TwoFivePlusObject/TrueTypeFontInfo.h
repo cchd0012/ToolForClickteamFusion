@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../Chunk.h"
 #include "../BaseData.h"
@@ -45,7 +45,7 @@ namespace CTT {
 			bool loadFromBuffer(BYTE*& bufferPnt);
 			bool saveIntoBuffer(BYTE*& bufferPnt);
 
-			// µ¥ÀÌÅÍ ·»´õ¸µ¿ë ÇÔ¼ö
+			// ë°ì´í„° ë Œë”ë§ìš© í•¨ìˆ˜
 			void renderData(UINT32 index);
 
 		private:

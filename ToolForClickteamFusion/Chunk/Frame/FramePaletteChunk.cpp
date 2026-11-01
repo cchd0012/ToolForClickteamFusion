@@ -1,4 +1,4 @@
-#include "FramePaletteChunk.h"
+ï»¿#include "FramePaletteChunk.h"
 #include "../../Archive/Archive.h"
 #include "../../ImGUI/Headers.h"
 
@@ -18,7 +18,7 @@ FramePaletteChunk::~FramePaletteChunk()
 
 bool FramePaletteChunk::loadFromOrgBuffer()
 {
-	// chunk µ¥ÀÌÅÍ: vector<Color>, 0x101°³·Î °íÁ¤ÀÎµí?
+	// chunk ë°ì´í„°: vector<Color>, 0x101ê°œë¡œ ê³ ì •ì¸ë“¯?
 	value.clear();
 
 	BYTE* orgBufferPnt = orgBuffer;
@@ -31,7 +31,7 @@ bool FramePaletteChunk::loadFromOrgBuffer()
 		value.push_back(color);
 	}
 
-	// ¿©±â¼­ »ö»ó ÃÊ±âÈ­
+	// ì—¬ê¸°ì„œ ìƒ‰ìƒ ì´ˆê¸°í™”
 	for (UINT32 i = 0; i < 0x101; i++)
 	{
 		colorPalette[i].x = (float)value[i].r / 255.0f;
@@ -69,7 +69,7 @@ bool FramePaletteChunk::saveIntoOrgBuffer()
 }
 
 
-// µ¥ÀÌÅÍ ·»´õ¸µ¿ë
+// ë°ì´í„° ë Œë”ë§ìš©
 void FramePaletteChunk::renderData()
 {
 	for (int n = 0; n < IM_ARRAYSIZE(colorPalette); n++)

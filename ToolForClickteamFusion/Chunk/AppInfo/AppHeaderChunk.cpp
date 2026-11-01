@@ -1,4 +1,4 @@
-#include "AppHeaderChunk.h"
+ï»¿#include "AppHeaderChunk.h"
 #include "../../Util/JsonUtil.h"
 #include "../../Util/CommonUtil.h"
 #include "../../ImGUI/Headers.h"
@@ -7,7 +7,7 @@ using namespace CTT::Chunk;
 using namespace CTT::JsonUtil;
 using namespace CTT::CommonUtil;
 
-// ºñÆ® À§Ä¡º°·Î Æ÷ÇÔµÇ´Â Á¤º¸
+// ë¹„íŠ¸ ìœ„ì¹˜ë³„ë¡œ í¬í•¨ë˜ëŠ” ì •ë³´
 wstring commonFlagStr[] = {
 	L"HeadingMaximized",
 	L"NoHeading",
@@ -116,10 +116,10 @@ AppHeaderChunk::~AppHeaderChunk()
 
 bool AppHeaderChunk::loadFromOrgBuffer()
 {
-	// chunk µ¥ÀÌÅÍ: [AppHeader]
+	// chunk ë°ì´í„°: [AppHeader]
 	memcpy(&value, orgBuffer, sizeof(AppHeader));
 	if (value.size != orgSize) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": AppHeader Chunk: Data°¡ ±úÁ³½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": AppHeader Chunk: Dataê°€ ê¹¨ì¡ŒìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 	value.initialScore ^= 0xFFFFFFFF;
@@ -324,7 +324,7 @@ void AppHeaderChunk::importFromJson(Json::Value& importValues)
 }
 
 
-// µ¥ÀÌÅÍ ·»´õ¸µ¿ë
+// ë°ì´í„° ë Œë”ë§ìš©
 void AppHeaderChunk::renderData()
 {
 	stringstream oss;
@@ -458,7 +458,7 @@ void AppHeaderChunk::renderData()
 
 	ImGui::Text("  ],");
 
-	// ÄÃ·¯ Ã¢Àº ³ªÅ¸³»µÇ ¼±ÅÃ ºÒ°¡´ÉÇÏµµ·Ï
+	// ì»¬ëŸ¬ ì°½ì€ ë‚˜íƒ€ë‚´ë˜ ì„ íƒ ë¶ˆê°€ëŠ¥í•˜ë„ë¡
 	oss << "  border_color:";
 	ImGui::Text(oss.str().c_str());
 	oss.str("");
@@ -466,11 +466,11 @@ void AppHeaderChunk::renderData()
 	ImGuiColorEditFlags colorEditFlags = ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel;
 	Color borderColor = value.borderColor;
 	ImVec4 borderColorNm = ImVec4((float(borderColor.r) / 255.0f), (float(borderColor.g) / 255.0f), (float(borderColor.b) / 255.0f), (float(borderColor.a) / 255.0f));
-	// -- °°Àº ¶óÀÎ --
+	// -- ê°™ì€ ë¼ì¸ --
 	ImGui::SameLine();
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3.0f);
 	ImGui::ColorEdit4("MyColor##1", (float*)&borderColorNm, colorEditFlags);
-	// -- °°Àº ¶óÀÎ --
+	// -- ê°™ì€ ë¼ì¸ --
 	ImGui::SameLine(ImGui::CalcTextSize(u8"  border_color:").x + 36.0f);
 	ImGui::Text(",");
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3.0f);

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../Chunk.h"
 #include "../BaseData.h"
@@ -12,9 +12,9 @@ namespace CTT {
 
 		typedef struct _common_log_font_info
 		{
-			UINT32 checksum;		// Ã¼Å©¼¶, 0ÀÌ¾îµµ »ó°ü¾ø´Âµí?
-			UINT32 reference;		// ´ëÃæ 1ÀÌ¸é µÉµí
-			UINT32 orgSize;			// *¿øº»Å©±â
+			UINT32 checksum;		// ì²´í¬ì„¬, 0ì´ì–´ë„ ìƒê´€ì—†ëŠ”ë“¯?
+			UINT32 reference;		// ëŒ€ì¶© 1ì´ë©´ ë ë“¯
+			UINT32 orgSize;			// *ì›ë³¸í¬ê¸°
 			INT32 height;
 			UINT32 width;
 			UINT32 escapement;
@@ -58,14 +58,14 @@ namespace CTT {
 			bool loadFromBuffer(BYTE*& bufferPnt);
 			bool saveIntoBuffer(BYTE*& bufferPnt);
 
-			// µ¥ÀÌÅÍ ·»´õ¸µ¿ë ÇÔ¼ö
+			// ë°ì´í„° ë Œë”ë§ìš© í•¨ìˆ˜
 			void renderData(UINT32 index);
 
 		private:
 			bool deriveFontData();
 			bool deriveCompressedData();
 
-			// ÃßÈÄ ³²´Â °ø°£ÀÇ handle À§Ä¡¸¦ ³Ö°Å³ª, ²Ë Â÷¸é (handleÃÖ´ë°ª + 1) ÇÏ¸é µÉµí
+			// ì¶”í›„ ë‚¨ëŠ” ê³µê°„ì˜ handle ìœ„ì¹˜ë¥¼ ë„£ê±°ë‚˜, ê½‰ ì°¨ë©´ (handleìµœëŒ€ê°’ + 1) í•˜ë©´ ë ë“¯
 			UINT32 handle;
 			UINT32 originalSize;
 			CommonLogFontInfo info;

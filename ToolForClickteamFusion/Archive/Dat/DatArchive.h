@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../Archive.h"
 
@@ -13,7 +13,7 @@ namespace CTT {
 			~DatArchive();
 			bool init();
 		private:
-			// front Çì´õ´Â ÀÖÀ¸³ª moduleÀº Modules Æú´õ¿¡ µû·Î Á¸ÀçÇÑ´Ù
+			// front í—¤ë”ëŠ” ìˆìœ¼ë‚˜ moduleì€ Modules í´ë”ì— ë”°ë¡œ ì¡´ì¬í•œë‹¤
 			UINT32 frontHeaderStartOffset;
 		};
 

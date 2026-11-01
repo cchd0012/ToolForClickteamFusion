@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../Chunk.h"
 #include "../BaseData.h"
@@ -19,7 +19,7 @@ namespace CTT {
 			~FrameLayerEffect();
 
 			UINT32 getDataSize() { 
-				// µ¥ÀÌÅÍ°¡ µü ºÙ¾îÀÖÁö ¾ÊÁö¸¸ ÇÕÄ¡¸é Å©±â´Â ¶È°°´Ù
+				// ë°ì´í„°ê°€ ë”± ë¶™ì–´ìˆì§€ ì•Šì§€ë§Œ í•©ì¹˜ë©´ í¬ê¸°ëŠ” ë˜‘ê°™ë‹¤
 				return (sizeof(FrameEffectInfo) + (sizeof(UINT32) * 2)) + getValuesSize();
 			}
 			UINT32 getValuesSize() {
@@ -56,7 +56,7 @@ namespace CTT {
 			BYTE getFlags() { return 0; }
 			void clearFlags() { ; }
 
-			// ÀÎÀÚ Á¤º¸¸¦ ÀĞ¾îµéÀÌ°Å³ª ±â·ÏÇÒ ¼ö ÀÖµµ·Ï ÇÏ±â À§ÇÔ
+			// ì¸ì ì •ë³´ë¥¼ ì½ì–´ë“¤ì´ê±°ë‚˜ ê¸°ë¡í•  ìˆ˜ ìˆë„ë¡ í•˜ê¸° ìœ„í•¨
 			void setBaseBuffer(BYTE *baseBuffer) {
 				this->baseBuffer = baseBuffer;
 			}
@@ -72,7 +72,7 @@ namespace CTT {
 			bool loadFromBuffer(BYTE*& bufferPnt);
 			bool saveIntoBuffer(BYTE*& bufferPnt);
 
-			// µ¥ÀÌÅÍ ·»´õ¸µ¿ë ÇÔ¼ö
+			// ë°ì´í„° ë Œë”ë§ìš© í•¨ìˆ˜
 			void renderData(UINT32 index);
 
 		private:

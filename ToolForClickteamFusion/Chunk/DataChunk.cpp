@@ -1,4 +1,4 @@
-#include "DataChunk.h"
+ï»¿#include "DataChunk.h"
 #include "../Archive/Archive.h"
 #include "../Util/JsonUtil.h"
 #include "../Util/CommonUtil.h"
@@ -28,22 +28,22 @@ DataChunk::~DataChunk()
 
 bool DataChunk::exportData(wstring& exportDirPath, bool isFullyExport)
 {
-	// µğ·ºÅä¸® »ı¼º
+	// ë””ë ‰í† ë¦¬ ìƒì„±
 	createDirectoryRecursively(exportDirPath);
 
-	// exportData¸¦ È£ÃâÇÒ ´ç½Ã nameÀÌ ÁöÁ¤µÅÀÖÁö ¾ÊÀº °æ¿ì°¡ ÀÖ¾î¼­
-	// °æ·Î¸¦ ³Ö´Â ´ë½Å ÃßÃâ µğ·ºÅä¸®, ÃßÃâ ÀÎµ¦½º, ÃßÃâ È®ÀåÀÚ¸¦ Á÷Á¢ ³Ö¾îÁà¾ß ÇÒ°Å°°´Ù
-	// ¾Æ´Ï¸é ÃßÃâÀ» ¼öÇàÇÑ ÈÄ ³Ö¾îÁÖ´Â °Íµµ ÁÁÀ» µíÇÔ
+	// exportDataë¥¼ í˜¸ì¶œí•  ë‹¹ì‹œ nameì´ ì§€ì •ë¼ìˆì§€ ì•Šì€ ê²½ìš°ê°€ ìˆì–´ì„œ
+	// ê²½ë¡œë¥¼ ë„£ëŠ” ëŒ€ì‹  ì¶”ì¶œ ë””ë ‰í† ë¦¬, ì¶”ì¶œ ì¸ë±ìŠ¤, ì¶”ì¶œ í™•ì¥ìë¥¼ ì§ì ‘ ë„£ì–´ì¤˜ì•¼ í• ê±°ê°™ë‹¤
+	// ì•„ë‹ˆë©´ ì¶”ì¶œì„ ìˆ˜í–‰í•œ í›„ ë„£ì–´ì£¼ëŠ” ê²ƒë„ ì¢‹ì„ ë“¯í•¨
 
-	// ¸ğµç µ¥ÀÌÅÍ ÃßÃâ
+	// ëª¨ë“  ë°ì´í„° ì¶”ì¶œ
 	for (size_t i = 0; i < value.size(); i++) {
-		// ÃßÃâ °³¼ö °»½Å
+		// ì¶”ì¶œ ê°œìˆ˜ ê°±ì‹ 
 		getStates()->currentDataIndex++;
-		// NULL ´ëºñ ÄÚµå
+		// NULL ëŒ€ë¹„ ì½”ë“œ
 		if (value[i] == NULL) {
 			continue;
 		}
-		// ÃßÃâ
+		// ì¶”ì¶œ
 		if (!value[i]->exportData(exportDirPath, (UINT32)i, isFullyExport)) {
 			return false;
 		}
@@ -54,32 +54,32 @@ bool DataChunk::exportData(wstring& exportDirPath, bool isFullyExport)
 
 bool DataChunk::importData(wstring& importDirPath)
 {
-	// °æ·Î Á¸Àç È®ÀÎ
+	// ê²½ë¡œ ì¡´ì¬ í™•ì¸
 	bool isDirExists = true;
 	if (isFileOrDir(importDirPath) != FSOType::FSO_DIRECTORY) {
-		wcout << infoPrefix << importDirPath << L": ÇØ´ç µğ·ºÅä¸®°¡ Á¸ÀçÇÏÁö ¾ÊÀ¸¹Ç·Î ±³Ã¼ ¾øÀÌ ÁøÇàµË´Ï´Ù";
+		wcout << infoPrefix << importDirPath << L": í•´ë‹¹ ë””ë ‰í† ë¦¬ê°€ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ êµì²´ ì—†ì´ ì§„í–‰ë©ë‹ˆë‹¤";
 		isDirExists = false;
 	}
 
-	// importData¸¦ È£ÃâÇÒ ´ç½Ã nameÀÌ ÁöÁ¤µÅÀÖÁö ¾ÊÀº °æ¿ì°¡ ÀÖ¾î¼­
-	// °æ·Î¸¦ ³Ö´Â ´ë½Å import µğ·ºÅä¸®, import ÀÎµ¦½º, import È®ÀåÀÚ¸¦ Á÷Á¢ ³Ö¾îÁà¾ß ÇÒ°Å°°´Ù
-	// ÇÏÁö¸¸ ÀÌ·± ½ÄÀ¸·Î ÇÏ¸é ÆÄÀÏÀ» Ãß°¡ÇÏ±â°¡ ¾öÃ» ±î´Ù·Î¿ò.
-	// ±×·¯´Ï±î ¸®½ºÆ®¿¡¼­ ÂüÁ¶ÇÏ´Â ½ÄÀ¸·Î ¹Ù²ã¾ß ÇÏ±ä ÇÑ´Ù
-	// offsetList´Â ´ıÀÎ°¡?
+	// importDataë¥¼ í˜¸ì¶œí•  ë‹¹ì‹œ nameì´ ì§€ì •ë¼ìˆì§€ ì•Šì€ ê²½ìš°ê°€ ìˆì–´ì„œ
+	// ê²½ë¡œë¥¼ ë„£ëŠ” ëŒ€ì‹  import ë””ë ‰í† ë¦¬, import ì¸ë±ìŠ¤, import í™•ì¥ìë¥¼ ì§ì ‘ ë„£ì–´ì¤˜ì•¼ í• ê±°ê°™ë‹¤
+	// í•˜ì§€ë§Œ ì´ëŸ° ì‹ìœ¼ë¡œ í•˜ë©´ íŒŒì¼ì„ ì¶”ê°€í•˜ê¸°ê°€ ì—„ì²­ ê¹Œë‹¤ë¡œì›€.
+	// ê·¸ëŸ¬ë‹ˆê¹Œ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì°¸ì¡°í•˜ëŠ” ì‹ìœ¼ë¡œ ë°”ê¿”ì•¼ í•˜ê¸´ í•œë‹¤
+	// offsetListëŠ” ë¤ì¸ê°€?
 
-	// TrueTypeFont ¶§¹®¿¡ ¿©±â¼­ ¹Ì¸® ¼öÇàÀ» ÇØ¾ß offsetList¸¦ º¸Á¸ÇÒ ¼ö ÀÖ´Ù
+	// TrueTypeFont ë•Œë¬¸ì— ì—¬ê¸°ì„œ ë¯¸ë¦¬ ìˆ˜í–‰ì„ í•´ì•¼ offsetListë¥¼ ë³´ì¡´í•  ìˆ˜ ìˆë‹¤
 	offsetList.clear();
 	UINT32 accumOffset = 0;
 
-	// Á¸ÀçÇÏ´Â µ¥ÀÌÅÍ´Â ÀüºÎ ±³Ã¼
+	// ì¡´ì¬í•˜ëŠ” ë°ì´í„°ëŠ” ì „ë¶€ êµì²´
 	for (size_t i = 0; i < value.size(); i++) {
-		// NULL ´ëºñ ÄÚµå
+		// NULL ëŒ€ë¹„ ì½”ë“œ
 		if (value[i] == NULL) {
 			continue;
 		}
-		// import °³¼ö °»½Å
+		// import ê°œìˆ˜ ê°±ì‹ 
 		getStates()->currentDataIndex++;
-		// µ¥ÀÌÅÍ°¡ Á¸ÀçÇÏ¸é ±×³É replace, ¾ø´Ù¸é ±³Ã¼ ¾øÀÌ import
+		// ë°ì´í„°ê°€ ì¡´ì¬í•˜ë©´ ê·¸ëƒ¥ replace, ì—†ë‹¤ë©´ êµì²´ ì—†ì´ import
 		if (!value[i]->importData(importDirPath, (UINT32)i)) {
 			return false;
 		}
@@ -95,15 +95,15 @@ bool DataChunk::exportJson(wstring& exportJsonPath)
 {
 	Json::Value root;
 
-	// json¿¡ ÀüºÎ Ãß°¡
+	// jsonì— ì „ë¶€ ì¶”ê°€
 	for (UINT32 i = 0; i < value.size(); i++) {
-		// NULL ´ëºñ ÄÚµå
+		// NULL ëŒ€ë¹„ ì½”ë“œ
 		if (value[i] == NULL) {
 			continue;
 		}
-		// ÃßÃâ °³¼ö °»½Å
+		// ì¶”ì¶œ ê°œìˆ˜ ê°±ì‹ 
 		getStates()->currentDataIndex++;
-		// ÃßÃâ
+		// ì¶”ì¶œ
 		Json::Value exportValue;
 		if (!value[i]->exportJson(exportValue, offsetList)) {
 			return false;
@@ -112,7 +112,7 @@ bool DataChunk::exportJson(wstring& exportJsonPath)
 	}
 
 	if (!writeIntoJson(root, exportJsonPath)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": DataChunk: json µ¥ÀÌÅÍ¸¦ ±â·ÏÇÏÁö ¸øÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": DataChunk: json ë°ì´í„°ë¥¼ ê¸°ë¡í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 	else {
@@ -125,18 +125,18 @@ bool DataChunk::importJson(wstring& importJsonPath)
 {
 	Json::Value root;
 	if (!readFromJson(root, importJsonPath)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": DataChunk: json µ¥ÀÌÅÍ¸¦ ÀĞ¾îµéÀÌÁö ¸øÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": DataChunk: json ë°ì´í„°ë¥¼ ì½ì–´ë“¤ì´ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
-	// jsonÀ¸·ÎºÎÅÍ ÀüºÎ Ãß°¡, ÃÖ´ë Å©±â¸¸Å­. ...¾Æ´Ï¸é ±×³É ÀüºÎ ´Ù ÀĞ¾îµéÀÏ±î?
+	// jsonìœ¼ë¡œë¶€í„° ì „ë¶€ ì¶”ê°€, ìµœëŒ€ í¬ê¸°ë§Œí¼. ...ì•„ë‹ˆë©´ ê·¸ëƒ¥ ì „ë¶€ ë‹¤ ì½ì–´ë“¤ì¼ê¹Œ?
 	UINT32 maxCount = (root.size() > value.size()) ? (UINT32)value.size() : (UINT32)root.size();
 	for (UINT32 i = 0; i < maxCount;i++) {
-		// NULL ´ëºñ ÄÚµå
+		// NULL ëŒ€ë¹„ ì½”ë“œ
 		if (value[i] == NULL) {
 			continue;
 		}
-		// import °³¼ö °»½Å
+		// import ê°œìˆ˜ ê°±ì‹ 
 		getStates()->currentDataIndex++;
 		// import
 		if (!value[i]->importJson(root[i], offsetList)) {
@@ -158,14 +158,14 @@ bool DataChunk::readOnlyDataCount(HANDLE hArchive)
 {
 	DWORD dRead;
 
-	// Data Chunk´Â depth¸¦ Á¶ÀıÇÒ ÇÊ¿ä´Â ¾øÀ¸³ª, °³¼ö´Â ÀúÀåÇØ¾ß ÇÑ´Ù
-	// ¶ÇÇÑ °³¼ö Á¤º¸¸¸ ÀĞÀ¸¸é µÇ´Ï ÀüºÎ ´Ù ÀĞÀ» ÇÊ¿äµµ ¾ø±ä ÇÑµ¥...
-	// ÀÏ´Ü DataChunk ÀÚÃ¼´Â ¾ÏÈ£È­ ¹× ¾ĞÃàµÇÁö ¾ÊÀº °ÍÀ¸·Î ÆÇ´ÜÇÏ°í 4¹ÙÀÌÆ®¸¸ ÀĞµµ·Ï Ä«¿îÆ®ÇÑ´Ù
-	// °¡ ¾Æ´Ï¶ó, ºĞ¸í ¾ĞÃàµÈ µ¥ÀÌÅÍµµ ÀÖÀ½... ÀÌ·²¶§´Â ¾îÂ¿¼ö ¾øÀÌ ´Ù ÀĞ¾îµé¿©¾ß ÇÒ°Å °°´Ù
-	// ¾Æ¸¶ ¿ë·®Àº ¾Ë¾Æ¼­ Á¶ÀıµÇ¾î ÀÖÀ¸¸®¶ó »ı°¢µÊ
-	// ±â¿Õ ´Ù ÀĞ¾îµéÀÏ ¶§´Â value±îÁö ¼¼ÆÃÇÏ´Â°Ô ÁÁÁö ¾ÊÀ»±î?
+	// Data ChunkëŠ” depthë¥¼ ì¡°ì ˆí•  í•„ìš”ëŠ” ì—†ìœ¼ë‚˜, ê°œìˆ˜ëŠ” ì €ì¥í•´ì•¼ í•œë‹¤
+	// ë˜í•œ ê°œìˆ˜ ì •ë³´ë§Œ ì½ìœ¼ë©´ ë˜ë‹ˆ ì „ë¶€ ë‹¤ ì½ì„ í•„ìš”ë„ ì—†ê¸´ í•œë°...
+	// ì¼ë‹¨ DataChunk ìì²´ëŠ” ì•”í˜¸í™” ë° ì••ì¶•ë˜ì§€ ì•Šì€ ê²ƒìœ¼ë¡œ íŒë‹¨í•˜ê³  4ë°”ì´íŠ¸ë§Œ ì½ë„ë¡ ì¹´ìš´íŠ¸í•œë‹¤
+	// ê°€ ì•„ë‹ˆë¼, ë¶„ëª… ì••ì¶•ëœ ë°ì´í„°ë„ ìˆìŒ... ì´ëŸ´ë•ŒëŠ” ì–´ì©”ìˆ˜ ì—†ì´ ë‹¤ ì½ì–´ë“¤ì—¬ì•¼ í• ê±° ê°™ë‹¤
+	// ì•„ë§ˆ ìš©ëŸ‰ì€ ì•Œì•„ì„œ ì¡°ì ˆë˜ì–´ ìˆìœ¼ë¦¬ë¼ ìƒê°ë¨
+	// ê¸°ì™• ë‹¤ ì½ì–´ë“¤ì¼ ë•ŒëŠ” valueê¹Œì§€ ì„¸íŒ…í•˜ëŠ”ê²Œ ì¢‹ì§€ ì•Šì„ê¹Œ?
 
-	// ÀÌ¹Ì ´Ù ÀĞ¾îµé¿´À¸¸é °³¼ö¸¸ ¼¼ÆÃÇÏ°í ³ª°¡¸é µÊ
+	// ì´ë¯¸ ë‹¤ ì½ì–´ë“¤ì˜€ìœ¼ë©´ ê°œìˆ˜ë§Œ ì„¸íŒ…í•˜ê³  ë‚˜ê°€ë©´ ë¨
 	if (hasRead()) {
 		getStates()->totalDataCount += (UINT32)value.size();
 		getStates()->chunkDataCount = (UINT32)value.size();
@@ -176,11 +176,11 @@ bool DataChunk::readOnlyDataCount(HANDLE hArchive)
 	ReadFile(hArchive, &info, sizeof(ChunkInfo), &dRead, NULL);
 
 	if (info.flag == 0) {
-		// ºñ¾ĞÃà & ºñ¾ÏÈ£È­ µ¥ÀÌÅÍÀÏ ¶§
+		// ë¹„ì••ì¶• & ë¹„ì•”í˜¸í™” ë°ì´í„°ì¼ ë•Œ
 		ReadFile(hArchive, &totalCount, sizeof(UINT32), &dRead, NULL);
 	}
 	else {
-		// ¾ĞÃà or ¾ÏÈ£È­ µ¥ÀÌÅÍÀÏ ¶§
+		// ì••ì¶• or ì•”í˜¸í™” ë°ì´í„°ì¼ ë•Œ
 		BYTE* rawBuffer = (BYTE*)malloc(info.size);
 		if (info.size > SEGMENT_SIZE) {
 			segmentedReadFile(hArchive, rawBuffer, info.size);
@@ -202,7 +202,7 @@ bool DataChunk::readOnlyDataCount(HANDLE hArchive)
 			BaseData* data = allocateData();
 			if (!data->loadFromBuffer(orgBufferPnt)) {
 				delete data;
-				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": DataChunk: µ¥ÀÌÅÍ¸¦ ·ÎµåÇÏÁö ¸øÇß½À´Ï´Ù." << endl;
+				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": DataChunk: ë°ì´í„°ë¥¼ ë¡œë“œí•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 				return false;
 			}
 			value.push_back(data);
@@ -219,22 +219,22 @@ bool DataChunk::readOnlyDataCount(HANDLE hArchive)
 }
 
 
-// µ¥ÀÌÅÍ ·»´õ¸µ¿ë
+// ë°ì´í„° ë Œë”ë§ìš©
 void DataChunk::renderData()
 {
-	// ±âº»ÀûÀ¸·Î´Â getStates()->chunkDataCount¸¸ °¡Áö°í Ã³¸®ÇÏµÇ,
-	// value Å©±â°¡ 0ÀÌ ¾Æ´Ï¸é µ¥ÀÌÅÍ¸¦ ·»´õ¸µÇÏ´Â °Ô ÁÁÀ» °Í °°´Ù
+	// ê¸°ë³¸ì ìœ¼ë¡œëŠ” getStates()->chunkDataCountë§Œ ê°€ì§€ê³  ì²˜ë¦¬í•˜ë˜,
+	// value í¬ê¸°ê°€ 0ì´ ì•„ë‹ˆë©´ ë°ì´í„°ë¥¼ ë Œë”ë§í•˜ëŠ” ê²Œ ì¢‹ì„ ê²ƒ ê°™ë‹¤
 
 	stringstream oss;
 
 	if (value.size() == 0) {
-		oss << u8" - Data ¼ö: " << getStates()->chunkDataCount;
+		oss << u8" - Data ìˆ˜: " << getStates()->chunkDataCount;
 		ImGui::Text(oss.str().c_str());
 		oss.str("");
 	}
 
 	else {
-		// ÃÖ´ë 30°³±îÁö¸¸
+		// ìµœëŒ€ 30ê°œê¹Œì§€ë§Œ
 		stringstream oss;
 		UINT32 maxCount = (value.size() > 30) ? 30 : (UINT32)value.size();
 
@@ -262,7 +262,7 @@ void DataChunk::renderData()
 			ImGui::Text("  ...");
 		}
 
-		oss << "] (" << dec << value.size() << u8"°³)";
+		oss << "] (" << dec << value.size() << u8"ê°œ)";
 		ImGui::Text(oss.str().c_str());
 		oss.str("");
 	}
@@ -277,7 +277,7 @@ bool DataChunk::loadFromOrgBuffer()
 	UINT32 totalCount = *(UINT32*)orgBufferPnt;
 	orgBufferPnt += sizeof(UINT32);
 
-	// value ÃÊ±âÈ­
+	// value ì´ˆê¸°í™”
 	for (UINT32 i = 0; i < value.size(); i++) {
 		if (value[i] != NULL) {
 			delete value[i];
@@ -293,7 +293,7 @@ bool DataChunk::loadFromOrgBuffer()
 		BaseData* data = allocateData();
 		if (!data->loadFromBuffer(orgBufferPnt)) {
 			delete data;
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getNameUni(info.type) << L": µ¥ÀÌÅÍ¸¦ ·ÎµåÇÏÁö ¸øÇß½À´Ï´Ù." << endl;
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getNameUni(info.type) << L": ë°ì´í„°ë¥¼ ë¡œë“œí•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 			return false;
 		}
 		value.push_back(data);
@@ -308,8 +308,8 @@ bool DataChunk::loadFromOrgBuffer()
 
 bool DataChunk::saveIntoOrgBuffer()
 {
-	// ±â·Ï°ú µ¿½Ã¿¡ °¢ handleº° ¿ÀÇÁ¼Âµµ ´©ÀûÇØ¼­ ¼¼ÆÃÀ» ÇØµÖ¾ß ÇÑ´Ù
-	// ±×·¯·Á¸é ¸ÕÀú handle ÃÖ´ë°ªÀ» ÆÇº°ÇÑ ´ÙÀ½ (ÃÖ´ë handle + 1)¸¸Å­ ÇÒ´çÇØµÑ ÇÊ¿ä°¡ ÀÖÀ» °ÍÀÌ´Ù
+	// ê¸°ë¡ê³¼ ë™ì‹œì— ê° handleë³„ ì˜¤í”„ì…‹ë„ ëˆ„ì í•´ì„œ ì„¸íŒ…ì„ í•´ë‘¬ì•¼ í•œë‹¤
+	// ê·¸ëŸ¬ë ¤ë©´ ë¨¼ì € handle ìµœëŒ€ê°’ì„ íŒë³„í•œ ë‹¤ìŒ (ìµœëŒ€ handle + 1)ë§Œí¼ í• ë‹¹í•´ë‘˜ í•„ìš”ê°€ ìˆì„ ê²ƒì´ë‹¤
 
 	wcout << infoPrefix << L"making new offset array..." << endl;
 
@@ -317,17 +317,17 @@ bool DataChunk::saveIntoOrgBuffer()
 	offsetList.clear();
 	offsetList.resize(maxHandleValue + 1);
 
-	// 0x11C ¹öÀüÀ» °æ°è·Î baseOffsetÀÌ 0x8ÀÎ °æ¿ì¿Í 0x108ÀÎ °æ¿ì°¡ ³ª´¶´Ù.
+	// 0x11C ë²„ì „ì„ ê²½ê³„ë¡œ baseOffsetì´ 0x8ì¸ ê²½ìš°ì™€ 0x108ì¸ ê²½ìš°ê°€ ë‚˜ë‰œë‹¤.
 	UINT32 baseOffset = sizeof(info.size) + sizeof(UINT32);
 	if (getArchive()->getBuildVersion() >= 0x11C) {
 		baseOffset += 0x100;
 	}
 
-	// ´©ÀûÅ©±â °è»ê ¹× ¿ÀÇÁ¼Â ¼¼ÆÃ
-	// ±×·±µ¥ ¾ĞÃàµÈ µ¥ÀÌÅÍ¸¦ ±âÁØÀ¸·Î °è»êÇØ¾ß ÇÏ´Â °æ¿ì´Â getDataSize() ³»ºÎ¿¡¼­ ¾ĞÃà/ºñ¾ĞÃàÃ³¸®·Î °è»êÇØ¾ß ÇÑ´Ù
+	// ëˆ„ì í¬ê¸° ê³„ì‚° ë° ì˜¤í”„ì…‹ ì„¸íŒ…
+	// ê·¸ëŸ°ë° ì••ì¶•ëœ ë°ì´í„°ë¥¼ ê¸°ì¤€ìœ¼ë¡œ ê³„ì‚°í•´ì•¼ í•˜ëŠ” ê²½ìš°ëŠ” getDataSize() ë‚´ë¶€ì—ì„œ ì••ì¶•/ë¹„ì••ì¶•ì²˜ë¦¬ë¡œ ê³„ì‚°í•´ì•¼ í•œë‹¤
 	UINT32 accumOffset = baseOffset;
 	for (size_t i = 0; i < value.size(); i++) {
-		// NULL ´ëºñ ÄÚµå
+		// NULL ëŒ€ë¹„ ì½”ë“œ
 		if (value[i] == NULL) {
 			offsetList[value[i]->getHandle()] = 0;
 		}
@@ -337,10 +337,10 @@ bool DataChunk::saveIntoOrgBuffer()
 		}
 	}
 
-	// Å©±â °è»êÇÏ¿© Àç¼¼ÆÃ
+	// í¬ê¸° ê³„ì‚°í•˜ì—¬ ì¬ì„¸íŒ…
 	orgSize = sizeof(UINT32) + (accumOffset - baseOffset);
 
-	// ¹öÆÛ ÇÒ´ç
+	// ë²„í¼ í• ë‹¹
 	if (orgBuffer != NULL) {
 		free(orgBuffer);
 		orgBuffer = NULL;
@@ -348,23 +348,23 @@ bool DataChunk::saveIntoOrgBuffer()
 	orgBuffer = (BYTE*)malloc(orgSize);
 	memset(orgBuffer, 0, orgSize);
 
-	// orgBuffer¿¡ ±â·Ï, ±â·ÏÀ» ¸¶Ä£ µ¥ÀÌÅÍ´Â Á¤¸®
+	// orgBufferì— ê¸°ë¡, ê¸°ë¡ì„ ë§ˆì¹œ ë°ì´í„°ëŠ” ì •ë¦¬
 	BYTE* orgBufferPnt = orgBuffer;
 
-	// °³¼ö ¼¼ÆÃ
+	// ê°œìˆ˜ ì„¸íŒ…
 	*(UINT32*)(orgBufferPnt) = (UINT32)value.size();
 	orgBufferPnt += sizeof(UINT32);
 
 	wcout << infoPrefix << L"ChunkType: " << uppercase << hex << getNameUni(info.type) << L": saving " << to_wstring(value.size()) << L" data to buffer..." << endl;
 	for (size_t i = 0; i < value.size(); i++) {
-		// NULL ´ëºñ ÄÚµå
+		// NULL ëŒ€ë¹„ ì½”ë“œ
 		if (value[i] == NULL) {
 			continue;
 		}
 		//wcout << flush << L"\r";
 		//wcout << infoPrefix << L"saving " << to_wstring(i + 1) << L"/" << to_wstring(value.size()) << L" data to buffer...";
 		if (!value[i]->saveIntoBuffer(orgBufferPnt)) {
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getNameUni(info.type) << L": µ¥ÀÌÅÍ¸¦ ÀúÀåÇÏÁö ¸øÇß½À´Ï´Ù." << endl;
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getNameUni(info.type) << L": ë°ì´í„°ë¥¼ ì €ì¥í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 			return false;
 		}
 	}

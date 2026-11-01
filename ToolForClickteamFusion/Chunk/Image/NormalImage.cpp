@@ -1,4 +1,4 @@
-#include "NormalImage.h"
+ï»¿#include "NormalImage.h"
 #include "../../Archive/Archive.h"
 #include "../../Util/ZlibUtil.h"
 #include "../../Util/CommonUtil.h"
@@ -22,9 +22,9 @@ NormalImage::~NormalImage() {
 
 bool NormalImage::loadFromBuffer(BYTE*& bufferPnt)
 {
-	// µ¥ÀÌÅÍ¸¦ ±×´ë·Î ´Ù °¡Áö°í ÀÖ±â¿¡´Â ¿ë·®ÀÌ ³Ê¹« Å©±â ¶§¹®¿¡
-	// [±¸Á¶Ã¼] + [¾ĞÃàµ¥ÀÌÅÍ] Á¤µµ·Î¸¸ °¡Áö°í ÀÖ´Ù°¡
-	// ÃßÃâÇÒ ¶§ ÀÏ½ÃÀûÀ¸·Î ¾ĞÃàÀ» Çª´Â ½ÄÀ¸·Î ¿î¿ëÇÏ´Â °Ô ÁÁ°Ú´Ù
+	// ë°ì´í„°ë¥¼ ê·¸ëŒ€ë¡œ ë‹¤ ê°€ì§€ê³  ìˆê¸°ì—ëŠ” ìš©ëŸ‰ì´ ë„ˆë¬´ í¬ê¸° ë•Œë¬¸ì—
+	// [êµ¬ì¡°ì²´] + [ì••ì¶•ë°ì´í„°] ì •ë„ë¡œë§Œ ê°€ì§€ê³  ìˆë‹¤ê°€
+	// ì¶”ì¶œí•  ë•Œ ì¼ì‹œì ìœ¼ë¡œ ì••ì¶•ì„ í‘¸ëŠ” ì‹ìœ¼ë¡œ ìš´ìš©í•˜ëŠ” ê²Œ ì¢‹ê² ë‹¤
 
 	handle = *(UINT32*)bufferPnt;
 	if (getArchive()->getBuildVersion() >= 0x11C) {
@@ -73,17 +73,17 @@ bool NormalImage::saveIntoBuffer(BYTE*& bufferPnt)
 }
 
 
-// µ¥ÀÌÅÍ ·»´õ¸µ¿ë ÇÔ¼ö
+// ë°ì´í„° ë Œë”ë§ìš© í•¨ìˆ˜
 void NormalImage::renderData(UINT32 index)
 {
 	stringstream oss;
 
-	// ÀÎµ¦½º Ç¥Çö
+	// ì¸ë±ìŠ¤ í‘œí˜„
 	oss << "  <" << index << ">{";
 	ImGui::Text(oss.str().c_str());
 	oss.str("");
 
-	// *** Ãâ·Â *** //
+	// *** ì¶œë ¥ *** //
 	ImGui::Text("  }");
 }
 
@@ -91,7 +91,7 @@ void NormalImage::renderData(UINT32 index)
 bool NormalImage::deriveTranslatingData()
 {
 	if ((compressedData == NULL) || (compressedSize == 0)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": µğÄÚµùÀ» ¼öÇàÇÒ µ¥ÀÌÅÍ°¡ ¾ø½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ë””ì½”ë”©ì„ ìˆ˜í–‰í•  ë°ì´í„°ê°€ ì—†ìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
@@ -101,13 +101,13 @@ bool NormalImage::deriveTranslatingData()
 	}
 	translatingSize = 0;
 
-	// ¾ĞÃà ÇØÁ¦¿ë º¯¼ö
+	// ì••ì¶• í•´ì œìš© ë³€ìˆ˜
 	UINT32 tmpSize = originalSize;
 	BYTE* tmpData = NULL;
 
-	// ¾ĞÃàÇ¬ µ¥ÀÌÅÍ: [imageInfo] + [(translatingData È¤Àº ÇÑ¹ø ´õ ¾ĞÃàµÈ µ¥ÀÌÅÍ)]
+	// ì••ì¶•í‘¼ ë°ì´í„°: [imageInfo] + [(translatingData í˜¹ì€ í•œë²ˆ ë” ì••ì¶•ëœ ë°ì´í„°)]
 	if (!ZlibUtil::decode(compressedData, compressedSize, tmpData, tmpSize)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ÀÌ¹ÌÁö µ¥ÀÌÅÍ µğÄÚµùÀ» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ì´ë¯¸ì§€ ë°ì´í„° ë””ì½”ë”©ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		if (tmpData != NULL) {
 			free(tmpData);
 		}
@@ -117,27 +117,27 @@ bool NormalImage::deriveTranslatingData()
 	memcpy(&info, tmpData, sizeof(CommonImageInfo));
 
 	if (isLZX()) {
-		// ÇÑ¹ø ´õ ¾ĞÃà: LZXÀÏ ¶§: [¿ø·¡ Å©±â 4¹ÙÀÌÆ®] + [¾ĞÃàµ¥ÀÌÅÍ]
+		// í•œë²ˆ ë” ì••ì¶•: LZXì¼ ë•Œ: [ì›ë˜ í¬ê¸° 4ë°”ì´íŠ¸] + [ì••ì¶•ë°ì´í„°]
 		translatingSize = *(UINT32*)(tmpData + sizeof(CommonImageInfo));
 		UINT32 startOfs = (sizeof(CommonImageInfo) + sizeof(UINT32));
 		if (!ZlibUtil::decode((tmpData + startOfs), (tmpSize - startOfs), translatingData, translatingSize)) {
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ÀÌ¹ÌÁö µ¥ÀÌÅÍ µğÄÚµùÀ» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ì´ë¯¸ì§€ ë°ì´í„° ë””ì½”ë”©ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 			free(tmpData);
 			return false;
 		}
 		free(tmpData);
 	}
 	else {
-		// LZX°¡ ¾Æ´Ò ¶§: º¯È¯µ¥ÀÌÅÍ¸¦ ±×´ë·Î ¿Å°Ü¿Í¼­ º¹»ç
+		// LZXê°€ ì•„ë‹ ë•Œ: ë³€í™˜ë°ì´í„°ë¥¼ ê·¸ëŒ€ë¡œ ì˜®ê²¨ì™€ì„œ ë³µì‚¬
 		translatingSize = (tmpSize - sizeof(CommonImageInfo));
 		translatingData = (BYTE*)malloc(translatingSize);
 		memcpy(translatingData, (tmpData + sizeof(CommonImageInfo)), translatingSize);
 	}
 
-	// ¿ªÇÒ ³¡³­ ÀÓ½Ãº¯¼ö Á¦°Å
+	// ì—­í•  ëë‚œ ì„ì‹œë³€ìˆ˜ ì œê±°
 	free(tmpData);
 
-	// ¸Ş¸ğ¸® °ü¸®¸¦ À§ÇÏ¿© ¾ĞÃà µ¥ÀÌÅÍ Á¦°Å
+	// ë©”ëª¨ë¦¬ ê´€ë¦¬ë¥¼ ìœ„í•˜ì—¬ ì••ì¶• ë°ì´í„° ì œê±°
 	free(compressedData);
 	compressedData = NULL;
 	compressedSize = 0;
@@ -149,7 +149,7 @@ bool NormalImage::deriveTranslatingData()
 bool NormalImage::deriveCompressedData()
 {
 	if ((translatingData == NULL) || (translatingSize == 0)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ÀÎÄÚµùÀ» ¼öÇàÇÒ µ¥ÀÌÅÍ°¡ ¾ø½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ì¸ì½”ë”©ì„ ìˆ˜í–‰í•  ë°ì´í„°ê°€ ì—†ìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
@@ -162,13 +162,13 @@ bool NormalImage::deriveCompressedData()
 	UINT32 tmpSize = 0;
 	BYTE* tmpData = NULL;
 
-	// ÇÃ·¡±×¿¡ µû¶ó µ¥ÀÌÅÍ º¯È¯
+	// í”Œë˜ê·¸ì— ë”°ë¼ ë°ì´í„° ë³€í™˜
 	if (isLZX()) {
-		// [¿ø·¡Å©±â 4¹ÙÀÌÆ®] + [¾ĞÃàµ¥ÀÌÅÍ]·Î º¯°æÇÏ¿© ¼¼ÆÃ
+		// [ì›ë˜í¬ê¸° 4ë°”ì´íŠ¸] + [ì••ì¶•ë°ì´í„°]ë¡œ ë³€ê²½í•˜ì—¬ ì„¸íŒ…
 		BYTE* tmpCompData = NULL;
 		UINT32 tmpCompSize = 0;
 		if (!ZlibUtil::encode(translatingData, translatingSize, tmpCompData, tmpCompSize)) {
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ÀÌ¹ÌÁö µ¥ÀÌÅÍ ÀÎÄÚµùÀ» ½ÇÆĞÇß½À´Ï´Ù(1)." << endl;
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ì´ë¯¸ì§€ ë°ì´í„° ì¸ì½”ë”©ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤(1)." << endl;
 			if (tmpCompData != NULL) {
 				free(tmpCompData);
 			}
@@ -181,30 +181,30 @@ bool NormalImage::deriveCompressedData()
 		free(tmpCompData);
 	}
 	else {
-		// ±×´ë·Î º¹»çÇØ¼­ ¼¼ÆÃ
+		// ê·¸ëŒ€ë¡œ ë³µì‚¬í•´ì„œ ì„¸íŒ…
 		tmpSize = translatingSize;
 		tmpData = (BYTE*)malloc(tmpSize);
 		memcpy(tmpData, translatingData, tmpSize);
 	}
 
-	// imageInfo ¹× originalSize ¼öÁ¤
+	// imageInfo ë° originalSize ìˆ˜ì •
 	info.size = tmpSize;
 	originalSize = sizeof(CommonImageInfo) + tmpSize;
 
-	// imageInfo¿Í tmpData¸¦ ºÙ¿©¼­ fullOrgData·Î ¸¸µé°í ¾ĞÃàÀ» ¼öÇàÇÑ´Ù
+	// imageInfoì™€ tmpDataë¥¼ ë¶™ì—¬ì„œ fullOrgDataë¡œ ë§Œë“¤ê³  ì••ì¶•ì„ ìˆ˜í–‰í•œë‹¤
 	BYTE* fullOrgData = (BYTE*)malloc(originalSize);
 	memcpy(fullOrgData, &info, sizeof(CommonImageInfo));
 	memcpy((fullOrgData + sizeof(CommonImageInfo)), tmpData, tmpSize);
 	if (!ZlibUtil::encode(fullOrgData, originalSize, compressedData, compressedSize)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ÀÌ¹ÌÁö µ¥ÀÌÅÍ ÀÎÄÚµùÀ» ½ÇÆĞÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": ì´ë¯¸ì§€ ë°ì´í„° ì¸ì½”ë”©ì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 
-	// ÇÊ¿ä¾ø´Â ¹öÆÛµé Ãß°¡ ÇØÁ¦
+	// í•„ìš”ì—†ëŠ” ë²„í¼ë“¤ ì¶”ê°€ í•´ì œ
 	free(tmpData);
 	free(fullOrgData);
 
-	// ¸Ş¸ğ¸® °ü¸®¸¦ À§ÇÏ¿© º¯È¯ µ¥ÀÌÅÍ Á¦°Å
+	// ë©”ëª¨ë¦¬ ê´€ë¦¬ë¥¼ ìœ„í•˜ì—¬ ë³€í™˜ ë°ì´í„° ì œê±°
 	free(translatingData);
 	translatingData = NULL;
 	translatingSize = 0;

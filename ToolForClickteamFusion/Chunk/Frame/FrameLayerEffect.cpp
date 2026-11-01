@@ -1,4 +1,4 @@
-#include "FrameLayerEffect.h"
+ï»¿#include "FrameLayerEffect.h"
 #include "../../Archive/Archive.h"
 #include "../../Util/ZlibUtil.h"
 #include "../../Util/CommonUtil.h"
@@ -21,7 +21,7 @@ FrameLayerEffect::~FrameLayerEffect() {
 
 bool FrameLayerEffect::exportJson(Json::Value& exportValue, vector<UINT32>& offsetList)
 {
-	// value·Î ÃßÃâ
+	// valueë¡œ ì¶”ì¶œ
 
 	Json::Value instValue;
 
@@ -94,7 +94,7 @@ bool FrameLayerEffect::exportJson(Json::Value& exportValue, vector<UINT32>& offs
 
 bool FrameLayerEffect::importJson(Json::Value& importValue, vector<UINT32>& offsetList)
 {
-	// value·ÎºÎÅÍ ÀĞ¾îµéÀÌ±â
+	// valueë¡œë¶€í„° ì½ì–´ë“¤ì´ê¸°
 
 	Json::Value instValue = importValue["inst"];
 
@@ -118,7 +118,7 @@ bool FrameLayerEffect::importJson(Json::Value& importValue, vector<UINT32>& offs
 			ShaderArgument shaderArgument;
 			memset(&shaderArgument, 0, sizeof(ShaderArgument));
 
-			// ÀÌ¸§ º¹»ç°¡ ±×³É ÇÏ¸é Àß ¾ÈµÇ´Â°Å °°À½
+			// ì´ë¦„ ë³µì‚¬ê°€ ê·¸ëƒ¥ í•˜ë©´ ì˜ ì•ˆë˜ëŠ”ê±° ê°™ìŒ
 			wstring shaderArgName = getUniStr(shaderArgumentsValue[i]["name"].asCString(), CodePage::CP_UTF_8);
 			shaderArgument.info.name.resize(shaderArgName.size() + 1);
 			memset((wchar_t*)shaderArgument.info.name.data(), 0, ((shaderArgName.size() + 1) * sizeof(wchar_t)));
@@ -161,30 +161,30 @@ bool FrameLayerEffect::importJson(Json::Value& importValue, vector<UINT32>& offs
 
 bool FrameLayerEffect::loadFromBuffer(BYTE*& bufferPnt)
 {
-	// baseBuffer°¡ NULLÀÌ¸é ±×³É ¸®ÅÏ
+	// baseBufferê°€ NULLì´ë©´ ê·¸ëƒ¥ ë¦¬í„´
 	if (baseBuffer == NULL) {
 		return false;
 	}
 
-	// info È®º¸
+	// info í™•ë³´
 	memcpy(&inst.info, bufferPnt, sizeof(FrameEffectInfo));
 	bufferPnt += sizeof(FrameEffectInfo);
 
-	// paramsCount, valuesOffset È®º¸
+	// paramsCount, valuesOffset í™•ë³´
 	UINT32 paramsCount = *(UINT32*)(bufferPnt);
 	bufferPnt += sizeof(UINT32);
 	UINT32 valuesOffset = *(UINT32*)(bufferPnt);
 	bufferPnt += sizeof(UINT32);
 
-	// info.shaderIndex °ªÀÌ -1ÀÌ¸é ±×³É ¸®ÅÏÇÑ´Ù
+	// info.shaderIndex ê°’ì´ -1ì´ë©´ ê·¸ëƒ¥ ë¦¬í„´í•œë‹¤
 	if (inst.info.shaderIndex == -1) {
 		return true;
 	}
 
-	// baseBuffer, valuesOffset·ÎºÎÅÍ valuesBufferPnt ¼¼ÆÃÇÏ±â
+	// baseBuffer, valuesOffsetë¡œë¶€í„° valuesBufferPnt ì„¸íŒ…í•˜ê¸°
 	valuesBufferPnt = baseBuffer + valuesOffset;
 
-	// »ç¿ëÇÏ´Â shaderÀÇ ÀÌ¸§ ¹× parameter ¸®½ºÆ® È®º¸
+	// ì‚¬ìš©í•˜ëŠ” shaderì˜ ì´ë¦„ ë° parameter ë¦¬ìŠ¤íŠ¸ í™•ë³´
 	Shader* shader = reinterpret_cast<Shader*>(getArchive()->getShaderListChunk()->getValue()[inst.info.shaderIndex]);
 	inst.shaderName = shader->getName();
 
@@ -193,12 +193,12 @@ bool FrameLayerEffect::loadFromBuffer(BYTE*& bufferPnt)
 	inst.shaderArguments.clear();
 	inst.shaderArguments.resize(paramsCount);
 
-	// parameter ÀĞ¾îµéÀÌ±â
+	// parameter ì½ì–´ë“¤ì´ê¸°
 	for (UINT32 i = 0; i < paramsCount;i++) {
 
 		memset(&inst.shaderArguments[i], 0, sizeof(ShaderArgument));
 
-		// ÀÌ¸§ º¹»ç°¡ ±×³É ÇÏ¸é Àß ¾ÈµÇ´Â°Å °°À½
+		// ì´ë¦„ ë³µì‚¬ê°€ ê·¸ëƒ¥ í•˜ë©´ ì˜ ì•ˆë˜ëŠ”ê±° ê°™ìŒ
 		inst.shaderArguments[i].info.name.resize(shaderParameters[i].name.size() + 1);
 		memset((wchar_t*)inst.shaderArguments[i].info.name.data(), 0, ((shaderParameters[i].name.size() + 1) * sizeof(wchar_t)));
 		memcpy((wchar_t*)inst.shaderArguments[i].info.name.data(), shaderParameters[i].name.data(), (shaderParameters[i].name.size() * sizeof(wchar_t)));
@@ -238,37 +238,37 @@ bool FrameLayerEffect::loadFromBuffer(BYTE*& bufferPnt)
 
 bool FrameLayerEffect::saveIntoBuffer(BYTE*& bufferPnt)
 {
-	// valuesBufferPnt, baseBuffer°¡ NULLÀÌ¸é ±×³É ¸®ÅÏ
+	// valuesBufferPnt, baseBufferê°€ NULLì´ë©´ ê·¸ëƒ¥ ë¦¬í„´
 	if ((valuesBufferPnt == NULL) || (baseBuffer == NULL)) {
 		return false;
 	}
 
-	// info ±â·Ï
+	// info ê¸°ë¡
 	memcpy(bufferPnt, &inst.info, sizeof(FrameEffectInfo));
 	bufferPnt += sizeof(FrameEffectInfo);
 
-	// paramsCount´Â ±×³É ±â·ÏÇØµµ µÇÁö¸¸,
-	// paramsOffsetÀº FrameLayerEffectDataChunk ¿¡¼­ valuesBufferPnt °ªÀ» °è¼Ó °¡Áö°í
-	// ¹öÆÛ¿¡ ±â·ÏÇÏ±â Àü¿¡ paramsBuffer¸¦ ¼¼ÆÃÇØÁà¾ß ÇÑ´Ù
+	// paramsCountëŠ” ê·¸ëƒ¥ ê¸°ë¡í•´ë„ ë˜ì§€ë§Œ,
+	// paramsOffsetì€ FrameLayerEffectDataChunk ì—ì„œ valuesBufferPnt ê°’ì„ ê³„ì† ê°€ì§€ê³ 
+	// ë²„í¼ì— ê¸°ë¡í•˜ê¸° ì „ì— paramsBufferë¥¼ ì„¸íŒ…í•´ì¤˜ì•¼ í•œë‹¤
 
-	// paramsCount ¼¼ÆÃÇÏ±â
+	// paramsCount ì„¸íŒ…í•˜ê¸°
 	UINT32 paramsCount = (UINT32)inst.shaderArguments.size();
 
-	// baseBuffer, paramBuffer·ÎºÎÅÍ valuesOffset ¼¼ÆÃÇÏ±â
+	// baseBuffer, paramBufferë¡œë¶€í„° valuesOffset ì„¸íŒ…í•˜ê¸°
 	UINT32 valuesOffset = (UINT32)(valuesBufferPnt - baseBuffer);
 
-	// paramsCount°¡ 0ÀÌ¸é paramsOffsetµµ 0À¸·Î ¼¼ÆÃÇÑ´Ù
+	// paramsCountê°€ 0ì´ë©´ paramsOffsetë„ 0ìœ¼ë¡œ ì„¸íŒ…í•œë‹¤
 	if (paramsCount == 0) {
 		valuesOffset = 0;
 	}
 
-	// paramsCount, valuesOffset ±â·Ï
+	// paramsCount, valuesOffset ê¸°ë¡
 	*(UINT32*)(bufferPnt) = paramsCount;
 	bufferPnt += sizeof(UINT32);
 	*(UINT32*)(bufferPnt) = valuesOffset;
 	bufferPnt += sizeof(UINT32);
 
-	// parameter ±â·ÏÇÏ±â
+	// parameter ê¸°ë¡í•˜ê¸°
 	for (UINT32 i = 0; i < paramsCount; i++) {
 		switch (inst.shaderArguments[i].info.type) {
 			case ShaderParameterType::INT: {
@@ -301,12 +301,12 @@ bool FrameLayerEffect::saveIntoBuffer(BYTE*& bufferPnt)
 }
 
 
-// µ¥ÀÌÅÍ ·»´õ¸µ¿ë ÇÔ¼ö
+// ë°ì´í„° ë Œë”ë§ìš© í•¨ìˆ˜
 void FrameLayerEffect::renderData(UINT32 index)
 {
 	stringstream oss;
 
-	// ÀÎµ¦½º Ç¥Çö
+	// ì¸ë±ìŠ¤ í‘œí˜„
 	oss << "  <" << index << ">{";
 	ImGui::Text(oss.str().c_str());
 	oss.str("");
@@ -327,17 +327,17 @@ void FrameLayerEffect::renderData(UINT32 index)
 	ImGui::Text(oss.str().c_str());
 	oss.str("");
 
-	// ÄÃ·¯ Ã¢Àº ³ªÅ¸³»µÇ ¼±ÅÃ ºÒ°¡´ÉÇÏµµ·Ï
+	// ì»¬ëŸ¬ ì°½ì€ ë‚˜íƒ€ë‚´ë˜ ì„ íƒ ë¶ˆê°€ëŠ¥í•˜ë„ë¡
 	ImGuiColorEditFlags colorEditFlags =ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel;
 	Color rgbCoeff = inst.info.RGBCoeff;
 	ImVec4 rgbCoeffNm = ImVec4((float(rgbCoeff.r) / 255.0f), (float(rgbCoeff.g) / 255.0f), (float(rgbCoeff.b) / 255.0f), (float(rgbCoeff.a) / 255.0f));
-	// -- °°Àº ¶óÀÎ --
+	// -- ê°™ì€ ë¼ì¸ --
 	ImGui::SameLine();
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3.0f);
 	ImGui::PushID(index);
 	ImGui::ColorEdit4("MyColor##1", (float*)&rgbCoeffNm, colorEditFlags);
 	ImGui::PopID();
-	// -- °°Àº ¶óÀÎ --
+	// -- ê°™ì€ ë¼ì¸ --
 	if (inst.info.shaderIndex != -1) {
 		ImGui::SameLine(ImGui::CalcTextSize(u8"      rgb_coefficent:").x + 36.0f);
 		ImGui::Text(",");
@@ -399,11 +399,11 @@ void FrameLayerEffect::renderData(UINT32 index)
 					oss << "            value:";
 					ImGui::Text(oss.str().c_str());
 					oss.str("");
-					// ÄÃ·¯ Ã¢Àº ³ªÅ¸³»µÇ ¼±ÅÃ ºÒ°¡´ÉÇÏµµ·Ï
+					// ì»¬ëŸ¬ ì°½ì€ ë‚˜íƒ€ë‚´ë˜ ì„ íƒ ë¶ˆê°€ëŠ¥í•˜ë„ë¡
 					ImGuiColorEditFlags colorEditFlags = ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel;
 					Color bgColor = inst.shaderArguments[i].colorValue;
 					ImVec4 bgColorNm = ImVec4((float(bgColor.r) / 255.0f), (float(bgColor.g) / 255.0f), (float(bgColor.b) / 255.0f), (float(bgColor.a) / 255.0f));
-					// -- °°Àº ¶óÀÎ --
+					// -- ê°™ì€ ë¼ì¸ --
 					ImGui::SameLine();
 					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3.0f);
 					ImGui::PushID(index * 0x100 + i);

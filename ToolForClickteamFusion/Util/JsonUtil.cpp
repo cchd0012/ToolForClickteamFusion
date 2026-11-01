@@ -1,4 +1,4 @@
-#include "JsonUtil.h"
+ï»¿#include "JsonUtil.h"
 #include "CommonUtil.h"
 
 using namespace CTT::JsonUtil;
@@ -11,38 +11,38 @@ bool CTT::JsonUtil::readFromJson(Json::Value& value, wstring& path)
 	
 	wstring jsonPath = path;
 
-	// µð·ºÅä¸®°¡ Á¸ÀçÇÏ´ÂÁö ÆÄ¾ÇÇÏ±â
+	// ë””ë ‰í† ë¦¬ê°€ ì¡´ìž¬í•˜ëŠ”ì§€ íŒŒì•…í•˜ê¸°
 	wstring dirPath = getOnlyDirPath(path);
 	if (path != dirPath) {
 		if (isFileOrDir(dirPath) != FSOType::FSO_DIRECTORY) {
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << dirPath << L": µð·ºÅä¸®°¡ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù" << endl;
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << dirPath << L": ë””ë ‰í† ë¦¬ê°€ ì¡´ìž¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤" << endl;
 			return false;
 		}
 	}
 
-	// json È®ÀåÀÚ ¾øÀ¸¸é ºÙ¿©ÁÖ±â
+	// json í™•ìž¥ìž ì—†ìœ¼ë©´ ë¶™ì—¬ì£¼ê¸°
 	if (jsonPath.rfind(L".json") == wstring::npos) {
 		jsonPath += L".json";
 	}
 
-	// ÇÚµé ¸¸µé±â
+	// í•¸ë“¤ ë§Œë“¤ê¸°
 	HANDLE hJson = CreateFileW(jsonPath.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
-	// ÆÄÀÏ Å©±â¸¸Å­ ÀÐ¾îµéÀÌ±â
+	// íŒŒì¼ í¬ê¸°ë§Œí¼ ì½ì–´ë“¤ì´ê¸°
 	DWORD jsonSize = GetFileSize(hJson, NULL);
 	std::string input(jsonSize, 0);
 	if (!ReadFile(hJson, &input[0], jsonSize, &dRead, NULL)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << jsonPath << L": json µ¥ÀÌÅÍ¸¦ ÀÐ¾îµéÀÌÁö ¸øÇß½À´Ï´Ù" << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << jsonPath << L": json ë°ì´í„°ë¥¼ ì½ì–´ë“¤ì´ì§€ ëª»í–ˆìŠµë‹ˆë‹¤" << endl;
 		return false;
 	}
 	CloseHandle(hJson);
 
-	// json ÆÄ½Ì
+	// json íŒŒì‹±
 	Json::CharReaderBuilder reader;
 	std::stringstream ss(input);
 	std::string errs;
 	if (!Json::parseFromStream(reader, ss, &value, &errs)) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << jsonPath << L": json µ¥ÀÌÅÍ ÆÄ½Ì ½ÇÆÐ: " << getUniStr(errs, CodePage::CP_UTF_8) << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << jsonPath << L": json ë°ì´í„° íŒŒì‹± ì‹¤íŒ¨: " << getUniStr(errs, CodePage::CP_UTF_8) << endl;
 		return false;
 	}
 
@@ -56,24 +56,24 @@ bool CTT::JsonUtil::writeIntoJson(Json::Value& value, wstring &path)
 
 	wstring jsonPath = path;
 
-	// ¸ÕÀú µð·ºÅä¸®¸¦ Æ÷ÇÔÇÑ °æ·Î¶ó¸é µð·ºÅä¸®¸¦ ¸¸µé¾î¾ß ÇÑ´Ù
+	// ë¨¼ì € ë””ë ‰í† ë¦¬ë¥¼ í¬í•¨í•œ ê²½ë¡œë¼ë©´ ë””ë ‰í† ë¦¬ë¥¼ ë§Œë“¤ì–´ì•¼ í•œë‹¤
 	wstring dirPath = getOnlyDirPath(path);
 	if (path != dirPath) {
 		if (!createDirectoryRecursively(dirPath)) {
-			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << dirPath << L": µð·ºÅä¸®¸¦ »ý¼ºÇÏÁö ¸øÇß½À´Ï´Ù" << endl;
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << dirPath << L": ë””ë ‰í† ë¦¬ë¥¼ ìƒì„±í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤" << endl;
 			return false;
 		}
 	}
 
-	// json È®ÀåÀÚ ¾øÀ¸¸é ºÙ¿©ÁÖ±â
+	// json í™•ìž¥ìž ì—†ìœ¼ë©´ ë¶™ì—¬ì£¼ê¸°
 	if (jsonPath.rfind(L".json") == wstring::npos) {
 		jsonPath += L".json";
 	}
 
-	// ÇÚµé ¸¸µé±â
+	// í•¸ë“¤ ë§Œë“¤ê¸°
 	HANDLE hJson = CreateFileW(jsonPath.c_str(), GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
-	// ÇÚµé¿¡ ±â·Ï
+	// í•¸ë“¤ì— ê¸°ë¡
 	Json::StreamWriterBuilder builder;
 	builder.settings_["emitUTF8"] = true;
 	string output = Json::writeString(builder, value);

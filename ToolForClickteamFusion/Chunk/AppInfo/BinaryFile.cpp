@@ -1,4 +1,4 @@
-#include "BinaryFile.h"
+ï»¿#include "BinaryFile.h"
 #include "../../Archive/Archive.h"
 #include "../../Util/CommonUtil.h"
 
@@ -23,17 +23,17 @@ BinaryFile::~BinaryFile() {
 
 bool BinaryFile::exportData(wstring& dirPath, UINT32 index, bool isFullyExport)
 {
-	// ÃßÃâ ÆÄÀÏ °æ·Î »ı¼º
+	// ì¶”ì¶œ íŒŒì¼ ê²½ë¡œ ìƒì„±
 	wstring exportFilePath = dirPath + L"/" + getOnlyName(name);
 
 	wcout << infoPrefix << L"exporting " << exportFilePath << L"..." << endl;
 
 	DWORD dWrite;
 
-	// ±×´ë·Î ±â·Ï
+	// ê·¸ëŒ€ë¡œ ê¸°ë¡
 	HANDLE hBinaryFile = CreateFileW(exportFilePath.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hBinaryFile == INVALID_HANDLE_VALUE) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(exportFilePath) << L": ¹ÙÀÌ³Ê¸® ÆÄÀÏÀ» ÃßÃâÇÏÁö ¸øÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(exportFilePath) << L": ë°”ì´ë„ˆë¦¬ íŒŒì¼ì„ ì¶”ì¶œí•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 	WriteFile(hBinaryFile, binaryData, binarySize, &dWrite, NULL);
@@ -45,10 +45,10 @@ bool BinaryFile::exportData(wstring& dirPath, UINT32 index, bool isFullyExport)
 
 bool BinaryFile::importData(wstring& dirPath, UINT32 index)
 {
-	// importÇÒ ÆÄÀÏ °æ·Î »ı¼º
+	// importí•  íŒŒì¼ ê²½ë¡œ ìƒì„±
 	wstring importFilePath = dirPath + L"/" + getOnlyName(name);
 
-	// Á¸Àç È®ÀÎ, ¾øÀ¸¸é ±×³É µ¹¾Æ°¨
+	// ì¡´ì¬ í™•ì¸, ì—†ìœ¼ë©´ ê·¸ëƒ¥ ëŒì•„ê°
 	if (isFileOrDir(importFilePath) != FSOType::FSO_FILE) {
 		return true;
 	}
@@ -63,10 +63,10 @@ bool BinaryFile::importData(wstring& dirPath, UINT32 index)
 	}
 	binarySize = 0;
 
-	// ±×´ë·Î ÀĞ¾îµéÀÌ±â
+	// ê·¸ëŒ€ë¡œ ì½ì–´ë“¤ì´ê¸°
 	HANDLE hBinaryFile = CreateFileW(importFilePath.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hBinaryFile == INVALID_HANDLE_VALUE) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(importFilePath) << L": ¹ÙÀÌ³Ê¸® ÆÄÀÏÀ» ÀĞ¾îµéÀÌÁö ¸øÇß½À´Ï´Ù." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << getOnlyName(importFilePath) << L": ë°”ì´ë„ˆë¦¬ íŒŒì¼ì„ ì½ì–´ë“¤ì´ì§€ ëª»í–ˆìŠµë‹ˆë‹¤." << endl;
 		return false;
 	}
 	binarySize = GetFileSize(hBinaryFile, NULL);
@@ -122,12 +122,12 @@ bool BinaryFile::saveIntoBuffer(BYTE*& bufferPnt)
 }
 
 
-// µ¥ÀÌÅÍ ·»´õ¸µ¿ë ÇÔ¼ö
+// ë°ì´í„° ë Œë”ë§ìš© í•¨ìˆ˜
 void BinaryFile::renderData(UINT32 index)
 {
 	stringstream oss;
 
-	// ÀÎµ¦½º Ç¥Çö
+	// ì¸ë±ìŠ¤ í‘œí˜„
 	oss << "  <" << index << ">{";
 	ImGui::Text(oss.str().c_str());
 	oss.str("");

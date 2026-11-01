@@ -1,0 +1,606 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="리소스 파일">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Archive">
+      <UniqueIdentifier>{8c95f416-485a-4f13-9649-c11ef92202db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Chunk">
+      <UniqueIdentifier>{ebc59e54-a3c8-42be-989e-d216843815bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Chunk\Frame">
+      <UniqueIdentifier>{0ae46064-d6f6-4b85-a84e-e5e01d8387bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="__app__">
+      <UniqueIdentifier>{557f9ac6-e65d-46e8-a1a9-96e93aa7a2c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archive\Exe">
+      <UniqueIdentifier>{b1f710e3-d0fa-498e-be5c-7c800a0e46ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archive\Ccn">
+      <UniqueIdentifier>{4a819d45-3b28-4ef9-8527-0de58591eb0b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Util">
+      <UniqueIdentifier>{2ab1d57d-8f1d-45ff-89be-ad03bc99bfb7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Chunk\Literal">
+      <UniqueIdentifier>{eca7e367-d7e7-498a-bc43-17e292d8b0ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Chunk\AppInfo">
+      <UniqueIdentifier>{4adfadc1-e85c-47cf-9ad6-92353217318a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archive\Dat">
+      <UniqueIdentifier>{a7511760-992a-4ff2-847f-d8ab40783e9f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Chunk\Image">
+      <UniqueIdentifier>{8ae1db08-6a24-4a56-bb0e-521c1bb4a4f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Chunk\Object">
+      <UniqueIdentifier>{e5146a54-9735-480c-a1cf-54ecfbac034c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Chunk\Sound">
+      <UniqueIdentifier>{3e5d618c-1004-4063-b306-e313e341a1ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Chunk\TwoFivePlusObject">
+      <UniqueIdentifier>{0c85fcb1-acaf-4b48-8597-c9112d628374}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Chunk\Font">
+      <UniqueIdentifier>{2f176c8e-c409-4ac9-900e-a5f54c15fff1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ImGUI">
+      <UniqueIdentifier>{0199ad68-c612-4449-ae04-2e5339d4fed4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Application">
+      <UniqueIdentifier>{bbb1b77f-dd92-43e2-9d4d-24e976ce1c71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ImGUI\dirent">
+      <UniqueIdentifier>{c39a6f4f-bf55-4305-861c-b07d0867b52d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ImGUI\stb">
+      <UniqueIdentifier>{e0831a98-5cc4-4f89-bb00-1eb0482b0516}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Chunk\Frame\FrameEvent">
+      <UniqueIdentifier>{e944a8f5-2e68-43e9-9105-2475a512d582}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Chunk\Frame\FrameEvent\FrameEventParameter">
+      <UniqueIdentifier>{df2c4d8a-df60-4126-b26c-66eb5e392e89}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="chunk\Chunk.cpp">
+      <Filter>Chunk</Filter>
+    </ClCompile>
+    <ClCompile Include="ToolForClickteamFusion.cpp">
+      <Filter>__app__</Filter>
+    </ClCompile>
+    <ClCompile Include="archive\Exe\ExeArchive.cpp">
+      <Filter>Archive\Exe</Filter>
+    </ClCompile>
+    <ClCompile Include="archive\Archive.cpp">
+      <Filter>Archive</Filter>
+    </ClCompile>
+    <ClCompile Include="Archive\Ccn\CcnArchive.cpp">
+      <Filter>Archive\Ccn</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\BitmapTranslationUtil.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\ZlibUtil.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\Frame\FrameChunk.cpp">
+      <Filter>Chunk\Frame</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\CommonUtil.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\DecryptionUtil.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\AppInfo\AppHeaderChunk.cpp">
+      <Filter>Chunk\AppInfo</Filter>
+    </ClCompile>
+    <ClCompile Include="Archive\Dat\DatArchive.cpp">
+      <Filter>Archive\Dat</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\JsonUtil.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\Lz4Util.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\Image\BaseImage.cpp">
+      <Filter>Chunk\Image</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\Image\TwoFivePlusImage.cpp">
+      <Filter>Chunk\Image</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\Image\NormalImage.cpp">
+      <Filter>Chunk\Image</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\PngUtil.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\DataChunk.cpp">
+      <Filter>Chunk</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\Sound\Sound.cpp">
+      <Filter>Chunk\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\Font\LogFont.cpp">
+      <Filter>Chunk\Font</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\AppInfo\BinaryFile.cpp">
+      <Filter>Chunk\AppInfo</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\Object\Object.cpp">
+      <Filter>Chunk\Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\Object\ObjectHeaderChunk.cpp">
+      <Filter>Chunk\Object</Filter>
+    </ClCompile>
+    <ClCompile Include="jsoncpp.cpp">
+      <Filter>__app__</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\AppInfo\Shader.cpp">
+      <Filter>Chunk\AppInfo</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\AppInfo\ShaderListChunk.cpp">
+      <Filter>Chunk\AppInfo</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGUI\imgui.cpp">
+      <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGUI\imgui_demo.cpp">
+      <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGUI\imgui_draw.cpp">
+      <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGUI\imgui_impl_dx9.cpp">
+      <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGUI\imgui_impl_win32.cpp">
+      <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGUI\imgui_tables.cpp">
+      <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGUI\imgui_widgets.cpp">
+      <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Application\Application.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
+    <ClCompile Include="Application\Dx9Application.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
+    <ClCompile Include="Application\Dx9Application_Render.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\TextureUtil.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGUI\ImGuiFileDialog.cpp">
+      <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Application\Dx9Application_Process.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\Literal\LiteralChunk.cpp">
+      <Filter>Chunk\Literal</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\Frame\FrameHeaderChunk.cpp">
+      <Filter>Chunk\Frame</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\Frame\FrameVirtualRectChunk.cpp">
+      <Filter>Chunk\Frame</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\Frame\FramePaletteChunk.cpp">
+      <Filter>Chunk\Frame</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\Frame\FrameLayer.cpp">
+      <Filter>Chunk\Frame</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\Frame\FrameLayerEffectDataChunk.cpp">
+      <Filter>Chunk\Frame</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\Frame\FrameLayerEffect.cpp">
+      <Filter>Chunk\Frame</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\TwoFivePlusObject\TrueTypeFontInfoDataChunk.cpp">
+      <Filter>Chunk\TwoFivePlusObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\TwoFivePlusObject\TrueTypeFontDataChunk.cpp">
+      <Filter>Chunk\TwoFivePlusObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\TwoFivePlusObject\TrueTypeFont.cpp">
+      <Filter>Chunk\TwoFivePlusObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\TwoFivePlusObject\TrueTypeFontInfo.cpp">
+      <Filter>Chunk\TwoFivePlusObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\TwoFivePlusObject\ObjectNamesChunk.cpp">
+      <Filter>Chunk\TwoFivePlusObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\Frame\FrameEffectChunk.cpp">
+      <Filter>Chunk\Frame</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\Frame\FrameObject.cpp">
+      <Filter>Chunk\Frame</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\Frame\FrameTransitionChunk.cpp">
+      <Filter>Chunk\Frame</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventChunk.cpp">
+      <Filter>Chunk\Frame\FrameEvent</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventHeader.cpp">
+      <Filter>Chunk\Frame\FrameEvent</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventSizeInfo.cpp">
+      <Filter>Chunk\Frame\FrameEvent</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventOption.cpp">
+      <Filter>Chunk\Frame\FrameEvent</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventDataGroup.cpp">
+      <Filter>Chunk\Frame\FrameEvent</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventData.cpp">
+      <Filter>Chunk\Frame\FrameEvent</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventCondition.cpp">
+      <Filter>Chunk\Frame\FrameEvent</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventAction.cpp">
+      <Filter>Chunk\Frame\FrameEvent</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventParameter\FrameEventGroupParameter.cpp">
+      <Filter>Chunk\Frame\FrameEvent\FrameEventParameter</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventParameter\FrameEventParameter.cpp">
+      <Filter>Chunk\Frame\FrameEvent\FrameEventParameter</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventParameter\FrameEventDataPointerParameter.cpp">
+      <Filter>Chunk\Frame\FrameEvent\FrameEventParameter</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="archive\Archive.h">
+      <Filter>Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="archive\ArchiveConstant.h">
+      <Filter>Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="chunk\Chunk.h">
+      <Filter>Chunk</Filter>
+    </ClInclude>
+    <ClInclude Include="chunk\ChunkConstant.h">
+      <Filter>Chunk</Filter>
+    </ClInclude>
+    <ClInclude Include="archive\Exe\ExeArchive.h">
+      <Filter>Archive\Exe</Filter>
+    </ClInclude>
+    <ClInclude Include="Common.h">
+      <Filter>__app__</Filter>
+    </ClInclude>
+    <ClInclude Include="Archive\Ccn\CcnArchive.h">
+      <Filter>Archive\Ccn</Filter>
+    </ClInclude>
+    <ClInclude Include="Archive\ArchiveStructure.h">
+      <Filter>Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\BitmapTranslationUtil.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\ZlibUtil.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\ChunkStructure.h">
+      <Filter>Chunk</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\FrameChunk.h">
+      <Filter>Chunk\Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\CommonUtilConstant.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\DecryptionUtil.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\CommonUtil.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Literal\StringChunk.h">
+      <Filter>Chunk\Literal</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\AppInfo\AppHeaderChunk.h">
+      <Filter>Chunk\AppInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Literal\Headers.h">
+      <Filter>Chunk\Literal</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\AppInfo\Headers.h">
+      <Filter>Chunk\AppInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Literal\IntegerChunk.h">
+      <Filter>Chunk\Literal</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Literal\BooleanChunk.h">
+      <Filter>Chunk\Literal</Filter>
+    </ClInclude>
+    <ClInclude Include="Archive\Dat\DatArchive.h">
+      <Filter>Archive\Dat</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\Headers.h">
+      <Filter>Chunk\Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\JsonUtil.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\Lz4Util.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\CommonStructure.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Image\BaseImage.h">
+      <Filter>Chunk\Image</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Image\NormalImage.h">
+      <Filter>Chunk\Image</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Image\TwoFivePlusImage.h">
+      <Filter>Chunk\Image</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Image\ImageDataChunk.h">
+      <Filter>Chunk\Image</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Object\Object.h">
+      <Filter>Chunk\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Literal\ListChunk.h">
+      <Filter>Chunk\Literal</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Image\Headers.h">
+      <Filter>Chunk\Image</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\PngUtil.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\DataChunk.h">
+      <Filter>Chunk</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\BaseData.h">
+      <Filter>Chunk</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Sound\Sound.h">
+      <Filter>Chunk\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Sound\SoundDataChunk.h">
+      <Filter>Chunk\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Sound\Headers.h">
+      <Filter>Chunk\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Font\LogFont.h">
+      <Filter>Chunk\Font</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Font\LogFontDataChunk.h">
+      <Filter>Chunk\Font</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Font\Headers.h">
+      <Filter>Chunk\Font</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\AppInfo\BinaryFileDataChunk.h">
+      <Filter>Chunk\AppInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\AppInfo\BinaryFile.h">
+      <Filter>Chunk\AppInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Object\ObjectDataChunk.h">
+      <Filter>Chunk\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Object\Headers.h">
+      <Filter>Chunk\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Object\ObjectHeaderChunk.h">
+      <Filter>Chunk\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\AppInfo\Shader.h">
+      <Filter>Chunk\AppInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\AppInfo\ShaderListChunk.h">
+      <Filter>Chunk\AppInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\imconfig.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\imgui.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\imgui_impl_dx9.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\imgui_impl_win32.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\imgui_internal.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\imstb_rectpack.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\imstb_textedit.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\imstb_truetype.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Application\Dx9Application.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="Application\Application.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\Headers.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="Util\TextureUtil.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Application\ApplicationState.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\dirent\dirent.h">
+      <Filter>ImGUI\dirent</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\stb\stb_image.h">
+      <Filter>ImGUI\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\stb\stb_image_resize2.h">
+      <Filter>ImGUI\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\ImGuiFileDialog.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\ImGuiFileDialogConfig.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Application\ChunkTreeNode.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\FrameHeaderChunk.h">
+      <Filter>Chunk\Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\FrameVirtualRectChunk.h">
+      <Filter>Chunk\Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\FramePaletteChunk.h">
+      <Filter>Chunk\Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\FrameLayer.h">
+      <Filter>Chunk\Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\FrameLayerDataChunk.h">
+      <Filter>Chunk\Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\FrameLayerEffectDataChunk.h">
+      <Filter>Chunk\Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\FrameLayerEffect.h">
+      <Filter>Chunk\Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\TwoFivePlusObject\Headers.h">
+      <Filter>Chunk\TwoFivePlusObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\TwoFivePlusObject\TrueTypeFontInfoDataChunk.h">
+      <Filter>Chunk\TwoFivePlusObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\TwoFivePlusObject\TrueTypeFontDataChunk.h">
+      <Filter>Chunk\TwoFivePlusObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\TwoFivePlusObject\TrueTypeFont.h">
+      <Filter>Chunk\TwoFivePlusObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\TwoFivePlusObject\TrueTypeFontInfo.h">
+      <Filter>Chunk\TwoFivePlusObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\TwoFivePlusObject\ObjectNamesChunk.h">
+      <Filter>Chunk\TwoFivePlusObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Literal\UnsignedShortChunk.h">
+      <Filter>Chunk\Literal</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\FrameStructure.h">
+      <Filter>Chunk\Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\AppInfo\ShaderStructure.h">
+      <Filter>Chunk\AppInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\AppInfo\AppHeaderStructure.h">
+      <Filter>Chunk\AppInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\FrameEffectChunk.h">
+      <Filter>Chunk\Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\FrameObject.h">
+      <Filter>Chunk\Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\FrameObjectDataChunk.h">
+      <Filter>Chunk\Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\FrameTransitionChunk.h">
+      <Filter>Chunk\Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventConstant.h">
+      <Filter>Chunk\Frame\FrameEvent</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventChunk.h">
+      <Filter>Chunk\Frame\FrameEvent</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventStructure.h">
+      <Filter>Chunk\Frame\FrameEvent</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventBaseClass.h">
+      <Filter>Chunk\Frame\FrameEvent</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventHeader.h">
+      <Filter>Chunk\Frame\FrameEvent</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventSizeInfo.h">
+      <Filter>Chunk\Frame\FrameEvent</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventOption.h">
+      <Filter>Chunk\Frame\FrameEvent</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventDataGroup.h">
+      <Filter>Chunk\Frame\FrameEvent</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventData.h">
+      <Filter>Chunk\Frame\FrameEvent</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventCondition.h">
+      <Filter>Chunk\Frame\FrameEvent</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventAction.h">
+      <Filter>Chunk\Frame\FrameEvent</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventParameter\FrameEventBaseParameter.h">
+      <Filter>Chunk\Frame\FrameEvent\FrameEventParameter</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventParameter\Headers.h">
+      <Filter>Chunk\Frame\FrameEvent\FrameEventParameter</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventParameter\FrameEventGroupParameter.h">
+      <Filter>Chunk\Frame\FrameEvent\FrameEventParameter</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventParameter\FrameEventParameterConstant.h">
+      <Filter>Chunk\Frame\FrameEvent\FrameEventParameter</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventParameter\FrameEventDataPointerParameter.h">
+      <Filter>Chunk\Frame\FrameEvent\FrameEventParameter</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ToolForClickteamFusion.rc">
+      <Filter>리소스 파일</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="menu_maximize_icon.png">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="menu_minimize_icon.png">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="menu_close_icon.png">
+      <Filter>리소스 파일</Filter>
+    </Image>
+  </ItemGroup>
+</Project>

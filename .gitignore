@@ -1,0 +1,40 @@
+# ---- Visual Studio / build outputs ----
+/.vs/
+/x64/
+/Debug/
+/Release/
+/ToolForClickteamFusion/x64/
+/ToolForClickteamFusion/Debug/
+/ToolForClickteamFusion/Release/
+*.user
+*.suo
+*.aps
+*.ncb
+*.obj
+*.o
+*.pdb
+*.ilk
+*.exp
+*.idb
+*.ipch
+*.tlog
+*.log
+*.pch
+
+# ---- generated GUI settings ----
+/ToolForClickteamFusion/imgui.ini
+
+# ---- binaries (publish releases separately, do not commit) ----
+/ToolForClickteamFusion/*.exe
+/ToolForClickteamFusion/*.dll
+
+# ---- game data under test (copyrighted / huge) ----
+/ToolForClickteamFusion/*.dat
+/ToolForClickteamFusion/*.ccn
+/ToolForClickteamFusion/*.bin
+/ToolForClickteamFusion/dtge-v0.1.2/
+/ToolForClickteamFusion/sally_whisper_of_soul_kor/
+/ToolForClickteamFusion/Sonic3Din2D_kor/
+
+# ---- extraction output folders produced by the tool ----
+/ToolForClickteamFusion/font/

@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{6aa83c37-86af-4ea4-8010-0756ba05fc20}</ProjectGuid>
+    <RootNamespace>ToolForClickteamFusion</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnabled>false</VcpkgEnabled>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)includes\src;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\$(Platform)\;$(SolutionDir)includes\lib\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>zlib.lib;libpng16.lib;liblz4_static.lib;d3d9.lib;d3dx9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)includes\src;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\$(Platform)\;$(SolutionDir)includes\lib\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>zlib.lib;libpng16.lib;liblz4_static.lib;d3d9.lib;d3dx9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)includes\src;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\$(Platform)\;$(SolutionDir)includes\lib\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>zlib.lib;libpng16.lib;liblz4_static.lib;d3d9.lib;d3dx9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Application\Application.cpp" />
+    <ClCompile Include="Application\Dx9Application.cpp" />
+    <ClCompile Include="Application\Dx9Application_Process.cpp" />
+    <ClCompile Include="Application\Dx9Application_Render.cpp" />
+    <ClCompile Include="archive\Archive.cpp" />
+    <ClCompile Include="Archive\Ccn\CcnArchive.cpp" />
+    <ClCompile Include="Archive\Dat\DatArchive.cpp" />
+    <ClCompile Include="archive\Exe\ExeArchive.cpp" />
+    <ClCompile Include="Chunk\AppInfo\AppHeaderChunk.cpp" />
+    <ClCompile Include="Chunk\AppInfo\BinaryFile.cpp" />
+    <ClCompile Include="Chunk\AppInfo\Shader.cpp" />
+    <ClCompile Include="Chunk\AppInfo\ShaderListChunk.cpp" />
+    <ClCompile Include="chunk\Chunk.cpp" />
+    <ClCompile Include="Chunk\DataChunk.cpp" />
+    <ClCompile Include="Chunk\Font\LogFont.cpp" />
+    <ClCompile Include="Chunk\Frame\FrameChunk.cpp" />
+    <ClCompile Include="Chunk\Frame\FrameEffectChunk.cpp" />
+    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventAction.cpp" />
+    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventChunk.cpp" />
+    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventCondition.cpp" />
+    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventData.cpp" />
+    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventDataGroup.cpp" />
+    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventHeader.cpp" />
+    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventOption.cpp" />
+    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventParameter\FrameEventDataPointerParameter.cpp" />
+    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventParameter\FrameEventGroupParameter.cpp" />
+    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventParameter\FrameEventParameter.cpp" />
+    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventSizeInfo.cpp" />
+    <ClCompile Include="Chunk\Frame\FrameHeaderChunk.cpp" />
+    <ClCompile Include="Chunk\Frame\FrameObject.cpp" />
+    <ClCompile Include="Chunk\Frame\FrameLayer.cpp" />
+    <ClCompile Include="Chunk\Frame\FrameLayerEffect.cpp" />
+    <ClCompile Include="Chunk\Frame\FrameLayerEffectDataChunk.cpp" />
+    <ClCompile Include="Chunk\Frame\FramePaletteChunk.cpp" />
+    <ClCompile Include="Chunk\Frame\FrameTransitionChunk.cpp" />
+    <ClCompile Include="Chunk\Frame\FrameVirtualRectChunk.cpp" />
+    <ClCompile Include="Chunk\Image\BaseImage.cpp" />
+    <ClCompile Include="Chunk\Image\NormalImage.cpp" />
+    <ClCompile Include="Chunk\Image\TwoFivePlusImage.cpp" />
+    <ClCompile Include="Chunk\Literal\LiteralChunk.cpp" />
+    <ClCompile Include="Chunk\Object\Object.cpp" />
+    <ClCompile Include="Chunk\Object\ObjectHeaderChunk.cpp" />
+    <ClCompile Include="Chunk\Sound\Sound.cpp" />
+    <ClCompile Include="Chunk\TwoFivePlusObject\ObjectNamesChunk.cpp" />
+    <ClCompile Include="Chunk\TwoFivePlusObject\TrueTypeFontInfoDataChunk.cpp" />
+    <ClCompile Include="Chunk\TwoFivePlusObject\TrueTypeFontDataChunk.cpp" />
+    <ClCompile Include="Chunk\TwoFivePlusObject\TrueTypeFont.cpp" />
+    <ClCompile Include="Chunk\TwoFivePlusObject\TrueTypeFontInfo.cpp" />
+    <ClCompile Include="ImGUI\imgui.cpp" />
+    <ClCompile Include="ImGUI\ImGuiFileDialog.cpp" />
+    <ClCompile Include="ImGUI\imgui_demo.cpp" />
+    <ClCompile Include="ImGUI\imgui_draw.cpp" />
+    <ClCompile Include="ImGUI\imgui_impl_dx9.cpp" />
+    <ClCompile Include="ImGUI\imgui_impl_win32.cpp" />
+    <ClCompile Include="ImGUI\imgui_tables.cpp" />
+    <ClCompile Include="ImGUI\imgui_widgets.cpp" />
+    <ClCompile Include="jsoncpp.cpp" />
+    <ClCompile Include="ToolForClickteamFusion.cpp" />
+    <ClCompile Include="Util\DecryptionUtil.cpp" />
+    <ClCompile Include="Util\BitmapTranslationUtil.cpp" />
+    <ClCompile Include="Util\CommonUtil.cpp" />
+    <ClCompile Include="Util\JsonUtil.cpp" />
+    <ClCompile Include="Util\Lz4Util.cpp" />
+    <ClCompile Include="Util\PngUtil.cpp" />
+    <ClCompile Include="Util\TextureUtil.cpp" />
+    <ClCompile Include="Util\ZlibUtil.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Application\Application.h" />
+    <ClInclude Include="Application\ApplicationState.h" />
+    <ClInclude Include="Application\ChunkTreeNode.h" />
+    <ClInclude Include="Application\Dx9Application.h" />
+    <ClInclude Include="archive\Archive.h" />
+    <ClInclude Include="archive\ArchiveConstant.h" />
+    <ClInclude Include="Archive\ArchiveStructure.h" />
+    <ClInclude Include="Archive\Ccn\CcnArchive.h" />
+    <ClInclude Include="Archive\Dat\DatArchive.h" />
+    <ClInclude Include="archive\Exe\ExeArchive.h" />
+    <ClInclude Include="Chunk\AppInfo\AppHeaderChunk.h" />
+    <ClInclude Include="Chunk\AppInfo\AppHeaderStructure.h" />
+    <ClInclude Include="Chunk\AppInfo\BinaryFile.h" />
+    <ClInclude Include="Chunk\AppInfo\BinaryFileDataChunk.h" />
+    <ClInclude Include="Chunk\AppInfo\Headers.h" />
+    <ClInclude Include="Chunk\AppInfo\Shader.h" />
+    <ClInclude Include="Chunk\AppInfo\ShaderListChunk.h" />
+    <ClInclude Include="Chunk\AppInfo\ShaderStructure.h" />
+    <ClInclude Include="Chunk\BaseData.h" />
+    <ClInclude Include="chunk\Chunk.h" />
+    <ClInclude Include="chunk\ChunkConstant.h" />
+    <ClInclude Include="Chunk\ChunkStructure.h" />
+    <ClInclude Include="Chunk\Font\LogFont.h" />
+    <ClInclude Include="Chunk\Font\LogFontDataChunk.h" />
+    <ClInclude Include="Chunk\Font\Headers.h" />
+    <ClInclude Include="Chunk\Frame\FrameChunk.h" />
+    <ClInclude Include="Chunk\Frame\FrameEffectChunk.h" />
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventAction.h" />
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventBaseClass.h" />
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventChunk.h" />
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventCondition.h" />
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventConstant.h" />
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventData.h" />
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventDataGroup.h" />
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventHeader.h" />
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventOption.h" />
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventParameter\FrameEventBaseParameter.h" />
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventParameter\FrameEventDataPointerParameter.h" />
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventParameter\FrameEventGroupParameter.h" />
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventParameter\FrameEventParameterConstant.h" />
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventParameter\Headers.h" />
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventSizeInfo.h" />
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventStructure.h" />
+    <ClInclude Include="Chunk\Frame\FrameHeaderChunk.h" />
+    <ClInclude Include="Chunk\Frame\FrameObject.h" />
+    <ClInclude Include="Chunk\Frame\FrameObjectDataChunk.h" />
+    <ClInclude Include="Chunk\Frame\FrameLayer.h" />
+    <ClInclude Include="Chunk\Frame\FrameLayerEffect.h" />
+    <ClInclude Include="Chunk\Frame\FrameLayerEffectDataChunk.h" />
+    <ClInclude Include="Chunk\Frame\FrameLayerDataChunk.h" />
+    <ClInclude Include="Chunk\Frame\FramePaletteChunk.h" />
+    <ClInclude Include="Chunk\Frame\FrameStructure.h" />
+    <ClInclude Include="Chunk\Frame\FrameTransitionChunk.h" />
+    <ClInclude Include="Chunk\Frame\FrameVirtualRectChunk.h" />
+    <ClInclude Include="Chunk\Frame\Headers.h" />
+    <ClInclude Include="Chunk\Image\BaseImage.h" />
+    <ClInclude Include="Chunk\Image\Headers.h" />
+    <ClInclude Include="Chunk\Image\ImageDataChunk.h" />
+    <ClInclude Include="Chunk\Image\NormalImage.h" />
+    <ClInclude Include="Chunk\Image\TwoFivePlusImage.h" />
+    <ClInclude Include="Chunk\Literal\BooleanChunk.h" />
+    <ClInclude Include="Chunk\Literal\Headers.h" />
+    <ClInclude Include="Chunk\Literal\IntegerChunk.h" />
+    <ClInclude Include="Chunk\Literal\ListChunk.h" />
+    <ClInclude Include="Chunk\Literal\UnsignedShortChunk.h" />
+    <ClInclude Include="Chunk\Literal\StringChunk.h" />
+    <ClInclude Include="Chunk\Object\Headers.h" />
+    <ClInclude Include="Chunk\Object\Object.h" />
+    <ClInclude Include="Chunk\DataChunk.h" />
+    <ClInclude Include="Chunk\Object\ObjectDataChunk.h" />
+    <ClInclude Include="Chunk\Object\ObjectHeaderChunk.h" />
+    <ClInclude Include="Chunk\Sound\Headers.h" />
+    <ClInclude Include="Chunk\Sound\SoundDataChunk.h" />
+    <ClInclude Include="Chunk\Sound\Sound.h" />
+    <ClInclude Include="Chunk\TwoFivePlusObject\Headers.h" />
+    <ClInclude Include="Chunk\TwoFivePlusObject\ObjectNamesChunk.h" />
+    <ClInclude Include="Chunk\TwoFivePlusObject\TrueTypeFontInfo.h" />
+    <ClInclude Include="Chunk\TwoFivePlusObject\TrueTypeFontInfoDataChunk.h" />
+    <ClInclude Include="Chunk\TwoFivePlusObject\TrueTypeFontDataChunk.h" />
+    <ClInclude Include="Chunk\TwoFivePlusObject\TrueTypeFont.h" />
+    <ClInclude Include="Common.h" />
+    <ClInclude Include="ImGUI\dirent\dirent.h" />
+    <ClInclude Include="ImGUI\Headers.h" />
+    <ClInclude Include="ImGUI\imconfig.h" />
+    <ClInclude Include="ImGUI\imgui.h" />
+    <ClInclude Include="ImGUI\ImGuiFileDialog.h" />
+    <ClInclude Include="ImGUI\ImGuiFileDialogConfig.h" />
+    <ClInclude Include="ImGUI\imgui_impl_dx9.h" />
+    <ClInclude Include="ImGUI\imgui_impl_win32.h" />
+    <ClInclude Include="ImGUI\imgui_internal.h" />
+    <ClInclude Include="ImGUI\imstb_rectpack.h" />
+    <ClInclude Include="ImGUI\imstb_textedit.h" />
+    <ClInclude Include="ImGUI\imstb_truetype.h" />
+    <ClInclude Include="ImGUI\stb\stb_image.h" />
+    <ClInclude Include="ImGUI\stb\stb_image_resize2.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="Util\CommonStructure.h" />
+    <ClInclude Include="Util\CommonUtilConstant.h" />
+    <ClInclude Include="Util\DecryptionUtil.h" />
+    <ClInclude Include="Util\BitmapTranslationUtil.h" />
+    <ClInclude Include="Util\CommonUtil.h" />
+    <ClInclude Include="Util\JsonUtil.h" />
+    <ClInclude Include="Util\Lz4Util.h" />
+    <ClInclude Include="Util\PngUtil.h" />
+    <ClInclude Include="Util\TextureUtil.h" />
+    <ClInclude Include="Util\ZlibUtil.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ToolForClickteamFusion.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="menu_close_icon.png" />
+    <Image Include="menu_maximize_icon.png" />
+    <Image Include="menu_minimize_icon.png" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

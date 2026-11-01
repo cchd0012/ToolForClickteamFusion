@@ -115,6 +115,12 @@ namespace CTT {
 			// 오브젝트 텍스트 번역 표 (2.5+ 오브젝트의 Alterable 문자열과 Text 문단)
 			ObjectTextTable objectTextTable;
 
+			// 프레임 스크립트 디컴파일 / 리컴파일에 쓰는 정보 (오브젝트 이름은 처음 필요할 때 한 번만 읽는다)
+			FrameEventScriptContext frameScriptContext;
+			bool frameScriptContextLoaded;
+			// 교체할 때 몇 번째 프레임인지 세는 변수
+			UINT32 rewriteFrameIndex;
+
 			// application 버전 등을 포함한 정보 세팅
 			bool setApplicationInfo();
 

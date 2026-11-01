@@ -359,3 +359,74 @@ bool FrameChunk::replaceEventText(const FrameEventTextTable& table, UINT32& repl
 	}
 	return eventChunk->replaceText(table, replacedCount);
 }
+
+
+// 프레임에 들어 있는 이름 청크를 찾는다 (없으면 NULL)
+static FrameNameChunk* findFrameNameChunk(vector<CTT::Chunk::Chunk*>& chunkList)
+{
+	for (size_t i = 0; i < chunkList.size(); i++) {
+		if (chunkList[i]->getType() == ChunkType::CHUNK_FRAME_NAME) {
+			return dynamic_cast<FrameNameChunk*>(chunkList[i]);
+		}
+	}
+	return NULL;
+}
+
+
+bool FrameChunk::decompileScript(UINT32 frameIndex, const FrameEventScriptContext& context, Json::Value& value)
+{
+	value = Json::Value(Json::objectValue);
+	value["type"] = "frame";
+	value["version"] = 1;
+	value["index"] = (Json::UInt)frameIndex;
+
+	FrameNameChunk* nameChunk = findFrameNameChunk(chunkList);
+	if (nameChunk != NULL) {
+		value["name"] = getAnsiStr(nameChunk->getValue(), CodePage::CP_UTF_8);
+	}
+
+	FrameEventChunk* eventChunk = findFrameEventChunk(chunkList);
+	if (eventChunk != NULL) {
+		Json::Value eventsValue;
+		if (eventChunk->decompileScript(context, eventsValue)) {
+			value["events"] = eventsValue;
+		}
+		else {
+			// 해석하지 못한 이벤트는 원본 바이트로 보존되므로, json 에는 events 를 넣지 않는다
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 프레임 " << dec << frameIndex << L" 의 이벤트를 해석하지 못해 json 에 포함하지 않습니다." << endl;
+		}
+	}
+	return true;
+}
+
+
+bool FrameChunk::recompileScript(const Json::Value& value, string& errorMessage)
+{
+	if (!value.isObject() || (value["type"].asString() != "frame")) {
+		errorMessage = "the json is not a frame script (type != \"frame\")";
+		return false;
+	}
+
+	// 이벤트를 먼저 반영한다 (실패하면 아무것도 바꾸지 않는다)
+	if (value.isMember("events")) {
+		FrameEventChunk* eventChunk = findFrameEventChunk(chunkList);
+		if (eventChunk == NULL) {
+			errorMessage = "the frame has no event chunk, but the json has events";
+			return false;
+		}
+		if (!eventChunk->recompileScript(value["events"], errorMessage)) {
+			return false;
+		}
+	}
+
+	// 프레임 이름
+	if (value.isMember("name")) {
+		FrameNameChunk* nameChunk = findFrameNameChunk(chunkList);
+		if (nameChunk == NULL) {
+			errorMessage = "the frame has no name chunk, but the json has a name";
+			return false;
+		}
+		nameChunk->setValue(getUniStr(value["name"].asString(), CodePage::CP_UTF_8));
+	}
+	return true;
+}

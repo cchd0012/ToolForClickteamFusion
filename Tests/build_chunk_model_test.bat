@@ -13,6 +13,7 @@ cl /nologo /EHsc /W3 /O2 /MT /D_CRT_SECURE_NO_WARNINGS ^
   /Fo"%OUT%\\" /Fe"%OUT%\ChunkModelTest.exe" ^
   "%ROOT%\Tests\ChunkModelTest.cpp" ^
   "%SRC%\Chunk\Frame\FrameEvent\FrameEventModel.cpp" ^
+  "%SRC%\Chunk\Frame\FrameEvent\FrameEventScript.cpp" ^
   "%SRC%\Chunk\Frame\FrameEvent\FrameEventText.cpp" ^
   "%SRC%\Util\CommonUtil.cpp" ^
   "%ROOT%\includes\src\jsoncpp\jsoncpp.cpp" ^

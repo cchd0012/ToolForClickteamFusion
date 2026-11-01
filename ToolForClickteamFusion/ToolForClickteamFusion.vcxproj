@@ -156,6 +156,7 @@
     <ClCompile Include="Chunk\Font\LogFont.cpp" />
     <ClCompile Include="Chunk\Frame\FrameChunk.cpp" />
     <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventModel.cpp" />
+    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventScript.cpp" />
     <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventText.cpp" />
     <ClCompile Include="Chunk\Object\ObjectCommon.cpp" />
     <ClCompile Include="Chunk\Object\ObjectScript.cpp" />
@@ -234,6 +235,7 @@
     <ClInclude Include="Chunk\Font\Headers.h" />
     <ClInclude Include="Chunk\Frame\FrameChunk.h" />
     <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventModel.h" />
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventScript.h" />
     <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventText.h" />
     <ClInclude Include="Chunk\Object\ObjectCommon.h" />
     <ClInclude Include="Chunk\Object\ObjectScript.h" />

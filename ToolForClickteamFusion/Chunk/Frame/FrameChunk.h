@@ -2,6 +2,7 @@
 
 #include "../Chunk.h"
 #include "FrameEvent/FrameEventText.h"
+#include "FrameEvent/FrameEventScript.h"
 
 namespace CTT {
 
@@ -17,6 +18,10 @@ namespace CTT {
 			// 프레임 이벤트의 텍스트 추출 / 교체
 			bool extractEventText(UINT32 frameIndex, FrameEventTextTable& table);
 			bool replaceEventText(const FrameEventTextTable& table, UINT32& replacedCount);
+
+			// 프레임 디컴파일 / 리컴파일 (현재는 이벤트). 프레임 이름과 이벤트를 JSON 으로 풀어내거나 다시 반영한다
+			bool decompileScript(UINT32 frameIndex, const FrameEventScriptContext& context, Json::Value& value);
+			bool recompileScript(const Json::Value& value, string& errorMessage);
 			// 데이터 렌더링용 함수
 			void renderData();
 		protected:

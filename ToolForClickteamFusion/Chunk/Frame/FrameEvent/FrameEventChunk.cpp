@@ -137,6 +137,25 @@ bool FrameEventChunk::replaceText(const FrameEventTextTable& table, UINT32& repl
 }
 
 
+bool FrameEventChunk::decompileScript(const FrameEventScriptContext& context, Json::Value& value)
+{
+	if (!parsed) {
+		return false;
+	}
+	return decompileFrameEvents(model, context, value);
+}
+
+
+bool FrameEventChunk::recompileScript(const Json::Value& value, string& errorMessage)
+{
+	if (!parsed) {
+		errorMessage = "the frame events could not be parsed, so they are kept as raw bytes";
+		return false;
+	}
+	return recompileFrameEvents(model, value, errorMessage);
+}
+
+
 void FrameEventChunk::renderData()
 {
 	if (parsed) {

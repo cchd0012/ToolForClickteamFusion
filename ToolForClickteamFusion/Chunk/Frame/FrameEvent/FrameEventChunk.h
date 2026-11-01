@@ -3,6 +3,7 @@
 #include "../../Chunk.h"
 #include "FrameEventModel.h"
 #include "FrameEventText.h"
+#include "FrameEventScript.h"
 
 namespace CTT {
 
@@ -24,6 +25,11 @@ namespace CTT {
 			bool extractText(UINT32 frameIndex, FrameEventTextTable& table);
 			// 번역이 있는 문자열 토큰을 교체한다 (replacedCount = 교체한 토큰의 개수)
 			bool replaceText(const FrameEventTextTable& table, UINT32& replacedCount);
+
+			// 이벤트를 JSON 으로 풀어낸다 (디컴파일). 모델을 사용할 수 없으면 false
+			bool decompileScript(const FrameEventScriptContext& context, Json::Value& value);
+			// JSON 을 이벤트에 반영한다 (리컴파일). 실패하면 이벤트는 바뀌지 않고 errorMessage 에 이유가 담긴다
+			bool recompileScript(const Json::Value& value, string& errorMessage);
 
 			bool isParsed() const { return parsed; }
 			FrameEventChunkModel& getModel() { return model; }

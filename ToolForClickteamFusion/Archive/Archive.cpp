@@ -52,6 +52,8 @@ Archive::Archive(wstring archivePath)
 	memset(&backHeader, 0, sizeof(BackHeader));
 	chunkStartOffset = 0;
 	hArchive = INVALID_HANDLE_VALUE;
+	frameScriptContextLoaded = false;
+	rewriteFrameIndex = 0;
 }
 
 
@@ -489,6 +491,8 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 	UINT32 frameIndex = 0;
 	frameEventTextTable.clear();
 	objectTextTable.clear();
+	frameScriptContext.objectNames.clear();
+	frameScriptContextLoaded = false;
 
 	// 초기화 및 chunk 시작 위치 지정
 	memset(&chunkInfo, 0, sizeof(ChunkInfo));
@@ -751,20 +755,48 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 				break;
 			}
 
-			// Frame (이벤트 텍스트)
+			// Frame (이벤트 텍스트 / 스크립트)
 			case ChunkType::CHUNK_FRAME:
 			{
-				if (contains(extractingDataTypes, L"text")) {
+				if (contains(extractingDataTypes, L"text") || contains(extractingDataTypes, L"script")) {
 					FrameChunk chunk;
 					if (!chunk.readFromArchive(hArchive)) {
 						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Frame 데이터를 읽어들이지 못했습니다." << endl;
 						triggerError(__FUNCTION__, u8"Frame 데이터를 읽어들이지 못했습니다");
 						return false;
 					}
-					if (!chunk.extractEventText(frameIndex, frameEventTextTable)) {
-						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Frame 이벤트 텍스트를 추출하지 못했습니다." << endl;
-						triggerError(__FUNCTION__, u8"Frame 이벤트 텍스트를 추출하지 못했습니다");
-						return false;
+					if (contains(extractingDataTypes, L"text")) {
+						if (!chunk.extractEventText(frameIndex, frameEventTextTable)) {
+							wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Frame 이벤트 텍스트를 추출하지 못했습니다." << endl;
+							triggerError(__FUNCTION__, u8"Frame 이벤트 텍스트를 추출하지 못했습니다");
+							return false;
+						}
+					}
+					if (contains(extractingDataTypes, L"script")) {
+						// 오브젝트 이름은 처음 필요할 때 한 번만 읽는다 (이벤트의 오브젝트 번호에 이름을 붙이기 위함)
+						if (!frameScriptContextLoaded) {
+							frameScriptContextLoaded = true;
+							vector<ObjectHeaderEntry> headers;
+							if (!readObjectHeaders(headers, frameScriptContext.objectNames)) {
+								wcout << infoPrefix << L"오브젝트 이름을 읽지 못해 이벤트에 오브젝트 이름을 붙이지 않습니다." << endl;
+								frameScriptContext.objectNames.clear();
+							}
+						}
+						// 프레임 하나당 json 파일 하나로 풀어낸다 (디컴파일)
+						Json::Value scriptValue;
+						if (!chunk.decompileScript(frameIndex, frameScriptContext, scriptValue)) {
+							wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Frame 스크립트를 디컴파일하지 못했습니다." << endl;
+							triggerError(__FUNCTION__, u8"Frame 스크립트를 디컴파일하지 못했습니다");
+							return false;
+						}
+						wostringstream indexStream;
+						indexStream << setw(6) << setfill(L'0') << frameIndex;
+						wstring exportJsonPath = getExtentionRemovedPath(archivePath) + L"/script/frame/" + indexStream.str() + L".json";
+						if (!writeIntoJson(scriptValue, exportJsonPath)) {
+							wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Frame 스크립트를 json 으로 저장하지 못했습니다." << endl;
+							triggerError(__FUNCTION__, u8"Frame 스크립트를 json 으로 저장하지 못했습니다");
+							return false;
+						}
 					}
 					frameIndex++;
 					getStates()->currentDataIndex++;
@@ -911,6 +943,7 @@ bool Archive::rewriteNewArchive(vector<wstring>& replacingDataTypes)
 	// 프레임 이벤트 텍스트와 오브젝트 텍스트 번역 표는 처음 필요할 때 다시 읽어 들인다
 	frameEventTextTable.clear();
 	objectTextTable.clear();
+	rewriteFrameIndex = 0;
 
 	// chunkStartOffset : 현재 아카이브 데이터에서 chunk가 시작하는 위치
 
@@ -1288,7 +1321,29 @@ bool Archive::rewriteFrameChunk(HANDLE hNewArchive, vector<wstring>& replacingDa
 		return false;
 	}
 
-	// *** text냐, script냐에 따라 교체 로직을 다르게 해야 한다
+	UINT32 currentFrameIndex = rewriteFrameIndex++;
+
+	// 프레임 스크립트 교체 (리컴파일): script/frame/<프레임 번호 6자리>.json 이 있는 프레임만 반영한다
+	if (contains(replacingDataTypes, L"script")) {
+		wostringstream indexStream;
+		indexStream << setw(6) << setfill(L'0') << currentFrameIndex;
+		wstring scriptPath = getExtentionRemovedPath(archivePath) + L"/script/frame/" + indexStream.str() + L".json";
+		if (isFileOrDir(scriptPath) == FSOType::FSO_FILE) {
+			Json::Value scriptValue;
+			if (!readFromJson(scriptValue, scriptPath)) {
+				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << scriptPath << L": Frame 스크립트 json 을 읽어들이지 못했습니다." << endl;
+				triggerError(__FUNCTION__, u8"Frame 스크립트 json 을 읽어들이지 못했습니다", true);
+				return false;
+			}
+			string errorMessage;
+			if (!chunk.recompileScript(scriptValue, errorMessage)) {
+				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << scriptPath << L": " << wstring(errorMessage.begin(), errorMessage.end()) << endl;
+				triggerError(__FUNCTION__, u8"Frame 스크립트를 리컴파일하지 못했습니다", true);
+				return false;
+			}
+			wcout << infoPrefix << L"Frame " << dec << currentFrameIndex << L" 번 스크립트를 반영했습니다." << endl;
+		}
+	}
 
 	// 프레임 이벤트 텍스트 교체
 	if (contains(replacingDataTypes, L"text")) {

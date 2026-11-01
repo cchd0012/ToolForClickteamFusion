@@ -9,6 +9,7 @@
 
 #include "../ToolForClickteamFusion/Chunk/Frame/FrameEvent/FrameEventModel.h"
 #include "../ToolForClickteamFusion/Chunk/Frame/FrameEvent/FrameEventText.h"
+#include "../ToolForClickteamFusion/Chunk/Frame/FrameEvent/FrameEventScript.h"
 #include "../ToolForClickteamFusion/Chunk/Object/ObjectCommon.h"
 #include "../ToolForClickteamFusion/Chunk/Object/ObjectText.h"
 #include "../ToolForClickteamFusion/Chunk/Object/ObjectScript.h"
@@ -383,6 +384,124 @@ static void testEventText(const string& gameDir, UINT32 build)
 	}
 	printf("  text   : %u string tokens, %u unique texts, translated %u/%u tokens, empty table keeps bytes, pointers kept\n",
 		(unsigned)collected, (unsigned)table.getEntryCount(), (unsigned)replacedTotal, (unsigned)tokenTotal);
+}
+
+
+// ---------------------------------------------------------------- 프레임 이벤트 스크립트 (디컴파일 / 리컴파일)
+
+// JSON 안의 "string" 종류 파라미터 값 뒤에 표식을 붙인다 (붙인 개수를 돌려준다)
+static UINT32 appendMarkerToStringParams(Json::Value& node)
+{
+	UINT32 count = 0;
+	if (node.isObject()) {
+		if (node.isMember("kind") && node["kind"].isString() && (node["kind"].asString() == "string") && node.isMember("value")) {
+			node["value"] = node["value"].asString() + "\xED\x95\x9C";
+			return 1;
+		}
+		for (Json::Value::iterator it = node.begin(); it != node.end(); ++it) {
+			count += appendMarkerToStringParams(*it);
+		}
+	}
+	else if (node.isArray()) {
+		for (Json::ArrayIndex i = 0; i < node.size(); i++) {
+			count += appendMarkerToStringParams(node[i]);
+		}
+	}
+	return count;
+}
+
+
+static void testEventScript(const string& gameDir, UINT32 build)
+{
+	vector<string> files = listFiles(gameDir + "\\events", "*.evt");
+	FrameEventScriptContext context;
+	context.objectNames.push_back("name0");
+
+	UINT32 identical = 0, edited = 0, editedParams = 0, rawParams = 0;
+	for (size_t i = 0; i < files.size(); i++) {
+		ByteBuffer data;
+		FrameEventChunkModel original;
+		string errorMessage;
+		if (!readFile(gameDir + "\\events\\" + files[i], data) || !parseFrameEventChunk(data, build, original, errorMessage)) {
+			fail(files[i] + " script parse: " + errorMessage);
+			continue;
+		}
+
+		// 1) 디컴파일 -> 문자열로 직렬화 -> 다시 읽기 -> 리컴파일 했을 때 바이트가 같아야 한다
+		Json::Value decompiled;
+		if (!decompileFrameEvents(original, context, decompiled)) {
+			fail(files[i] + " decompile failed");
+			continue;
+		}
+		Json::StreamWriterBuilder writerBuilder;
+		writerBuilder["indentation"] = "";
+		string jsonText = Json::writeString(writerBuilder, decompiled);
+		Json::Value reread;
+		Json::CharReaderBuilder readerBuilder;
+		istringstream jsonStream(jsonText);
+		if (!Json::parseFromStream(readerBuilder, jsonStream, &reread, &errorMessage)) {
+			fail(files[i] + " json reread: " + errorMessage);
+			continue;
+		}
+		// 해석한 모델을 그대로 쓰지 않고, 같은 헤더만 가진 모델에 JSON 만으로 되살려야 의미가 있다
+		FrameEventChunkModel rebuilt = original;
+		rebuilt.blocks.clear();
+		if (!recompileFrameEvents(rebuilt, reread, errorMessage)) {
+			fail(files[i] + " recompile: " + errorMessage);
+			continue;
+		}
+		ByteBuffer out;
+		if (!writeFrameEventChunk(rebuilt, out, errorMessage)) {
+			fail(files[i] + " write(recompiled): " + errorMessage);
+			continue;
+		}
+		if (out == data) {
+			identical++;
+		}
+		else {
+			char text[160];
+			sprintf(text, " script round trip differs (length %u -> %u, first difference %u)", (unsigned)data.size(), (unsigned)out.size(), (unsigned)firstDifference(data, out));
+			fail(files[i] + text);
+			continue;
+		}
+
+		// raw 로 남은 파라미터 개수 (해석하지 못한 파라미터가 많은지 확인용)
+		size_t at = 0;
+		while ((at = jsonText.find("\"kind\":\"raw\"", at)) != string::npos) {
+			rawParams++;
+			at += 5;
+		}
+
+		// 2) JSON 편집: 문자열 파라미터를 모두 고치고 리컴파일하면 다시 파싱되어야 하고, 그룹 포인터는 그대로여야 한다
+		Json::Value editedJson = reread;
+		UINT32 changedParams = appendMarkerToStringParams(editedJson);
+		FrameEventChunkModel editedModel = original;
+		editedModel.blocks.clear();
+		if (!recompileFrameEvents(editedModel, editedJson, errorMessage)) {
+			fail(files[i] + " recompile(edited): " + errorMessage);
+			continue;
+		}
+		ByteBuffer editedData;
+		if (!writeFrameEventChunk(editedModel, editedData, errorMessage)) {
+			fail(files[i] + " write(edited): " + errorMessage);
+			continue;
+		}
+		FrameEventChunkModel editedReparsed;
+		if (!parseFrameEventChunk(editedData, build, editedReparsed, errorMessage)) {
+			fail(files[i] + " reparse(edited): " + errorMessage);
+			continue;
+		}
+		if (pointerSignature(editedReparsed) != pointerSignature(original)) {
+			fail(files[i] + " group pointers changed target after script edit");
+		}
+		if ((changedParams > 0) && (editedData == data)) {
+			fail(files[i] + " script edit did not change the bytes");
+		}
+		edited++;
+		editedParams += changedParams;
+	}
+	printf("  script : %u/%u frames round trip identical through json, edited %u frames (%u string params), %u raw params\n",
+		(unsigned)identical, (unsigned)files.size(), (unsigned)edited, (unsigned)editedParams, (unsigned)rawParams);
 }
 
 
@@ -815,6 +934,7 @@ int main(int argc, char** argv)
 		printf("== %s (build %u)\n", games[i].c_str(), build);
 		testEvents(dir, build);
 		testEventText(dir, build);
+		testEventScript(dir, build);
 		testObjects(dir);
 		testObjectText(dir);
 		testObjectScript(dir);

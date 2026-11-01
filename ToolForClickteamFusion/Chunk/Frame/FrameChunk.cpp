@@ -326,3 +326,36 @@ bool FrameChunk::saveIntoOrgBuffer()
 
 	return true;
 }
+
+
+// 프레임에 들어 있는 이벤트 청크를 찾는다 (없으면 NULL)
+static FrameEventChunk* findFrameEventChunk(vector<CTT::Chunk::Chunk*>& chunkList)
+{
+	for (size_t i = 0; i < chunkList.size(); i++) {
+		if (chunkList[i]->getType() == ChunkType::CHUNK_FRAME_EVENTS) {
+			return dynamic_cast<FrameEventChunk*>(chunkList[i]);
+		}
+	}
+	return NULL;
+}
+
+
+bool FrameChunk::extractEventText(UINT32 frameIndex, FrameEventTextTable& table)
+{
+	FrameEventChunk* eventChunk = findFrameEventChunk(chunkList);
+	if (eventChunk == NULL) {
+		return true;
+	}
+	return eventChunk->extractText(frameIndex, table);
+}
+
+
+bool FrameChunk::replaceEventText(const FrameEventTextTable& table, UINT32& replacedCount)
+{
+	replacedCount = 0;
+	FrameEventChunk* eventChunk = findFrameEventChunk(chunkList);
+	if (eventChunk == NULL) {
+		return true;
+	}
+	return eventChunk->replaceText(table, replacedCount);
+}

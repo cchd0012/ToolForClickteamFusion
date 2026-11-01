@@ -1,4 +1,4 @@
-#include "FrameEventModel.h"
+﻿#include "FrameEventModel.h"
 #include <map>
 
 using namespace CTT::Chunk;
@@ -45,11 +45,11 @@ size_t CTT::Chunk::countUnresolvedFrameEventPointers(const FrameEventChunkModel&
 
 
 
-// ------------------------------------------------------------------ parse
+// ------------------------------------------------------------------ 파싱
 
 namespace {
 
-	// where a group pointer was found while parsing
+	// 파싱 중 그룹 포인터가 발견된 위치
 	typedef struct _pointer_reference {
 		size_t block;
 		size_t group;
@@ -118,7 +118,7 @@ namespace {
 					}
 				}
 				else if (id == frameEventEndMagic) {
-					// keep the end magic and anything that follows it
+					// 끝 매직과 그 뒤에 이어지는 데이터는 그대로 보존한다
 					model->blocks.push_back(makeRawBlock(at, total - at));
 					return;
 				}
@@ -139,7 +139,7 @@ namespace {
 				FrameEventParameter& param = ref.isCondition ? group.conditions[ref.item].params[ref.param] : group.actions[ref.item].params[ref.param];
 				param.targetGroupId = -1;
 				param.targetGroupDelta = 0;
-				// the group that contains the target offset (normally the target is exactly a group start)
+				// 대상 오프셋을 포함하는 그룹을 찾는다 (보통은 대상이 정확히 그룹의 시작 위치이다)
 				map<INT64, GroupRange>::const_iterator it = groupByStart.upper_bound(ref.targetOffset);
 				if (it != groupByStart.begin()) {
 					--it;
@@ -317,7 +317,7 @@ bool CTT::Chunk::parseFrameEventChunk(const ByteBuffer& data, UINT32 build, Fram
 
 
 
-// ------------------------------------------------------------------ write
+// ------------------------------------------------------------------ 쓰기
 
 namespace {
 
@@ -408,7 +408,7 @@ namespace {
 			writer.patchU16(start, (UINT16)size);
 		}
 
-		// returns the byte size of the group
+		// 그룹의 바이트 크기를 반환한다
 		size_t writeGroup(const FrameEventDataGroup& group)
 		{
 			if ((group.conditions.size() > 255) || (group.actions.size() > 255)) {
@@ -504,7 +504,7 @@ bool CTT::Chunk::writeFrameEventChunk(const FrameEventChunkModel& model, ByteBuf
 
 
 
-// ------------------------------------------------------------------ expressions
+// ------------------------------------------------------------------ 수식
 
 bool CTT::Chunk::parseFrameEventExpression(const ByteBuffer& body, FrameEventExpression& expression, string& errorMessage)
 {
@@ -573,7 +573,7 @@ bool CTT::Chunk::getFrameEventExpressionString(const FrameEventExpressionToken& 
 		}
 		value.push_back((wchar_t)c);
 	}
-	return false;	// no terminator
+	return false;	// 종료 문자가 없다
 }
 
 

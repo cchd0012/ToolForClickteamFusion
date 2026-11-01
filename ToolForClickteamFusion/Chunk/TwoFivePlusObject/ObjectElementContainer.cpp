@@ -1,11 +1,11 @@
-#include "ObjectElementContainer.h"
+﻿#include "ObjectElementContainer.h"
 #include "../../Util/ZlibUtil.h"
 
 using namespace CTT::Chunk;
 using namespace CTT::ZlibUtil;
 
 
-// compress with ZlibUtil (Z_BEST_COMPRESSION, the level the games use)
+// ZlibUtil 로 압축한다 (Z_BEST_COMPRESSION, 게임이 사용하는 압축 레벨)
 static ByteBuffer deflateBuffer(const ByteBuffer& data)
 {
 	BYTE* encodedData = NULL;
@@ -49,7 +49,7 @@ bool ObjectElementContainer::parse(const ByteBuffer& payload, string& errorMessa
 			if (!decode(element.originalCompressed.empty() ? NULL : &element.originalCompressed[0], compSize, decodedData, decodedSize)) {
 				throw ByteBufferError("element decompression failed");
 			}
-			// ZlibUtil does not report failed streams, so the size has to be checked here
+			// ZlibUtil 은 압축 해제 실패를 알려주지 않으므로 여기서 크기를 확인해야 한다
 			if (decodedSize != orgSize) {
 				free(decodedData);
 				throw ByteBufferError("element decompression failed");

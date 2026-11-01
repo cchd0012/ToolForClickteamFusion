@@ -107,6 +107,9 @@ namespace CTT {
 			BinaryFileDataChunk binaryFileData;
 			ShaderListChunk shaderList;
 
+			// 프레임 이벤트 텍스트 번역 표 (추출할 때 모으고, 교체할 때 읽어 들인다)
+			FrameEventTextTable frameEventTextTable;
+
 			// application 버전 등을 포함한 정보 세팅
 			bool setApplicationInfo();
 

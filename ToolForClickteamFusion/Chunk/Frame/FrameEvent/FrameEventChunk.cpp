@@ -1,4 +1,4 @@
-#include "FrameEventChunk.h"
+﻿#include "FrameEventChunk.h"
 #include "../../../Archive/Archive.h"
 #include "../../../ImGUI/Headers.h"
 
@@ -31,7 +31,7 @@ bool FrameEventChunk::loadFromOrgBuffer()
 		parseMessage = "parse failed: " + errorMessage;
 	}
 	else {
-		// the model is only trusted when it reproduces the original bytes exactly
+		// 모델이 원본 바이트를 정확히 재현할 때에만 모델을 신뢰한다
 		ByteBuffer rewritten;
 		if (!writeFrameEventChunk(model, rewritten, errorMessage)) {
 			parseMessage = "write failed: " + errorMessage;
@@ -68,12 +68,12 @@ bool FrameEventChunk::loadFromOrgBuffer()
 				}
 			}
 		}
-		wcout << infoPrefix << L"Frame events parsed losslessly: " << dec << groupCount << L" groups, " << pointerCount << L" group pointers" << endl;
+		wcout << infoPrefix << L"프레임 이벤트를 무손실로 파싱했습니다: " << dec << groupCount << L"개 그룹, " << pointerCount << L"개 그룹 포인터" << endl;
 	}
 	else {
 		model = FrameEventChunkModel();
 		rawFallback.swap(raw);
-		wcout << errPrefix << L"Frame events kept as raw bytes: " << parseMessage.c_str() << endl;
+		wcout << errPrefix << L"프레임 이벤트를 파싱하지 못해 원본 바이트로 보존합니다: " << parseMessage.c_str() << endl;
 	}
 
 	free(orgBuffer);
@@ -109,14 +109,42 @@ bool FrameEventChunk::saveIntoOrgBuffer()
 }
 
 
+bool FrameEventChunk::extractText(UINT32 frameIndex, FrameEventTextTable& table)
+{
+	if (!parsed) {
+		// 한 프레임을 해석하지 못하더라도 전체 추출은 계속한다
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 이벤트를 파싱하지 못해 텍스트를 추출하지 않습니다. (프레임 " << dec << frameIndex << L")" << endl;
+		return true;
+	}
+	table.addFrameEventText(model, frameIndex);
+	return true;
+}
+
+
+bool FrameEventChunk::replaceText(const FrameEventTextTable& table, UINT32& replacedCount)
+{
+	replacedCount = 0;
+	if (!parsed) {
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 이벤트를 파싱하지 못해 텍스트를 교체하지 않습니다." << endl;
+		return true;
+	}
+	string errorMessage;
+	if (!replaceFrameEventText(model, table, replacedCount, errorMessage)) {
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 텍스트 교체에 실패했습니다: " << wstring(errorMessage.begin(), errorMessage.end()) << endl;
+		return false;
+	}
+	return true;
+}
+
+
 void FrameEventChunk::renderData()
 {
 	if (parsed) {
-		ImGui::Text(u8"Event script: %u groups, %u group pointers", (unsigned)groupCount, (unsigned)pointerCount);
-		ImGui::TextDisabled(u8"Parsed losslessly (build %u).", (unsigned)model.build);
+		ImGui::Text(u8"이벤트 스크립트: 그룹 %u개, 그룹 포인터 %u개", (unsigned)groupCount, (unsigned)pointerCount);
+		ImGui::TextDisabled(u8"무손실로 파싱됨 (build %u).", (unsigned)model.build);
 	}
 	else {
-		ImGui::Text(u8"Event script kept as raw bytes (%u bytes).", (unsigned)rawFallback.size());
+		ImGui::Text(u8"이벤트 스크립트를 원본 바이트로 보존 중 (%u 바이트).", (unsigned)rawFallback.size());
 		ImGui::TextDisabled(u8"%s", parseMessage.c_str());
 	}
 }

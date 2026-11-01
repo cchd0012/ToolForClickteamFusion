@@ -1,13 +1,14 @@
-// Headless self-test for the lossless chunk models (frame events, ObjectCommon, 2.5+ element container).
+﻿// 무손실 청크 모델(프레임 이벤트, ObjectCommon, 2.5+ 요소 컨테이너)의 헤드리스 자체 테스트
 //
-// usage: ChunkModelTest.exe <testdata root> [game name]
-// The testdata root holds one folder per game, produced by a dump script:
+// 사용법: ChunkModelTest.exe <테스트 데이터 루트> [게임 이름]
+// 테스트 데이터 루트에는 덤프 스크립트가 만든 게임별 폴더가 있다:
 //   <game>/meta.txt               build=<n> layout=<tfp|n284|old>
-//   <game>/events/f<N>.evt        decoded 0x333D payloads
-//   <game>/objects.bin            repeated [u8 layout][i32 build][i16 type][u32 length][blob]
-//   <game>/c2256.bin, c2257.bin   decoded 2.5+ element container (optional)
+//   <game>/events/f<N>.evt        복호화된 0x333D 데이터
+//   <game>/objects.bin            [u8 레이아웃][i32 build][i16 타입][u32 길이][데이터] 의 반복
+//   <game>/c2256.bin, c2257.bin   복호화된 2.5+ 요소 컨테이너 (선택)
 
 #include "../ToolForClickteamFusion/Chunk/Frame/FrameEvent/FrameEventModel.h"
+#include "../ToolForClickteamFusion/Chunk/Frame/FrameEvent/FrameEventText.h"
 #include "../ToolForClickteamFusion/Chunk/Object/ObjectCommon.h"
 #include "../ToolForClickteamFusion/Chunk/TwoFivePlusObject/ObjectElementContainer.h"
 
@@ -90,7 +91,7 @@ static size_t firstDifference(const ByteBuffer& a, const ByteBuffer& b)
 }
 
 
-// ---------------------------------------------------------------- frame events
+// ---------------------------------------------------------------- 프레임 이벤트
 
 static vector<INT64> pointerSignature(const FrameEventChunkModel& model)
 {
@@ -133,7 +134,7 @@ static void collectParams(FrameEventDataGroup& group, vector<FrameEventParameter
 	}
 }
 
-// append a marker to every string token so that every group changes size and every pointer has to move
+// 모든 문자열 토큰 뒤에 표식을 붙여서 모든 그룹의 크기가 바뀌고 모든 포인터가 이동해야 하게 만든다
 static size_t growAllStrings(FrameEventChunkModel& model)
 {
 	size_t changed = 0;
@@ -207,7 +208,7 @@ static void testEvents(const string& gameDir, UINT32 build)
 			continue;
 		}
 
-		// statistics + expression round trip on every expression param
+		// 통계 + 모든 수식 파라미터의 인코딩 왕복 검증
 		for (size_t b = 0; b < model.blocks.size(); b++) {
 			for (size_t g = 0; g < model.blocks[b].groups.size(); g++) {
 				vector<FrameEventParameter*> params;
@@ -235,7 +236,7 @@ static void testEvents(const string& gameDir, UINT32 build)
 			}
 		}
 
-		// relocation: grow every string, write, parse again, the pointers must still hit the same groups
+		// 재배치 검증: 모든 문자열을 늘려서 쓰고 다시 파싱해도 포인터는 같은 그룹을 가리켜야 한다
 		FrameEventChunkModel grownModel = model;
 		grown += growAllStrings(grownModel);
 		ByteBuffer grownData;
@@ -260,7 +261,130 @@ static void testEvents(const string& gameDir, UINT32 build)
 }
 
 
-// ---------------------------------------------------------------- object common
+// ---------------------------------------------------------------- 프레임 이벤트 텍스트
+
+static const wchar_t* translationMarker = L"\xD55C";	// 번역문 끝에 붙이는 표식 ('한')
+
+// 모델의 비어 있지 않은 문자열 토큰 수와, 그중 표식으로 끝나는 토큰 수를 센다
+static void countStringTokens(FrameEventChunkModel& model, UINT32& total, UINT32& withMarker)
+{
+	total = 0;
+	withMarker = 0;
+	for (size_t b = 0; b < model.blocks.size(); b++) {
+		for (size_t g = 0; g < model.blocks[b].groups.size(); g++) {
+			vector<FrameEventParameter*> params;
+			collectParams(model.blocks[b].groups[g], params);
+			for (size_t k = 0; k < params.size(); k++) {
+				if (!isFrameEventExpressionParameter(params[k]->code)) {
+					continue;
+				}
+				FrameEventExpression expression;
+				string errorMessage;
+				if (!parseFrameEventExpression(params[k]->body, expression, errorMessage)) {
+					continue;
+				}
+				for (size_t t = 0; t < expression.tokens.size(); t++) {
+					wstring text;
+					if (getFrameEventExpressionString(expression.tokens[t], text) && !text.empty()) {
+						total++;
+						if (text.size() > 0 && text.substr(text.size() - 1) == translationMarker) {
+							withMarker++;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+static void testEventText(const string& gameDir, UINT32 build)
+{
+	vector<string> files = listFiles(gameDir + "\\events", "*.evt");
+
+	// 1) 모든 프레임의 문자열을 표에 모은다
+	FrameEventTextTable table;
+	UINT32 collected = 0;
+	for (size_t i = 0; i < files.size(); i++) {
+		ByteBuffer data;
+		FrameEventChunkModel model;
+		string errorMessage;
+		if (!readFile(gameDir + "\\events\\" + files[i], data) || !parseFrameEventChunk(data, build, model, errorMessage)) {
+			fail(files[i] + " text collect: " + errorMessage);
+			return;
+		}
+		collected += table.addFrameEventText(model, (UINT32)i);
+	}
+
+	// 2) JSON 으로 내보냈다가 다시 읽는다. 번역 없는 표와, 모든 항목에 번역을 단 표를 만든다
+	Json::Value untranslatedJson;
+	table.exportJson(untranslatedJson);
+	Json::Value translatedJson = untranslatedJson;
+	for (Json::ArrayIndex i = 0; i < translatedJson["texts"].size(); i++) {
+		Json::Value& item = translatedJson["texts"][i];
+		item["translation"] = item["original"].asString() + "\xED\x95\x9C";	// UTF-8 '한'
+	}
+	FrameEventTextTable emptyTable;
+	FrameEventTextTable translatedTable;
+	if (!emptyTable.importJson(untranslatedJson) || !translatedTable.importJson(translatedJson)) {
+		fail("text table json import");
+		return;
+	}
+	if ((emptyTable.getEntryCount() != table.getEntryCount()) || (translatedTable.getEntryCount() != table.getEntryCount())) {
+		fail("text table entry count changed by the json round trip");
+	}
+
+	// 3) 번역이 없으면 바이트가 그대로여야 하고, 모두 번역하면 모든 토큰이 바뀌어야 하며 포인터는 그대로여야 한다
+	UINT32 replacedTotal = 0, tokenTotal = 0;
+	for (size_t i = 0; i < files.size(); i++) {
+		ByteBuffer data;
+		FrameEventChunkModel model;
+		string errorMessage;
+		readFile(gameDir + "\\events\\" + files[i], data);
+		parseFrameEventChunk(data, build, model, errorMessage);
+		vector<INT64> signature = pointerSignature(model);
+
+		FrameEventChunkModel untouched = model;
+		UINT32 replaced = 0;
+		ByteBuffer untouchedData;
+		if (!replaceFrameEventText(untouched, emptyTable, replaced, errorMessage) || (replaced != 0)
+			|| !writeFrameEventChunk(untouched, untouchedData, errorMessage) || (untouchedData != data)) {
+			fail(files[i] + " empty translation table changed the events");
+			continue;
+		}
+
+		UINT32 expectedTokens, markerBefore;
+		countStringTokens(model, expectedTokens, markerBefore);
+		if (!replaceFrameEventText(model, translatedTable, replaced, errorMessage)) {
+			fail(files[i] + " replace: " + errorMessage);
+			continue;
+		}
+		ByteBuffer translatedData;
+		if (!writeFrameEventChunk(model, translatedData, errorMessage)) {
+			fail(files[i] + " write(translated): " + errorMessage);
+			continue;
+		}
+		FrameEventChunkModel reparsed;
+		if (!parseFrameEventChunk(translatedData, build, reparsed, errorMessage)) {
+			fail(files[i] + " reparse(translated): " + errorMessage);
+			continue;
+		}
+		UINT32 totalAfter, markerAfter;
+		countStringTokens(reparsed, totalAfter, markerAfter);
+		replacedTotal += replaced;
+		tokenTotal += expectedTokens;
+		if ((replaced != expectedTokens) || (totalAfter != expectedTokens) || (markerAfter != expectedTokens)) {
+			fail(files[i] + " not every string token was translated");
+		}
+		if (pointerSignature(reparsed) != signature) {
+			fail(files[i] + " group pointers changed target after text replacement");
+		}
+	}
+	printf("  text   : %u string tokens, %u unique texts, translated %u/%u tokens, empty table keeps bytes, pointers kept\n",
+		(unsigned)collected, (unsigned)table.getEntryCount(), (unsigned)replacedTotal, (unsigned)tokenTotal);
+}
+
+
+// ---------------------------------------------------------------- ObjectCommon
 
 static void testObjects(const string& gameDir)
 {
@@ -322,7 +446,7 @@ static void testObjects(const string& gameDir)
 			continue;
 		}
 
-		// mutation: grow every view, rebuild, parse again
+		// 변형 검증: 모든 항목을 늘려서 다시 만들고 다시 파싱한다
 		ObjectCommon changed = common;
 		bool animationEdited = false;
 		if (changed.hasAnimations()) {
@@ -346,7 +470,7 @@ static void testObjects(const string& gameDir)
 		}
 		ByteBuffer grown;
 		if (!changed.serialize(grown, errorMessage)) {
-			// an i16 offset overflow on very large objects is a legitimate refusal
+			// 매우 큰 오브젝트에서 i16 오프셋이 넘치는 경우는 정상적인 거부이다
 			if ((errorMessage.find("exceeds 32767") == string::npos) && (errorMessage.find("too large") == string::npos) && (errorMessage.find("overflow") == string::npos)) {
 				fail("mutated serialize: " + errorMessage);
 			}
@@ -377,7 +501,7 @@ static void testObjects(const string& gameDir)
 }
 
 
-// ---------------------------------------------------------------- 2.5+ element container
+// ---------------------------------------------------------------- 2.5+ 요소 컨테이너
 
 static void testContainer(const string& gameDir)
 {
@@ -401,7 +525,7 @@ static void testContainer(const string& gameDir)
 	if (!same2256) { fail("unchanged 0x2256 not byte-identical"); }
 	if (!same2257) { fail("regenerated 0x2257 offsets differ from the original"); }
 
-	// recompress everything and check that the decompressed content survives
+	// 전부 다시 압축한 뒤에도 압축을 푼 내용이 유지되는지 확인한다
 	ObjectElementContainer changed = container;
 	size_t recompressMatches = 0;
 	vector<ObjectContainerElement>& elements = changed.getElements();
@@ -461,6 +585,7 @@ int main(int argc, char** argv)
 		}
 		printf("== %s (build %u)\n", games[i].c_str(), build);
 		testEvents(dir, build);
+		testEventText(dir, build);
 		testObjects(dir);
 		testContainer(dir);
 	}

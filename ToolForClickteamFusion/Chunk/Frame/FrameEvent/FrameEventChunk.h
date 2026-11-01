@@ -1,23 +1,29 @@
-#pragma once
+﻿#pragma once
 
 #include "../../Chunk.h"
 #include "FrameEventModel.h"
+#include "FrameEventText.h"
 
 namespace CTT {
 
 	namespace Chunk {
 
-		// Frame event chunk (0x333D) backed by the lossless FrameEventChunkModel.
-		// If the data cannot be parsed, or the model does not reproduce the original bytes exactly,
-		// the chunk silently keeps the raw bytes, so saving can never corrupt the events.
+		// 무손실 FrameEventChunkModel 을 사용하는 프레임 이벤트 청크 (0x333D)
+		// 데이터를 파싱할 수 없거나 모델이 원본 바이트를 그대로 재현하지 못하면
+		// 원본 바이트를 그대로 보존하므로, 저장하더라도 이벤트가 손상되지 않는다
 		class FrameEventChunk : public Chunk
 		{
 		public:
 			FrameEventChunk();
 			~FrameEventChunk();
 
-			// ImGui rendering
+			// 데이터 렌더링 함수 (ImGui)
 			void renderData();
+
+			// 문자열 토큰을 번역 표에 모은다 (모델을 사용할 수 없으면 건너뛴다)
+			bool extractText(UINT32 frameIndex, FrameEventTextTable& table);
+			// 번역이 있는 문자열 토큰을 교체한다 (replacedCount = 교체한 토큰의 개수)
+			bool replaceText(const FrameEventTextTable& table, UINT32& replacedCount);
 
 			bool isParsed() const { return parsed; }
 			FrameEventChunkModel& getModel() { return model; }
@@ -30,10 +36,10 @@ namespace CTT {
 		private:
 			bool parsed;
 			FrameEventChunkModel model;
-			ByteBuffer rawFallback;		// only filled when the model could not be used
+			ByteBuffer rawFallback;		// 모델을 사용할 수 없을 때에만 채워지는 원본 바이트
 			string parseMessage;
 
-			// statistics for the viewer
+			// 뷰어에 표시할 통계
 			size_t groupCount;
 			size_t pointerCount;
 		};

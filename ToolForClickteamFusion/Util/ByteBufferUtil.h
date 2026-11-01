@@ -1,9 +1,9 @@
-#pragma once
+﻿#pragma once
 
 #include "../Common.h"
 #include <stdexcept>
 
-// Bounds checked little endian reader / writer for in-memory chunk data.
+// 메모리 상의 청크 데이터를 읽고 쓰기 위한 리틀 엔디안 리더/라이터 (범위를 벗어난 읽기는 예외로 처리한다)
 
 namespace CTT {
 
@@ -59,7 +59,7 @@ namespace CTT {
 				return out;
 			}
 
-			// null terminated UTF-16LE string (the terminator is consumed)
+			// null 로 끝나는 UTF-16LE 문자열 (종료 문자까지 함께 읽는다)
 			wstring readWString()
 			{
 				wstring value;

@@ -97,6 +97,9 @@
     <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventModel.cpp">
       <Filter>Chunk\Frame\FrameEvent</Filter>
     </ClCompile>
+    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventText.cpp">
+      <Filter>Chunk\Frame\FrameEvent</Filter>
+    </ClCompile>
     <ClCompile Include="Chunk\Object\ObjectCommon.cpp">
       <Filter>Chunk\Object</Filter>
     </ClCompile>
@@ -289,6 +292,9 @@
       <Filter>Chunk\Frame</Filter>
     </ClInclude>
     <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventModel.h">
+      <Filter>Chunk\Frame\FrameEvent</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventText.h">
       <Filter>Chunk\Frame\FrameEvent</Filter>
     </ClInclude>
     <ClInclude Include="Chunk\Object\ObjectCommon.h">

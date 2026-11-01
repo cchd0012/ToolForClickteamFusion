@@ -1,4 +1,4 @@
-#include "ObjectCommon.h"
+﻿#include "ObjectCommon.h"
 
 using namespace CTT::Chunk;
 
@@ -51,7 +51,7 @@ bool ObjectCommon::parse(const ByteBuffer& blob, ObjectCommonLayout commonLayout
 			throw ByteBufferError("ObjectCommon header too short");
 		}
 
-		// header positions of the i16 sub-block offsets
+		// 하위 블록 i16 오프셋이 기록된 헤더 상의 위치
 		INT32 position[SEGMENT_COUNT];
 		position[SEGMENT_SYSTEM] = 0x24;
 		position[SEGMENT_VALUES] = 0x26;
@@ -66,7 +66,7 @@ bool ObjectCommon::parse(const ByteBuffer& blob, ObjectCommonLayout commonLayout
 			position[SEGMENT_STRINGS] = 40;
 		}
 		else if ((layout == ObjectCommonLayout::BUILD_284) && (build == 0x11C) && (ByteBufferReader(raw, 6).readI32() == 0)) {
-			// a few build 284 files store the first fields in a different order
+			// build 284 파일 중 일부는 앞쪽 필드의 순서가 다르다
 			position[SEGMENT_COUNTER] = 4;
 			position[SEGMENT_MOVEMENT] = 10;
 			position[SEGMENT_EXTENSION] = 12;
@@ -95,8 +95,8 @@ bool ObjectCommon::parse(const ByteBuffer& blob, ObjectCommonLayout commonLayout
 		}
 		headerEnd = firstOffset;
 
-		// every sub-block runs until the next one starts
-		vector<pair<INT32, INT32> > order;	// (offset, segment)
+		// 각 하위 블록은 다음 하위 블록이 시작하기 전까지 이어진다
+		vector<pair<INT32, INT32> > order;	// (오프셋, 하위 블록 종류)
 		for (INT32 s = 0; s < SEGMENT_COUNT; s++) {
 			if (segments[s].present) {
 				order.push_back(make_pair(segments[s].offset, s));
@@ -108,11 +108,11 @@ bool ObjectCommon::parse(const ByteBuffer& blob, ObjectCommonLayout commonLayout
 			segments[order[i].second].length = end - (size_t)order[i].first;
 		}
 
-		// ---- animations ----
+		// ---- 애니메이션 ----
 		if (segments[SEGMENT_ANIMATION].present) {
 			try {
 				ByteBufferReader tableReader(raw, segments[SEGMENT_ANIMATION].offset);
-				tableReader.readI16();	// total size
+				tableReader.readI16();	// 전체 크기
 				INT16 slotCount = tableReader.readI16();
 				if (slotCount < 0) {
 					throw ByteBufferError("bad animation count");
@@ -155,12 +155,12 @@ bool ObjectCommon::parse(const ByteBuffer& blob, ObjectCommonLayout commonLayout
 				animationsParsed = true;
 			}
 			catch (const exception&) {
-				animationsParsed = false;	// stays raw
+				animationsParsed = false;	// 해석하지 못하면 원본 바이트 그대로 둔다
 				animations = ObjectAnimations();
 			}
 		}
 
-		// ---- alterable values ----
+		// ---- Alterable 값 ----
 		if (segments[SEGMENT_VALUES].present) {
 			try {
 				ByteBufferReader valueReader(&raw[0], segments[SEGMENT_VALUES].offset + segments[SEGMENT_VALUES].length, segments[SEGMENT_VALUES].offset);
@@ -181,7 +181,7 @@ bool ObjectCommon::parse(const ByteBuffer& blob, ObjectCommonLayout commonLayout
 			}
 		}
 
-		// ---- alterable strings ----
+		// ---- Alterable 문자열 ----
 		if (segments[SEGMENT_STRINGS].present) {
 			try {
 				ByteBufferReader stringReader(&raw[0], segments[SEGMENT_STRINGS].offset + segments[SEGMENT_STRINGS].length, segments[SEGMENT_STRINGS].offset);
@@ -312,7 +312,7 @@ ByteBuffer ObjectCommon::encodeStrings(const vector<wstring>& value, const ByteB
 bool ObjectCommon::build(bool canonical, ByteBuffer& blob, string& errorMessage) const
 {
 	try {
-		// collect the sub-blocks in their original order
+		// 하위 블록을 원래 순서대로 모은다
 		vector<pair<INT32, INT32> > order;
 		for (INT32 s = 0; s < SEGMENT_COUNT; s++) {
 			if (segments[s].present) {
@@ -323,7 +323,7 @@ bool ObjectCommon::build(bool canonical, ByteBuffer& blob, string& errorMessage)
 
 		ByteBufferWriter writer;
 		writer.writeBytes(&raw[0], headerEnd);
-		vector<pair<INT32, size_t> > newOffsets;	// (segment, new offset)
+		vector<pair<INT32, size_t> > newOffsets;	// (하위 블록 종류, 새 오프셋)
 		for (size_t i = 0; i < order.size(); i++) {
 			INT32 segment = order[i].second;
 			ByteBuffer data;

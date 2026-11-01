@@ -232,6 +232,16 @@ void Archive::setDataCount(vector<wstring>& extractingDataTypes)
 				break;
 			}
 
+			// Frame (이벤트 텍스트)
+			case ChunkType::CHUNK_FRAME:
+			{
+				if (contains(extractingDataTypes, L"text")) {
+					getStates()->totalDataCount++;
+				}
+				SetFilePointer(hArchive, sizeof(ChunkInfo) + chunkInfo.size, NULL, FILE_CURRENT);
+				break;
+			}
+
 			// default
 			default:
 			{
@@ -464,6 +474,10 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 
 	// TTF 오프셋을 공유하기 위한 데이터
 	vector<UINT32> ttfOffsetList;
+
+	// 프레임 이벤트 텍스트를 모으기 위한 변수
+	UINT32 frameIndex = 0;
+	frameEventTextTable.clear();
 
 	// 초기화 및 chunk 시작 위치 지정
 	memset(&chunkInfo, 0, sizeof(ChunkInfo));
@@ -718,6 +732,30 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 				break;
 			}
 
+			// Frame (이벤트 텍스트)
+			case ChunkType::CHUNK_FRAME:
+			{
+				if (contains(extractingDataTypes, L"text")) {
+					FrameChunk chunk;
+					if (!chunk.readFromArchive(hArchive)) {
+						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Frame 데이터를 읽어들이지 못했습니다." << endl;
+						triggerError(__FUNCTION__, u8"Frame 데이터를 읽어들이지 못했습니다");
+						return false;
+					}
+					if (!chunk.extractEventText(frameIndex, frameEventTextTable)) {
+						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Frame 이벤트 텍스트를 추출하지 못했습니다." << endl;
+						triggerError(__FUNCTION__, u8"Frame 이벤트 텍스트를 추출하지 못했습니다");
+						return false;
+					}
+					frameIndex++;
+					getStates()->currentDataIndex++;
+				}
+				else {
+					SetFilePointer(hArchive, sizeof(ChunkInfo) + chunkInfo.size, NULL, FILE_CURRENT);
+				}
+				break;
+			}
+
 			// default
 			default:
 			{
@@ -730,6 +768,19 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 	}
 
 	// 만일 개수를 다 세어도 합이 0이라면 그냥 1/1로 맞춘다
+	// 모아 둔 프레임 이벤트 텍스트를 JSON 으로 저장한다
+	if (contains(extractingDataTypes, L"text") && (frameEventTextTable.getEntryCount() > 0)) {
+		Json::Value textValue;
+		frameEventTextTable.exportJson(textValue);
+		wstring exportJsonPath = getExtentionRemovedPath(archivePath) + L"/text/frameEventText.json";
+		if (!writeIntoJson(textValue, exportJsonPath)) {
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Frame 이벤트 텍스트를 json 으로 저장하지 못했습니다." << endl;
+			triggerError(__FUNCTION__, u8"Frame 이벤트 텍스트를 json 으로 저장하지 못했습니다");
+			return false;
+		}
+		wcout << infoPrefix << L"Frame 이벤트 텍스트 " << dec << frameEventTextTable.getEntryCount() << L"개를 추출했습니다." << endl;
+	}
+
 	if (getStates()->totalDataCount == 0) {
 		getStates()->totalDataCount = 1;
 		getStates()->currentDataIndex = 1;
@@ -765,6 +816,9 @@ bool Archive::rewriteNewArchive(vector<wstring>& replacingDataTypes)
 
 	// 암호화 테이블 초기화
 	initializeEncryptionTable();
+
+	// 프레임 이벤트 텍스트 번역 표는 처음 필요할 때 다시 읽어 들인다
+	frameEventTextTable.clear();
 
 	// chunkStartOffset : 현재 아카이브 데이터에서 chunk가 시작하는 위치
 
@@ -1128,6 +1182,35 @@ bool Archive::rewriteFrameChunk(HANDLE hNewArchive, vector<wstring>& replacingDa
 	}
 
 	// *** text냐, script냐에 따라 교체 로직을 다르게 해야 한다
+
+	// 프레임 이벤트 텍스트 교체
+	if (contains(replacingDataTypes, L"text")) {
+		if (!frameEventTextTable.isLoaded()) {
+			wstring importJsonPath = getExtentionRemovedPath(archivePath) + L"/text/frameEventText.json";
+			if (isFileOrDir(importJsonPath) != FSOType::FSO_FILE) {
+				wcout << infoPrefix << L"Frame 이벤트 텍스트 json 이 없어 텍스트 교체를 건너뜁니다: " << importJsonPath << endl;
+				frameEventTextTable.markLoaded();
+			}
+			else {
+				Json::Value textValue;
+				if (!readFromJson(textValue, importJsonPath) || !frameEventTextTable.importJson(textValue)) {
+					wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Frame 이벤트 텍스트 json 을 읽어들이지 못했습니다." << endl;
+					triggerError(__FUNCTION__, u8"Frame 이벤트 텍스트 json 을 읽어들이지 못했습니다", true);
+					return false;
+				}
+				wcout << infoPrefix << L"Frame 이벤트 텍스트 " << dec << frameEventTextTable.getEntryCount() << L"개를 읽어들였습니다." << endl;
+			}
+		}
+		UINT32 replacedCount = 0;
+		if (!chunk.replaceEventText(frameEventTextTable, replacedCount)) {
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Frame 이벤트 텍스트를 교체하지 못했습니다." << endl;
+			triggerError(__FUNCTION__, u8"Frame 이벤트 텍스트를 교체하지 못했습니다", true);
+			return false;
+		}
+		if (replacedCount > 0) {
+			wcout << infoPrefix << L"Frame 이벤트 텍스트 " << dec << replacedCount << L"개를 교체했습니다." << endl;
+		}
+	}
 
 	if (!chunk.writeIntoArchive(hNewArchive)) {
 		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 신규 frame을 기록하지 못해 변환을 실패했습니다." << endl;

@@ -53,6 +53,12 @@
     <Filter Include="ImGUI">
       <UniqueIdentifier>{0199ad68-c612-4449-ae04-2e5339d4fed4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Glyph">
+      <UniqueIdentifier>{6f1c7a52-3b8e-4d0a-9c5e-2a7d41b8e0f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Glyph\FreeType">
+      <UniqueIdentifier>{b3a41e7c-5d62-4f19-8a0e-91c2d7e5f6a8}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Application">
       <UniqueIdentifier>{bbb1b77f-dd92-43e2-9d4d-24e976ce1c71}</UniqueIdentifier>
     </Filter>
@@ -126,6 +132,45 @@
     </ClCompile>
     <ClCompile Include="Util\CommonUtil.cpp">
       <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)includes\src\freetype-2.13.2\src\base\ftsystem.c">
+      <Filter>Glyph\FreeType</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)includes\src\freetype-2.13.2\src\base\ftinit.c">
+      <Filter>Glyph\FreeType</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)includes\src\freetype-2.13.2\src\base\ftdebug.c">
+      <Filter>Glyph\FreeType</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)includes\src\freetype-2.13.2\src\base\ftbase.c">
+      <Filter>Glyph\FreeType</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)includes\src\freetype-2.13.2\src\base\ftbitmap.c">
+      <Filter>Glyph\FreeType</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)includes\src\freetype-2.13.2\src\base\ftmm.c">
+      <Filter>Glyph\FreeType</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)includes\src\freetype-2.13.2\src\base\ftglyph.c">
+      <Filter>Glyph\FreeType</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)includes\src\freetype-2.13.2\src\truetype\truetype.c">
+      <Filter>Glyph\FreeType</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)includes\src\freetype-2.13.2\src\sfnt\sfnt.c">
+      <Filter>Glyph\FreeType</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)includes\src\freetype-2.13.2\src\smooth\smooth.c">
+      <Filter>Glyph\FreeType</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)includes\src\freetype-2.13.2\src\psnames\psnames.c">
+      <Filter>Glyph\FreeType</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)includes\src\freetype-2.13.2\src\autofit\autofit.c">
+      <Filter>Glyph\FreeType</Filter>
+    </ClCompile>
+    <ClCompile Include="Glyph\GlyphGenerator.cpp">
+      <Filter>Glyph</Filter>
     </ClCompile>
     <ClCompile Include="Util\DecryptionUtil.cpp">
       <Filter>Util</Filter>
@@ -341,6 +386,9 @@
     </ClInclude>
     <ClInclude Include="Util\CommonUtilConstant.h">
       <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Glyph\GlyphGenerator.h">
+      <Filter>Glyph</Filter>
     </ClInclude>
     <ClInclude Include="Util\DecryptionUtil.h">
       <Filter>Util</Filter>

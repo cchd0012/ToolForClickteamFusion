@@ -8,6 +8,8 @@ using namespace CTT::App;
 
 // Application/HeadlessApplication.cpp
 namespace CTT { namespace App { int runHeadlessCommand(int argc, WCHAR** argv); } }
+// Glyph/GlyphGenerator.cpp
+namespace CTT { namespace Glyph { int runGlyphCommand(int argc, WCHAR** argv); } }
 
 // Main code
 int wmain(int argc, WCHAR* argv[])
@@ -17,6 +19,11 @@ int wmain(int argc, WCHAR* argv[])
 	// 개발용 스위치: 창 없이 아카이브를 읽고 쓴다 (--roundtrip / --extract / --replace, Application/HeadlessApplication.cpp)
 	if (argc >= 2 && (wcscmp(argv[1], L"--roundtrip") == 0 || wcscmp(argv[1], L"--extract") == 0 || wcscmp(argv[1], L"--replace") == 0)) {
 		return runHeadlessCommand(argc, argv);
+	}
+
+	// 개발용 스위치: 추출해 둔 폴더에 글자 이미지를 만들어 넣는다 (--glyphs, Glyph/GlyphGenerator.cpp)
+	if (argc >= 2 && wcscmp(argv[1], L"--glyphs") == 0) {
+		return CTT::Glyph::runGlyphCommand(argc, argv);
 	}
 
 	wcout << L"----------------------------------------------------" << endl;

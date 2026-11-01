@@ -1,0 +1,11 @@
+FreeType 2.13.2 (https://download.savannah.gnu.org/releases/freetype/freetype-2.13.2.tar.gz)
+라이선스: FTL (FTL.TXT). 글자 이미지 생성기(Glyph/GlyphGenerator.cpp)가 TrueType 글자를 래스터화하는 데 쓴다.
+Pillow(PIL)가 쓰는 버전과 같게 맞춰, 파이썬 시제품과 같은 픽셀 결과를 얻는다.
+
+원본에서 바꾼 것
+- include/, src/base, src/truetype, src/sfnt, src/smooth, src/psnames, src/autofit 만 가져왔다
+- include/freetype/config/ftmodule.h : autofit, truetype, sfnt, psnames, smooth 모듈만 남겼다
+- include/freetype/config/ftoption.h : FT_CONFIG_OPTION_USE_ZLIB 을 껐다 (gzip 모듈을 가져오지 않았다)
+프로젝트에서는 FT2_BUILD_LIBRARY 를 정의하고 아래 파일을 C 로 컴파일한다
+ src/base/{ftsystem,ftinit,ftdebug,ftbase,ftbitmap,ftglyph,ftmm}.c, src/truetype/truetype.c, src/sfnt/sfnt.c,
+ src/smooth/smooth.c, src/psnames/psnames.c, src/autofit/autofit.c

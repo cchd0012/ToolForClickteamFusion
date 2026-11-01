@@ -102,6 +102,13 @@ bool BaseImage::importData(wstring& dirPath, UINT32 index)
 		return true;
 	}
 
+	return importFromFile(importFilePath);
+}
+
+
+// PNG 파일 하나로 이미지를 교체한다 (info 에 flag, graphicMode, transparent 가 세팅되어 있어야 한다)
+bool BaseImage::importFromFile(wstring& importFilePath)
+{
 	wcout << infoPrefix << L"importing " << importFilePath << L"..." << endl;
 
 	// 이미지 읽어들여서 너비/높이 새로 세팅

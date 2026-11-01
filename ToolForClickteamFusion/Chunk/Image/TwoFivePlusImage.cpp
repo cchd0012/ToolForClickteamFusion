@@ -21,6 +21,29 @@ TwoFivePlusImage::~TwoFivePlusImage()
 }
 
 
+void TwoFivePlusImage::initializeNew()
+{
+	memset(&additional, 0, sizeof(AdditionalImageInfo));
+	memset(&info, 0, sizeof(CommonImageInfo));
+	additional.unknown1 = 0xFFFFFFFF;
+	info.checksum = 0;
+	info.reference = 1;
+	info.graphicMode = 8;
+	info.flags = 0x88;
+}
+
+
+void TwoFivePlusImage::copyHeaderFrom(TwoFivePlusImage& other)
+{
+	UINT32 handle = additional.handle;
+	additional = other.additional;
+	additional.handle = handle;
+	info = other.info;
+	// 크기와 너비/높이는 이미지 데이터를 넣을 때 다시 정해진다
+	info.size = 0;
+}
+
+
 bool TwoFivePlusImage::loadFromBuffer(BYTE*& bufferPnt)
 {
 	// 이미지를 그대로 다 가지고 있기에는 용량이 너무 크기 때문에

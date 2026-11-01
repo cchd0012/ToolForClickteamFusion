@@ -65,6 +65,8 @@ namespace CTT {
 
 			bool exportData(wstring& dirPath, UINT32 index, bool isFullyExport);
 			bool importData(wstring& dirPath, UINT32 index);
+			// 경로를 직접 지정하여 PNG 파일 하나로 이미지를 교체한다
+			bool importFromFile(wstring& importFilePath);
 			bool exportJson(Json::Value& exportValue, vector<UINT32>& offsetList) { return true; }
 			bool importJson(Json::Value& importValue, vector<UINT32>& offsetList) { return true; }
 

@@ -30,6 +30,11 @@ namespace CTT {
 			UINT32 getHandle() { return additional.handle; }
 			void setHandle(UINT32 handle) { additional.handle = handle; }
 
+			// 새 이미지를 만들 때 쓰는 기본 헤더 값 (그래픽 모드 8, RGBA, LZ4)
+			void initializeNew();
+			// 다른 이미지의 헤더 값(플래그, 그래픽 모드, 핫스팟, 투명색 등)을 복제한다. 핸들과 이미지 데이터는 복제하지 않는다
+			void copyHeaderFrom(TwoFivePlusImage& other);
+
 			// 데이터 렌더링용 함수
 			void renderData(UINT32 index);
 

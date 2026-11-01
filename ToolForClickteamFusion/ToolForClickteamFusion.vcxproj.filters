@@ -142,6 +142,9 @@
     <ClCompile Include="Chunk\Image\BaseImage.cpp">
       <Filter>Chunk\Image</Filter>
     </ClCompile>
+    <ClCompile Include="Chunk\Image\ImageDataChunk.cpp">
+      <Filter>Chunk\Image</Filter>
+    </ClCompile>
     <ClCompile Include="Chunk\Image\TwoFivePlusImage.cpp">
       <Filter>Chunk\Image</Filter>
     </ClCompile>

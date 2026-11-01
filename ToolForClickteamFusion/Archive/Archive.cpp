@@ -580,6 +580,14 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 						delete chunk;
 						return false;
 					}
+					// 이미지 목록(핸들 포함)도 함께 내보낸다. 애니메이션 프레임은 위치가 아니라 핸들로 이미지를 가리킨다
+					wstring exportListPath = exportDirPath + L"/imageList.json";
+					if (!chunk->exportImageList(exportListPath)) {
+						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Image 목록을 추출하지 못했습니다." << endl;
+						triggerError(__FUNCTION__, u8"Image 목록을 추출하지 못했습니다");
+						delete chunk;
+						return false;
+					}
 					delete chunk;
 					wcout << infoPrefix << L"ChunkType: " << uppercase << hex << getNameUni(chunkInfo.type) << L" extracting complete!" << endl;
 					wcout << L"--------------------------------------" << endl << endl;
@@ -1386,6 +1394,16 @@ bool Archive::rewriteImagesChunk(HANDLE hNewArchive)
 	if (!chunk.importData(importDirPath)) {
 		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Image 데이터 교체를 실패했습니다." << endl;
 		return false;
+	}
+
+	// 새 이미지 추가 (appendImages.json 이 있을 때만)
+	wstring appendManifestPath = importDirPath + L"/appendImages.json";
+	if (isFileOrDir(appendManifestPath) == FSOType::FSO_FILE) {
+		if (!chunk.appendImages(appendManifestPath, importDirPath)) {
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Image 추가를 실패했습니다." << endl;
+			triggerError(__FUNCTION__, u8"Image 추가를 실패했습니다", true);
+			return false;
+		}
 	}
 
 	// chunk 기록과 동시에 offset array 생성

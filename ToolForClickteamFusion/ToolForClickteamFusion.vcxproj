@@ -175,6 +175,7 @@
     <ClCompile Include="Chunk\Frame\FrameTransitionChunk.cpp" />
     <ClCompile Include="Chunk\Frame\FrameVirtualRectChunk.cpp" />
     <ClCompile Include="Chunk\Image\BaseImage.cpp" />
+    <ClCompile Include="Chunk\Image\ImageDataChunk.cpp" />
     <ClCompile Include="Chunk\Image\NormalImage.cpp" />
     <ClCompile Include="Chunk\Image\TwoFivePlusImage.cpp" />
     <ClCompile Include="Chunk\Literal\LiteralChunk.cpp" />

@@ -94,6 +94,18 @@
     <ClCompile Include="Chunk\Frame\FrameChunk.cpp">
       <Filter>Chunk\Frame</Filter>
     </ClCompile>
+    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventModel.cpp">
+      <Filter>Chunk\Frame\FrameEvent</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\Object\ObjectCommon.cpp">
+      <Filter>Chunk\Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk\TwoFivePlusObject\ObjectElementContainer.cpp">
+      <Filter>Chunk\TwoFivePlusObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Application\HeadlessApplication.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
     <ClCompile Include="Util\CommonUtil.cpp">
       <Filter>Util</Filter>
     </ClCompile>
@@ -238,36 +250,6 @@
     <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventChunk.cpp">
       <Filter>Chunk\Frame\FrameEvent</Filter>
     </ClCompile>
-    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventHeader.cpp">
-      <Filter>Chunk\Frame\FrameEvent</Filter>
-    </ClCompile>
-    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventSizeInfo.cpp">
-      <Filter>Chunk\Frame\FrameEvent</Filter>
-    </ClCompile>
-    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventOption.cpp">
-      <Filter>Chunk\Frame\FrameEvent</Filter>
-    </ClCompile>
-    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventDataGroup.cpp">
-      <Filter>Chunk\Frame\FrameEvent</Filter>
-    </ClCompile>
-    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventData.cpp">
-      <Filter>Chunk\Frame\FrameEvent</Filter>
-    </ClCompile>
-    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventCondition.cpp">
-      <Filter>Chunk\Frame\FrameEvent</Filter>
-    </ClCompile>
-    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventAction.cpp">
-      <Filter>Chunk\Frame\FrameEvent</Filter>
-    </ClCompile>
-    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventParameter\FrameEventGroupParameter.cpp">
-      <Filter>Chunk\Frame\FrameEvent\FrameEventParameter</Filter>
-    </ClCompile>
-    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventParameter\FrameEventParameter.cpp">
-      <Filter>Chunk\Frame\FrameEvent\FrameEventParameter</Filter>
-    </ClCompile>
-    <ClCompile Include="Chunk\Frame\FrameEvent\FrameEventParameter\FrameEventDataPointerParameter.cpp">
-      <Filter>Chunk\Frame\FrameEvent\FrameEventParameter</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="archive\Archive.h">
@@ -305,6 +287,18 @@
     </ClInclude>
     <ClInclude Include="Chunk\Frame\FrameChunk.h">
       <Filter>Chunk\Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventModel.h">
+      <Filter>Chunk\Frame\FrameEvent</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\Object\ObjectCommon.h">
+      <Filter>Chunk\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk\TwoFivePlusObject\ObjectElementContainer.h">
+      <Filter>Chunk\TwoFivePlusObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\ByteBufferUtil.h">
+      <Filter>Util</Filter>
     </ClInclude>
     <ClInclude Include="Util\CommonUtilConstant.h">
       <Filter>Util</Filter>
@@ -547,43 +541,7 @@
     <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventStructure.h">
       <Filter>Chunk\Frame\FrameEvent</Filter>
     </ClInclude>
-    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventBaseClass.h">
-      <Filter>Chunk\Frame\FrameEvent</Filter>
-    </ClInclude>
-    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventHeader.h">
-      <Filter>Chunk\Frame\FrameEvent</Filter>
-    </ClInclude>
-    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventSizeInfo.h">
-      <Filter>Chunk\Frame\FrameEvent</Filter>
-    </ClInclude>
-    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventOption.h">
-      <Filter>Chunk\Frame\FrameEvent</Filter>
-    </ClInclude>
-    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventDataGroup.h">
-      <Filter>Chunk\Frame\FrameEvent</Filter>
-    </ClInclude>
-    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventData.h">
-      <Filter>Chunk\Frame\FrameEvent</Filter>
-    </ClInclude>
-    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventCondition.h">
-      <Filter>Chunk\Frame\FrameEvent</Filter>
-    </ClInclude>
-    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventAction.h">
-      <Filter>Chunk\Frame\FrameEvent</Filter>
-    </ClInclude>
-    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventParameter\FrameEventBaseParameter.h">
-      <Filter>Chunk\Frame\FrameEvent\FrameEventParameter</Filter>
-    </ClInclude>
-    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventParameter\Headers.h">
-      <Filter>Chunk\Frame\FrameEvent\FrameEventParameter</Filter>
-    </ClInclude>
-    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventParameter\FrameEventGroupParameter.h">
-      <Filter>Chunk\Frame\FrameEvent\FrameEventParameter</Filter>
-    </ClInclude>
     <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventParameter\FrameEventParameterConstant.h">
-      <Filter>Chunk\Frame\FrameEvent\FrameEventParameter</Filter>
-    </ClInclude>
-    <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventParameter\FrameEventDataPointerParameter.h">
       <Filter>Chunk\Frame\FrameEvent\FrameEventParameter</Filter>
     </ClInclude>
   </ItemGroup>

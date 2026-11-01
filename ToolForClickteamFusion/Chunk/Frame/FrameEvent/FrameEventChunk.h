@@ -1,44 +1,42 @@
 #pragma once
 
 #include "../../Chunk.h"
-#include "FrameEventBaseClass.h"
+#include "FrameEventModel.h"
 
 namespace CTT {
 
 	namespace Chunk {
 
+		// Frame event chunk (0x333D) backed by the lossless FrameEventChunkModel.
+		// If the data cannot be parsed, or the model does not reproduce the original bytes exactly,
+		// the chunk silently keeps the raw bytes, so saving can never corrupt the events.
 		class FrameEventChunk : public Chunk
 		{
 		public:
 			FrameEventChunk();
 			~FrameEventChunk();
-			// 데이터 렌더링용 함수
+
+			// ImGui rendering
 			void renderData();
-			// 텍스트 추출/교체 함수
-			bool extractText(Json::Value& extractValue);
-			bool replaceText(Json::Value& replaceValue);
-			// 디컴파일 / 리컴파일 함수
-			bool decompile(Json::Value& decompileValue);
-			bool recompile(Json::Value& recompileValue);
+
+			bool isParsed() const { return parsed; }
+			FrameEventChunkModel& getModel() { return model; }
+			const string& getParseMessage() const { return parseMessage; }
+
 		protected:
 			bool loadFromOrgBuffer();
 			bool saveIntoOrgBuffer();
+
 		private:
-			// 프레임 이벤트 계열 클래스 모음
-			vector<FrameEventBaseClass*> frameEventClassList;
-			// 점프 클래스를 매핑하기 위한 데이터
-			map<INT32, FrameEventData*> frameEventDataOffsetMapper;
+			bool parsed;
+			FrameEventChunkModel model;
+			ByteBuffer rawFallback;		// only filled when the model could not be used
+			string parseMessage;
+
+			// statistics for the viewer
+			size_t groupCount;
+			size_t pointerCount;
 		};
-
-		// 프레임 이벤트 내 데이터 그룹 순위 반환/지정 함수
-		INT32 getFrameEventDataGroupOrder();
-		void setFrameEventDataGroupOrder(INT32 order);
-		void increaseFrameEventDataGroupOrder();
-
-		// 프레임 이벤트 내 데이터 순위 반환/지정 함수
-		INT32 getFrameEventDataOrder();
-		void setFrameEventDataOrder(INT32 order);
-		void increaseFrameEventDataOrder();
 
 	}
 

@@ -100,9 +100,7 @@ bool FrameChunk::loadFromOrgBuffer()
 			}
 			case ChunkType::CHUNK_FRAME_EVENTS:
 			{
-				//*** 아직 미구현
-				// tmpChunk = new FrameEventChunk();
-				tmpChunk = new UnknownChunk();
+				tmpChunk = new FrameEventChunk();
 				break;
 			}
 			case ChunkType::CHUNK_FRAME_PLAY_HEADER:

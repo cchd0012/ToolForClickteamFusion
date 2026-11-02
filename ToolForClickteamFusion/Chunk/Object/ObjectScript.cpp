@@ -53,6 +53,38 @@ static bool sameText(const ObjectText& a, const ObjectText& b)
 }
 
 
+// ---- Text Blitter(txtblt.mfx, 식별자 TLBT) 편집 데이터 필드
+// 확장 데이터 블록의 맨 앞은 5개 dword 헤더(0x14바이트)이고, 필드 위치는 txtblt.mfx 의 CreateRunObject 가 읽는 편집 데이터(edPtr) 기준이다
+static const size_t kTextBlitterCellWidth = 0x5a4;
+static const size_t kTextBlitterCellHeight = 0x5a8;
+static const size_t kTextBlitterImageWidth = 0x5b8;
+static const size_t kTextBlitterImageHeight = 0x5bc;
+static const size_t kTextBlitterImageHandle = 0x5d0;			// u16. 실행 중에는 런타임이 다른 값으로 바꿔서 쓴다
+// 글자표 번호: 빈 꼬리 영역에 둔다 (원본 오브젝트는 이 영역이 전부 0이고 런타임도 건드리지 않는다)
+static const size_t kTextBlitterFontTableMagic = 0x2030;		// u32 'KFNT' (4B 46 4E 54)
+static const size_t kTextBlitterFontTable = 0x2034;				// u32 글자표 번호 (1 이상)
+static const size_t kTextBlitterMinBlock = 0x2038;
+static const UINT32 kTextBlitterFontTableMagicValue = 0x544E464B;
+
+static bool isTextBlitter(ObjectCommon& common)
+{
+	ByteBuffer identifier = common.getIdentifier();
+	return (identifier.size() == 4) && (memcmp(&identifier[0], "TLBT", 4) == 0);
+}
+
+static INT32 readBlockI32(const ByteBuffer& block, size_t offset)
+{
+	INT32 v;
+	memcpy(&v, &block[offset], 4);
+	return v;
+}
+
+static void writeBlockI32(ByteBuffer& block, size_t offset, INT32 v)
+{
+	memcpy(&block[offset], &v, 4);
+}
+
+
 // JSON 정수를 범위를 확인하며 읽는다
 static bool readInt(const Json::Value& value, INT64 minValue, INT64 maxValue, INT64& out)
 {
@@ -77,7 +109,25 @@ bool CTT::Chunk::decompileObjectScript(INT32 index, const string& name, INT16 ob
 	value["name"] = name;
 	value["objectType"] = objectType;
 	ByteBuffer identifier = common.getIdentifier();
-	value["identifier"] = string(identifier.begin(), identifier.end());
+	// 식별자는 확장 오브젝트에서만 'TLBT' 같은 글자이고, 그 밖에는 의미 없는 바이트일 수 있다. 글자가 아니면 16진수로 적는다 (JSON 문자열은 UTF-8 이어야 한다)
+	bool identifierPrintable = true;
+	for (size_t i = 0; i < identifier.size(); i++) {
+		if (identifier[i] < 0x20 || identifier[i] > 0x7E) {
+			identifierPrintable = false;
+		}
+	}
+	if (identifierPrintable) {
+		value["identifier"] = string(identifier.begin(), identifier.end());
+	}
+	else {
+		string hexText = "0x";
+		const char* digits = "0123456789ABCDEF";
+		for (size_t i = 0; i < identifier.size(); i++) {
+			hexText += digits[identifier[i] >> 4];
+			hexText += digits[identifier[i] & 15];
+		}
+		value["identifier"] = hexText;
+	}
 
 	if (common.hasAnimations()) {
 		ObjectAnimations& animations = common.getAnimations();
@@ -146,6 +196,21 @@ bool CTT::Chunk::decompileObjectScript(INT32 index, const string& name, INT16 ob
 		}
 		textValue["paragraphs"] = paragraphs;
 		value["text"] = textValue;
+	}
+	// Text Blitter 의 편집 데이터 필드 (셀/이미지 크기, 이미지 핸들, 글자표 번호)
+	if (isTextBlitter(common) && common.hasExtensionBlock()) {
+		ByteBuffer block = common.getExtensionBlock();
+		if (block.size() >= kTextBlitterMinBlock) {
+			Json::Value blitter(Json::objectValue);
+			blitter["cellWidth"] = readBlockI32(block, kTextBlitterCellWidth);
+			blitter["cellHeight"] = readBlockI32(block, kTextBlitterCellHeight);
+			blitter["imageWidth"] = readBlockI32(block, kTextBlitterImageWidth);
+			blitter["imageHeight"] = readBlockI32(block, kTextBlitterImageHeight);
+			blitter["imageHandle"] = (int)(block[kTextBlitterImageHandle] | (block[kTextBlitterImageHandle + 1] << 8));
+			bool hasFontTable = ((UINT32)readBlockI32(block, kTextBlitterFontTableMagic) == kTextBlitterFontTableMagicValue);
+			blitter["fontTable"] = hasFontTable ? readBlockI32(block, kTextBlitterFontTable) : 0;
+			value["textBlitter"] = blitter;
+		}
 	}
 	return true;
 }
@@ -313,6 +378,55 @@ bool CTT::Chunk::recompileObjectScript(ObjectCommon& common, const Json::Value& 
 		if (!sameText(common.getText(), parsed)) {
 			common.getText() = parsed;
 			common.markTextChanged();
+			changed = true;
+		}
+	}
+	// ---- Text Blitter 편집 데이터 필드 ----
+	if (value.isMember("textBlitter") && isTextBlitter(common) && common.hasExtensionBlock()) {
+		const Json::Value& blitter = value["textBlitter"];
+		ByteBuffer block = common.getExtensionBlock();
+		if (!blitter.isObject() || (block.size() < kTextBlitterMinBlock)) {
+			errorMessage = "bad textBlitter";
+			return false;
+		}
+		ByteBuffer updated = block;
+		struct Field { const char* name; size_t offset; INT64 minValue; INT64 maxValue; };
+		const Field fields[4] = {
+			{ "cellWidth", kTextBlitterCellWidth, 1, 4096 },
+			{ "cellHeight", kTextBlitterCellHeight, 1, 4096 },
+			{ "imageWidth", kTextBlitterImageWidth, 1, 65535 },
+			{ "imageHeight", kTextBlitterImageHeight, 1, 65535 }
+		};
+		for (int i = 0; i < 4; i++) {
+			if (blitter.isMember(fields[i].name)) {
+				INT64 v;
+				if (!readInt(blitter[fields[i].name], fields[i].minValue, fields[i].maxValue, v)) {
+					errorMessage = string("bad textBlitter.") + fields[i].name;
+					return false;
+				}
+				writeBlockI32(updated, fields[i].offset, (INT32)v);
+			}
+		}
+		if (blitter.isMember("imageHandle")) {
+			INT64 v;
+			if (!readInt(blitter["imageHandle"], 0, 65535, v)) {
+				errorMessage = "bad textBlitter.imageHandle";
+				return false;
+			}
+			updated[kTextBlitterImageHandle] = (BYTE)(v & 0xFF);
+			updated[kTextBlitterImageHandle + 1] = (BYTE)((v >> 8) & 0xFF);
+		}
+		if (blitter.isMember("fontTable")) {
+			INT64 v;
+			if (!readInt(blitter["fontTable"], 0, 0x7FFFFFFF, v)) {
+				errorMessage = "bad textBlitter.fontTable";
+				return false;
+			}
+			writeBlockI32(updated, kTextBlitterFontTableMagic, (v > 0) ? (INT32)kTextBlitterFontTableMagicValue : 0);
+			writeBlockI32(updated, kTextBlitterFontTable, (INT32)v);
+		}
+		if (updated != block) {
+			common.setExtensionBlock(updated);
 			changed = true;
 		}
 	}

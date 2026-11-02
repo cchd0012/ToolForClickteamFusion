@@ -15,6 +15,7 @@ ObjectCommon::ObjectCommon()
 	stringsChanged = false;
 	textParsed = false;
 	textChanged = false;
+	extensionChanged = false;
 }
 
 
@@ -415,6 +416,9 @@ bool ObjectCommon::build(bool canonical, ByteBuffer& blob, string& errorMessage)
 			}
 			else if ((segment == SEGMENT_SYSTEM) && textParsed && (canonical || textChanged)) {
 				data = encodeText(text);
+			}
+			else if ((segment == SEGMENT_EXTENSION) && extensionChanged) {
+				data = extensionBlock;
 			}
 			else {
 				data = getSegmentBytes((Segment)segment);

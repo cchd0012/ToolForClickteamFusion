@@ -105,6 +105,9 @@ namespace CTT {
 			// 해석하지 않는 하위 블록의 원본 바이트 (없으면 빈 값)
 			ByteBuffer getMovementBlock() const { return getSegmentBytes(SEGMENT_MOVEMENT); }
 			ByteBuffer getExtensionBlock() const { return getSegmentBytes(SEGMENT_EXTENSION); }
+			// 확장(Extension) 데이터 블록을 바꾼다. 확장마다 해석이 달라서 내용은 호출한 쪽이 책임진다 (예: Text Blitter 편집 데이터 필드)
+			bool hasExtensionBlock() const { return segments[SEGMENT_EXTENSION].present; }
+			void setExtensionBlock(const ByteBuffer& bytes) { extensionBlock = bytes; extensionChanged = true; }
 			ByteBuffer getCounterBlock() const { return getSegmentBytes(SEGMENT_COUNTER); }
 			ByteBuffer getSystemBlock() const { return getSegmentBytes(SEGMENT_SYSTEM); }
 
@@ -158,6 +161,9 @@ namespace CTT {
 			bool textParsed;
 			ObjectText text;
 			bool textChanged;
+
+			bool extensionChanged;
+			ByteBuffer extensionBlock;
 		};
 
 	}

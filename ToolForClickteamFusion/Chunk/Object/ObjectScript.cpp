@@ -67,6 +67,9 @@ static const size_t kTextBlitterLayoutFlags = 0x2038;			// u32 레이아웃 플�
 static const size_t kTextBlitterMinBlock = 0x2038;
 static const size_t kTextBlitterFlagsBlock = 0x203C;
 static const UINT32 kTextBlitterFontTableMagicValue = 0x544E464B;
+static const size_t kTextBlitterText = 0xa0;					// 오브젝트를 만들 때 처음 들어가는 문자열 (널 종료, ANSI). 다음 필드(0x5a0) 앞까지
+static const size_t kTextBlitterTextEnd = 0x5a0;
+static const int kTextBlitterTextCodePage = 949;
 
 static bool isTextBlitter(ObjectCommon& common)
 {
@@ -84,6 +87,44 @@ static INT32 readBlockI32(const ByteBuffer& block, size_t offset)
 static void writeBlockI32(ByteBuffer& block, size_t offset, INT32 v)
 {
 	memcpy(&block[offset], &v, 4);
+}
+
+// 편집 데이터의 처음 문자열(CP949)을 UTF-8 로 읽는다
+static string readBlitterText(const ByteBuffer& block)
+{
+	size_t length = 0;
+	while ((kTextBlitterText + length < kTextBlitterTextEnd) && (block[kTextBlitterText + length] != 0)) {
+		length++;
+	}
+	if (length == 0) {
+		return string();
+	}
+	int wideLength = MultiByteToWideChar(kTextBlitterTextCodePage, 0, (const char*)&block[kTextBlitterText], (int)length, NULL, 0);
+	wstring wide(wideLength, L'\0');
+	MultiByteToWideChar(kTextBlitterTextCodePage, 0, (const char*)&block[kTextBlitterText], (int)length, &wide[0], wideLength);
+	return getAnsiStr(wide, CodePage::CP_UTF_8);
+}
+
+// UTF-8 문자열을 CP949 로 바꿔 편집 데이터에 넣는다. 표현할 수 없는 글자나 너무 긴 문자열이면 실패
+static bool writeBlitterText(ByteBuffer& block, const string& utf8)
+{
+	wstring wide = getUniStr(utf8, CodePage::CP_UTF_8);
+	string bytes;
+	if (!wide.empty()) {
+		BOOL usedDefault = FALSE;
+		int length = WideCharToMultiByte(kTextBlitterTextCodePage, WC_NO_BEST_FIT_CHARS, wide.c_str(), (int)wide.size(), NULL, 0, NULL, &usedDefault);
+		bytes.assign(length, '\0');
+		WideCharToMultiByte(kTextBlitterTextCodePage, WC_NO_BEST_FIT_CHARS, wide.c_str(), (int)wide.size(), &bytes[0], length, NULL, &usedDefault);
+		if (usedDefault) {
+			return false;
+		}
+	}
+	if (kTextBlitterText + bytes.size() >= kTextBlitterTextEnd) {
+		return false;
+	}
+	memset(&block[kTextBlitterText], 0, kTextBlitterTextEnd - kTextBlitterText);
+	memcpy(&block[kTextBlitterText], bytes.data(), bytes.size());
+	return true;
 }
 
 
@@ -213,6 +254,9 @@ bool CTT::Chunk::decompileObjectScript(INT32 index, const string& name, INT16 ob
 			blitter["fontTable"] = hasFontTable ? readBlockI32(block, kTextBlitterFontTable) : 0;
 			bool pixelLayout = hasFontTable && (block.size() >= kTextBlitterFlagsBlock) && ((readBlockI32(block, kTextBlitterLayoutFlags) & 1) != 0);
 			blitter["layout"] = pixelLayout ? "pixel" : "byte";
+			if (block.size() >= kTextBlitterTextEnd) {
+				blitter["text"] = readBlitterText(block);
+			}
 			value["textBlitter"] = blitter;
 		}
 	}
@@ -438,6 +482,19 @@ bool CTT::Chunk::recompileObjectScript(ObjectCommon& common, const Json::Value& 
 			INT32 flagsValue = readBlockI32(updated, kTextBlitterLayoutFlags);
 			flagsValue = (layout == "pixel") ? (flagsValue | 1) : (flagsValue & ~1);
 			writeBlockI32(updated, kTextBlitterLayoutFlags, flagsValue);
+		}
+		if (blitter.isMember("text")) {
+			if (!blitter["text"].isString() || (block.size() < kTextBlitterTextEnd)) {
+				errorMessage = "bad textBlitter.text";
+				return false;
+			}
+			// 값이 그대로면 원래 바이트를 건드리지 않는다 (널 뒤의 찌꺼기까지 같게 유지)
+			if (readBlitterText(updated) != blitter["text"].asString()) {
+				if (!writeBlitterText(updated, blitter["text"].asString())) {
+					errorMessage = "bad textBlitter.text (CP949 로 표현할 수 없거나 너무 깁니다)";
+					return false;
+				}
+			}
 		}
 		if (updated != block) {
 			common.setExtensionBlock(updated);

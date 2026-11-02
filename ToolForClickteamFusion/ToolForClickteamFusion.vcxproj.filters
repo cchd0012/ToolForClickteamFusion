@@ -175,6 +175,9 @@
     <ClCompile Include="Glyph\FtFont.cpp">
       <Filter>Glyph</Filter>
     </ClCompile>
+    <ClCompile Include="Glyph\TxtbltFontPatch.cpp">
+      <Filter>Glyph</Filter>
+    </ClCompile>
     <ClCompile Include="Glyph\TxtbltHangul.cpp">
       <Filter>Glyph</Filter>
     </ClCompile>
@@ -400,6 +403,12 @@
       <Filter>Glyph</Filter>
     </ClInclude>
     <ClInclude Include="Glyph\FtFont.h">
+      <Filter>Glyph</Filter>
+    </ClInclude>
+    <ClInclude Include="Glyph\TxtbltFontCode.h">
+      <Filter>Glyph</Filter>
+    </ClInclude>
+    <ClInclude Include="Glyph\TxtbltFontPatch.h">
       <Filter>Glyph</Filter>
     </ClInclude>
     <ClInclude Include="Glyph\TxtbltFoldCode.h">

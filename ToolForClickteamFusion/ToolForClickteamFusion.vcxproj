@@ -201,6 +201,7 @@
     <ClCompile Include="Glyph\FontAtlas.cpp" />
     <ClCompile Include="Glyph\FtFont.cpp" />
     <ClCompile Include="Glyph\GlyphGenerator.cpp" />
+    <ClCompile Include="Glyph\TxtbltFontPatch.cpp" />
     <ClCompile Include="Glyph\TxtbltHangul.cpp" />
     <ClCompile Include="$(SolutionDir)includes\src\freetype-2.13.2\src\base\ftsystem.c">
       <PreprocessorDefinitions>FT2_BUILD_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -323,6 +324,8 @@
     <ClInclude Include="Glyph\FtFont.h" />
     <ClInclude Include="Glyph\GlyphGenerator.h" />
     <ClInclude Include="Glyph\TxtbltFoldCode.h" />
+    <ClInclude Include="Glyph\TxtbltFontCode.h" />
+    <ClInclude Include="Glyph\TxtbltFontPatch.h" />
     <ClInclude Include="Glyph\TxtbltHangul.h" />
     <ClInclude Include="Util\ByteBufferUtil.h" />
     <ClInclude Include="Chunk\Frame\FrameEffectChunk.h" />

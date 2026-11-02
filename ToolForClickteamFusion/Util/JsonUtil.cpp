@@ -50,7 +50,84 @@ bool CTT::JsonUtil::readFromJson(Json::Value& value, wstring& path)
 }
 
 
-bool CTT::JsonUtil::writeIntoJson(Json::Value& value, wstring &path)
+namespace {
+
+	// 압축했을 때의 길이를 대략 센다. budget 을 다 쓰면 바로 멈춘다 (큰 노드를 끝까지 세지 않기 위해)
+	bool fitsInBudget(const Json::Value& value, int& budget)
+	{
+		if (value.isObject()) {
+			budget -= 2;
+			for (Json::Value::const_iterator it = value.begin(); it != value.end(); ++it) {
+				budget -= (int)it.name().size() + 4;
+				if (budget < 0 || !fitsInBudget(*it, budget)) {
+					return false;
+				}
+			}
+		}
+		else if (value.isArray()) {
+			budget -= 2;
+			for (Json::ArrayIndex i = 0; i < value.size(); i++) {
+				budget -= 1;
+				if (budget < 0 || !fitsInBudget(value[i], budget)) {
+					return false;
+				}
+			}
+		}
+		else if (value.isString()) {
+			budget -= (int)value.asString().size() + 2;
+		}
+		else {
+			budget -= 8;
+		}
+		return budget >= 0;
+	}
+
+
+	// 줄 단위로 압축해서 쓴다. 작은 노드는 한 줄로, 큰 노드는 자식을 한 줄씩 펼친다
+	void writeInlineNode(Json::StreamWriter& compactWriter, const Json::Value& value, int depth, int inlineLimit, string& out)
+	{
+		bool isContainer = (value.isObject() || value.isArray()) && value.size() > 0;
+		int budget = inlineLimit;
+		if (!isContainer || fitsInBudget(value, budget)) {
+			ostringstream stream;
+			compactWriter.write(value, &stream);
+			out += stream.str();
+			return;
+		}
+		string childIndent((size_t)(depth + 1), ' ');
+		string closeIndent((size_t)depth, ' ');
+		if (value.isObject()) {
+			out += "{\r\n";
+			bool first = true;
+			for (Json::Value::const_iterator it = value.begin(); it != value.end(); ++it) {
+				if (!first) {
+					out += ",\r\n";
+				}
+				first = false;
+				ostringstream keyStream;
+				compactWriter.write(Json::Value(it.name()), &keyStream);
+				out += childIndent + keyStream.str() + ": ";
+				writeInlineNode(compactWriter, *it, depth + 1, inlineLimit, out);
+			}
+			out += "\r\n" + closeIndent + "}";
+		}
+		else {
+			out += "[\r\n";
+			for (Json::ArrayIndex i = 0; i < value.size(); i++) {
+				if (i > 0) {
+					out += ",\r\n";
+				}
+				out += childIndent;
+				writeInlineNode(compactWriter, value[i], depth + 1, inlineLimit, out);
+			}
+			out += "\r\n" + closeIndent + "]";
+		}
+	}
+
+}
+
+
+bool CTT::JsonUtil::writeIntoJson(Json::Value& value, wstring &path, UINT32 inlineLimit)
 {
 	DWORD dWrite;
 
@@ -76,7 +153,15 @@ bool CTT::JsonUtil::writeIntoJson(Json::Value& value, wstring &path)
 	// 핸들에 기록
 	Json::StreamWriterBuilder builder;
 	builder.settings_["emitUTF8"] = true;
-	string output = Json::writeString(builder, value);
+	string output;
+	if (inlineLimit == 0) {
+		output = Json::writeString(builder, value);
+	}
+	else {
+		builder.settings_["indentation"] = "";
+		unique_ptr<Json::StreamWriter> compactWriter(builder.newStreamWriter());
+		writeInlineNode(*compactWriter, value, 0, (int)inlineLimit, output);
+	}
 	WriteFile(hJson, output.c_str(), output.size(), &dWrite, NULL);
 	CloseHandle(hJson);
 

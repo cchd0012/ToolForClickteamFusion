@@ -793,7 +793,8 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 						wostringstream indexStream;
 						indexStream << setw(6) << setfill(L'0') << frameIndex;
 						wstring exportJsonPath = getExtentionRemovedPath(archivePath) + L"/script/frame/" + indexStream.str() + L".json";
-						if (!writeIntoJson(scriptValue, exportJsonPath)) {
+						// 조건/동작 하나가 한 줄이 되도록 압축해서 쓴다 (들여쓰기만 줄여도 크기가 절반 이하)
+						if (!writeIntoJson(scriptValue, exportJsonPath, 700)) {
 							wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Frame 스크립트를 json 으로 저장하지 못했습니다." << endl;
 							triggerError(__FUNCTION__, u8"Frame 스크립트를 json 으로 저장하지 못했습니다");
 							return false;

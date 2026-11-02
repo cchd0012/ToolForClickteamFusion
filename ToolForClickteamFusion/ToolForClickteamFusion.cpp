@@ -50,6 +50,16 @@ int wmain(int argc, WCHAR* argv[])
 		return -1;
 	}
 
+	// 개발용 스위치: 시작하자마자 아카이브를 연다 (--open <아카이브> [atlas] [blitter]. atlas, blitter 는 해당 한글화 도구 창도 같이 연다)
+	if (argc >= 3 && wcscmp(argv[1], L"--open") == 0) {
+		ApplicationState* startupStates = getApp()->getStates();
+		WideCharToMultiByte(CP_UTF8, 0, argv[2], -1, startupStates->startupArchivePath, MAX_UTF8_PATH - 1, NULL, NULL);
+		for (int i = 3; i < argc; i++) {
+			startupStates->startupShowAtlas = startupStates->startupShowAtlas || (wcscmp(argv[i], L"atlas") == 0);
+			startupStates->startupShowBlitter = startupStates->startupShowBlitter || (wcscmp(argv[i], L"blitter") == 0);
+		}
+	}
+
 	getApp()->run();
 	getApp()->terminate();
 

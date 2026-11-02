@@ -2,6 +2,9 @@
 #include "../ImGUI/Headers.h"
 #include "../Chunk/Image/Headers.h"
 #include "../Chunk/Sound/Headers.h"
+#include "../Util/CommonUtil.h"
+
+#include <shellapi.h>
 
 using namespace CTT::App;
 using namespace CTT::Archive;
@@ -27,6 +30,15 @@ void Dx9Application::render()
 		}
 	}
 
+	// 시작 스위치(--open)로 받은 아카이브를 처음 한 번 연다
+	if (states.startupArchivePath[0] != 0) {
+		strcpy_s(states.openArchivePath, states.startupArchivePath);
+		states.startupArchivePath[0] = 0;
+		states.isArchiveOpened = openArchive();
+		hangul.showAtlasWindow = states.isArchiveOpened && states.startupShowAtlas;
+		hangul.showBlitterWindow = states.isArchiveOpened && states.startupShowBlitter;
+	}
+
 	// 메뉴 탭 렌더링
 	renderMenuTab();
 
@@ -35,6 +47,14 @@ void Dx9Application::render()
 		renderArchiveInfoWindow();
 		renderArchiveChunkListWindow();
 		renderArchiveEachChunkInfoWindow();
+
+		// 한글화 도구 창 (수정 단계)
+		if (hangul.showAtlasWindow) {
+			renderHangulAtlasWindow();
+		}
+		if (hangul.showBlitterWindow) {
+			renderHangulBlitterWindow();
+		}
 	}
 
 	// 에러가 있다면 에러 메시지 박스 렌더링
@@ -132,8 +152,10 @@ void Dx9Application::renderMenuTab()
 			ImGui::EndMenu();
         }
 		// 추출
-		if (ImGui::BeginMenu(u8"추출"))
+		if (ImGui::BeginMenu(u8"1.추출"))
 		{
+			ImGui::TextDisabled(u8"1단계: 아카이브의 데이터를 파일(PNG, JSON 등)로 꺼냅니다");
+			ImGui::Separator();
 			// [아카이브를 열지 않았다면 비활성화]
 			if (!states.isArchiveOpened) {
 				ImGui::BeginDisabled(true);
@@ -162,6 +184,7 @@ void Dx9Application::renderMenuTab()
 				states.usingBinaryData = true;
 				states.usingText = true;
 				states.usingScript = true;
+					states.usingFlow = true;
 			}
 			if (ImGui::IsItemHovered()) {
 				ImGui::SetTooltip(u8"지정한 타입의 Chunk 데이터만\n아카이브와 같은 위치에 같은 이름을 가진\n폴더에 추출합니다");
@@ -172,9 +195,78 @@ void Dx9Application::renderMenuTab()
 			}
 			ImGui::EndMenu();
 		}
+			// 수정
+			if (ImGui::BeginMenu(u8"2.수정"))
+			{
+				ImGui::TextDisabled(u8"2단계: 추출된 파일을 고칩니다. 다 고치면 '3.교체'를 하세요");
+				ImGui::Separator();
+				// [아카이브를 열지 않았다면 비활성화]
+				if (!states.isArchiveOpened) {
+					ImGui::BeginDisabled(true);
+				}
+				wstring baseDir;
+				if (states.isArchiveOpened) {
+					wstring archivePathForEdit = archive->getArchivePath();
+					baseDir = CTT::CommonUtil::getExtentionRemovedPath(archivePathForEdit);
+				}
+				// 폴더 열기: 추출한 폴더가 없으면 비활성화한다
+				auto folderItem = [&](const char* label, const wchar_t* sub, const char* tip) {
+					wstring folder = baseDir + L"/" + sub;
+					DWORD attr = baseDir.empty() ? INVALID_FILE_ATTRIBUTES : GetFileAttributesW(folder.c_str());
+					bool exists = (attr != INVALID_FILE_ATTRIBUTES) && ((attr & FILE_ATTRIBUTE_DIRECTORY) != 0);
+					if (!exists) {
+						ImGui::BeginDisabled(true);
+					}
+					if (ImGui::MenuItem(label)) {
+						ShellExecuteW(NULL, L"open", folder.c_str(), NULL, NULL, SW_SHOWNORMAL);
+					}
+					if (!exists) {
+						ImGui::EndDisabled();
+					}
+					if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+						ImGui::SetTooltip(exists ? tip : u8"추출한 폴더가 없습니다. 먼저 '1.추출'을 하세요");
+					}
+				};
+				if (ImGui::BeginMenu(u8"텍스트")) {
+					folderItem(u8"텍스트 폴더 열기", L"text", u8"frameEventText.json, objectText.json 의 translation 칸에 번역을 적습니다");
+					ImGui::EndMenu();
+				}
+				if (ImGui::BeginMenu(u8"이미지")) {
+					folderItem(u8"이미지 폴더 열기", L"image", u8"PNG 를 같은 이름으로 고치거나 appendImages.json 으로 새 이미지를 추가합니다");
+					ImGui::EndMenu();
+				}
+				if (ImGui::BeginMenu(u8"폰트")) {
+					folderItem(u8"폰트 폴더 열기", L"font", u8"TrueType/LogFont 폰트 파일을 바꿉니다");
+					ImGui::Separator();
+					if (ImGui::MenuItem(u8"한글 글자 아틀라스...")) {
+						hangul.showAtlasWindow = true;
+					}
+					if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+						ImGui::SetTooltip(u8"폰트로 글자 아틀라스를 만들고, 텍스트 블리터(txtblt.mfx)가 한글을 그리게 하는 모듈을 만듭니다");
+					}
+					if (ImGui::MenuItem(u8"블리터 글자표 배정...")) {
+						hangul.showBlitterWindow = true;
+					}
+					if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+						ImGui::SetTooltip(u8"텍스트 블리터마다 글자표와 줄 폭 계산 방식을 고르고,\n블리터가 받는 문자열을 그 글자표로 미리 봅니다");
+					}
+					ImGui::EndMenu();
+				}
+				if (ImGui::BeginMenu(u8"스크립트")) {
+					folderItem(u8"스크립트 폴더 열기", L"script", u8"frame/ 의 이벤트, object/ 의 오브젝트 JSON 을 고칩니다");
+					ImGui::EndMenu();
+				}
+				// [아카이브를 열지 않았다면 비활성화]
+				if (!states.isArchiveOpened) {
+					ImGui::EndDisabled();
+				}
+				ImGui::EndMenu();
+			}
 		// 교체
-		if (ImGui::BeginMenu(u8"교체"))
+		if (ImGui::BeginMenu(u8"3.교체 (재합성)"))
 		{
+			ImGui::TextDisabled(u8"3단계: 고친 파일을 아카이브에 합쳐 새 아카이브(~_new)로 저장합니다");
+			ImGui::Separator();
 			// [아카이브를 열지 않았다면 비활성화]
 			if (!states.isArchiveOpened) {
 				ImGui::BeginDisabled(true);
@@ -500,6 +592,9 @@ DWORD extractingThreadFunction(PVOID pParam)
 	if (getApp()->getStates()->usingScript) {
 		extractingTypes.push_back(L"script");
 	}
+	if (getApp()->getStates()->usingFlow) {
+		extractingTypes.push_back(L"flow");
+	}
 	// 전체 개수 세팅
 	getApp()->getArchive()->setDataCount(extractingTypes);
 	// 추출 작업 수행
@@ -529,6 +624,7 @@ void Dx9Application::renderArchiveExtractModal()
 			states.usingBinaryData = true;
 			states.usingText = true;
 			states.usingScript = true;
+			states.usingFlow = true;
 			CreateThread(NULL, 0, extractingThreadFunction, NULL, 0, NULL);
 		}
 
@@ -582,6 +678,7 @@ void Dx9Application::renderArchivePartExtractModal()
 		ImGui::Checkbox(u8"기타 Blob 데이터", &states.usingBinaryData);
 		ImGui::Checkbox(u8"텍스트", &states.usingText);
 		ImGui::Checkbox(u8"스크립트", &states.usingScript);
+		ImGui::Checkbox(u8"텍스트 흐름 분석 (추출만 가능, 블리터가 받는 문자열)", &states.usingFlow);
 		// [추출 중이면 버튼 비활성화]
 		if (states.extractingThreadState == ThreadState::THREAD_EXECUTING) {
 			ImGui::EndDisabled();
@@ -611,7 +708,7 @@ void Dx9Application::renderArchivePartExtractModal()
 		static bool threadStateChange = false;
 
 		// 아무것도 체크되지 않았는지 여부
-		bool isNoneSelected = !states.usingImage && !states.usingSound && !states.usingFont && !states.usingShader && !states.usingBinaryData && !states.usingText && !states.usingScript;
+		bool isNoneSelected = !states.usingImage && !states.usingSound && !states.usingFont && !states.usingShader && !states.usingBinaryData && !states.usingText && !states.usingScript && !states.usingFlow;
 		if (archive->getArchiveType() == ArchiveType::ARCHIVE_EXE) {
 			isNoneSelected = isNoneSelected && !states.usingModule;
 		}

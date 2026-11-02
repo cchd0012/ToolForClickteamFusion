@@ -41,4 +41,13 @@ void Dx9Application::closeArchive()
 		delete archive;
 		archive = NULL;
 	}
+
+	// 한글화 도구 창의 작업 내용도 비운다 (다른 아카이브의 것이 남지 않도록)
+	hangul.blittersLoaded = false;
+	hangul.atlasesLoaded = false;
+	hangul.currentBlitter = -1;
+	hangul.previewAtlas = -1;
+	hangul.blitters.clear();
+	hangul.atlases.clear();
+	hangul.releaseTextures();
 }

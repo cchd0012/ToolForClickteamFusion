@@ -103,6 +103,7 @@ void Application::initializeAppState()
 	states.usingBinaryData = true;
 	states.usingText = true;
 	states.usingScript = true;
+	states.usingFlow = true;
 	states.totalDataCount = 0;
 	states.currentDataIndex = 0;
 

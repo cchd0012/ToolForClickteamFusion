@@ -2,6 +2,7 @@
 
 #include "Application.h"
 #include "../ImGUI/Headers.h"
+#include "HangulUi.h"
 
 namespace CTT {
 
@@ -36,6 +37,9 @@ namespace CTT {
 			void renderTreeNodes(ChunkTreeNode* node, UINT32 depth, UINT32 index, bool isRoot);
 			void renderArchiveChunkListWindow();
 			void renderArchiveEachChunkInfoWindow();
+			// 한글화 도구 창 (수정 단계), Dx9Application_Hangul.cpp
+			void renderHangulAtlasWindow();
+			void renderHangulBlitterWindow();
 			// 프로세싱 함수
 			void terminateProcess();
 			bool openArchive();
@@ -48,6 +52,7 @@ namespace CTT {
 			LPDIRECT3DDEVICE9 pD3dDevice;
 			bool isDeviceLost;
 			D3DPRESENT_PARAMETERS d3dPp;
+			HangulUiState hangul;
 		};
 
 	}

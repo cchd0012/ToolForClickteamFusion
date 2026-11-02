@@ -274,6 +274,9 @@
     <ClCompile Include="Application\Dx9Application_Render.cpp">
       <Filter>Application</Filter>
     </ClCompile>
+    <ClCompile Include="Application\Dx9Application_Hangul.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
     <ClCompile Include="Util\TextureUtil.cpp">
       <Filter>Util</Filter>
     </ClCompile>
@@ -559,6 +562,9 @@
       <Filter>ImGUI</Filter>
     </ClInclude>
     <ClInclude Include="Application\Dx9Application.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="Application\HangulUi.h">
       <Filter>Application</Filter>
     </ClInclude>
     <ClInclude Include="Application\Application.h">

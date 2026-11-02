@@ -31,6 +31,11 @@ typedef struct _application_state {
 	bool isDirty;
 	bool isDraggable;
 
+	// 시작할 때 바로 열 아카이브 (개발용 스위치 --open <아카이브> [atlas] [blitter])
+	char startupArchivePath[MAX_UTF8_PATH];
+	bool startupShowAtlas;
+	bool startupShowBlitter;
+
 	// 에러 관련 상태
 	bool isError;
 	char lastErrorTitle[MAX_ERROR_TITLE_LENGTH];
@@ -69,6 +74,7 @@ typedef struct _application_state {
 	bool usingBinaryData;
 	bool usingText;
 	bool usingScript;
+	bool usingFlow;						// 텍스트 흐름 분석 (추출만 가능, 스크립트 디컴파일 결과를 본다)
 	UINT32 totalDataCount;
 	UINT32 currentDataIndex;
 

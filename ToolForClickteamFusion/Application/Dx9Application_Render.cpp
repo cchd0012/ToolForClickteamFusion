@@ -259,8 +259,8 @@ void Dx9Application::renderMenuTab()
 					}
 					ImGui::EndMenu();
 				}
-				if (ImGui::BeginMenu(u8"스크립트")) {
-					folderItem(u8"스크립트 폴더 열기", L"script", u8"frame/ 의 이벤트, object/ 의 오브젝트 JSON 을 고칩니다");
+				if (ImGui::BeginMenu(u8"스크립트 (디컴파일 결과)")) {
+					folderItem(u8"스크립트 폴더 열기", L"script", u8"디컴파일한 frame/ 의 이벤트, object/ 의 오브젝트 JSON 을 고칩니다.\n고친 내용은 3.교체의 '스크립트'(리컴파일)로 아카이브에 합쳐집니다");
 					ImGui::EndMenu();
 				}
 				// [아카이브를 열지 않았다면 비활성화]
@@ -683,8 +683,8 @@ void Dx9Application::renderArchivePartExtractModal()
 		}
 		ImGui::Checkbox(u8"셰이더 (추출만 가능)", &states.usingShader);
 		ImGui::Checkbox(u8"기타 Blob 데이터", &states.usingBinaryData);
-		ImGui::Checkbox(u8"텍스트", &states.usingText);
-		ImGui::Checkbox(u8"스크립트", &states.usingScript);
+		ImGui::Checkbox(u8"텍스트 (번역용 JSON)", &states.usingText);
+		ImGui::Checkbox(u8"스크립트 (디컴파일: 이벤트와 오브젝트를 JSON 으로)", &states.usingScript);
 		ImGui::Checkbox(u8"텍스트 흐름 분석 (추출만 가능, 블리터가 받는 문자열)", &states.usingFlow);
 		// [추출 중이면 버튼 비활성화]
 		if (states.extractingThreadState == ThreadState::THREAD_EXECUTING) {
@@ -870,8 +870,8 @@ void Dx9Application::renderArchivePartReplaceModal()
 			ImGui::Checkbox(u8"모듈", &states.usingModule);
 		}
 		ImGui::Checkbox(u8"기타 Blob 데이터", &states.usingBinaryData);
-		ImGui::Checkbox(u8"텍스트", &states.usingText);
-		ImGui::Checkbox(u8"스크립트", &states.usingScript);
+		ImGui::Checkbox(u8"텍스트 (번역 JSON 적용)", &states.usingText);
+		ImGui::Checkbox(u8"스크립트 (리컴파일: 고친 JSON 을 이벤트와 오브젝트로 합침)", &states.usingScript);
 		// [교체 중이면 버튼 비활성화]
 		if (states.replacingThreadState == ThreadState::THREAD_EXECUTING) {
 			ImGui::EndDisabled();

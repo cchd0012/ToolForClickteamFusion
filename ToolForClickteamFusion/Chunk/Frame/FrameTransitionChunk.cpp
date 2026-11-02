@@ -72,7 +72,8 @@ bool FrameTransitionChunk::loadFromOrgBuffer()
 
 bool FrameTransitionChunk::saveIntoOrgBuffer()
 {
-	// parameterOffset = 4 + 4 + (sizeof(UINT32) * 2) + sizeof(Color) + sizeof(wchar_t) * (value.moduleFileName 길이 + 1)
+	// 헤더: moduleType(4) + name(4) + duration(4) + flags(4) + color(4) + 오프셋/크기 필드 3개(12) = 32바이트, 그 뒤에 모듈 파일명이 온다
+	// parameterOffset = moduleFileNameOffset + sizeof(wchar_t) * (value.moduleFileName 길이 + 1)
 	// 크기 계산: parameterOffset + (value.parameterData의 크기)
 	// parameterOffset은 parameterSize가 0이라도 정확히 기록해야 한다
 
@@ -81,7 +82,7 @@ bool FrameTransitionChunk::saveIntoOrgBuffer()
 		orgBuffer = NULL;
 	}
 
-	UINT32 moduleFileNameOffset = 4 + 4 + (sizeof(UINT32) * 2) + sizeof(Color);
+	UINT32 moduleFileNameOffset = 4 + 4 + (sizeof(UINT32) * 2) + sizeof(Color) + (sizeof(UINT32) * 3);
 	UINT32 parameterOffset = moduleFileNameOffset + (sizeof(wchar_t) * ((UINT32)value.moduleFileName.length() + 1));
 	UINT32 parameterSize = (UINT32)value.parameterData.size();
 	orgSize = parameterOffset + parameterSize;
@@ -92,20 +93,20 @@ bool FrameTransitionChunk::saveIntoOrgBuffer()
 	BYTE* baseBuffer = orgBuffer;
 
 	string moduleTypeAnsi = getAnsiStr(value.moduleType, CodePage::CP_ANSI);
-	memcpy(orgBufferPnt, moduleTypeAnsi.data(), 4);
+	memcpy(orgBufferPnt, moduleTypeAnsi.data(), (moduleTypeAnsi.size() < 4) ? moduleTypeAnsi.size() : 4);
 	orgBufferPnt += 4;
 
 	string nameAnsi = getAnsiStr(value.name, CodePage::CP_ANSI);
-	memcpy(orgBufferPnt, nameAnsi.data(), 4);
+	memcpy(orgBufferPnt, nameAnsi.data(), (nameAnsi.size() < 4) ? nameAnsi.size() : 4);
 	orgBufferPnt += 4;
 
-	value.duration = *(UINT32*)orgBufferPnt;
+	*(UINT32*)orgBufferPnt = value.duration;
 	orgBufferPnt += sizeof(UINT32);
 
-	value.flags = *(UINT32*)orgBufferPnt;
+	*(UINT32*)orgBufferPnt = value.flags;
 	orgBufferPnt += sizeof(UINT32);
 
-	value.color = *(Color*)orgBufferPnt;
+	*(Color*)orgBufferPnt = value.color;
 	orgBufferPnt += sizeof(Color);
 
 	*(UINT32*)orgBufferPnt = moduleFileNameOffset;

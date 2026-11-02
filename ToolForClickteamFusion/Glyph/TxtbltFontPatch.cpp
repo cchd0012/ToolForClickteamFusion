@@ -46,6 +46,14 @@ namespace {
 		0x45, 0xf0 };
 	const UINT32 kDrawRet = 0x10004463;
 
+	//  4) 레이아웃 함수 FUN_10002a73(개체) 의 시작: 글자표와 폭 합산 플래그가 있는 오브젝트는 kfont_layout 으로 줄을 나눈다
+	const UINT32 kLayoutVa = 0x10002a73;
+	const unsigned char kLayoutOrg[9] = { 0x55, 0x8b, 0xec, 0x81, 0xec, 0x34, 0x01, 0x00, 0x00 };		// push ebp / mov ebp,esp / sub esp,0x134
+	const UINT32 kLayoutRet = 0x10002a7c;
+	const UINT32 kLayoutNewNodeVa = 0x10002a3b;		// 줄 노드를 만드는 함수 (cdecl)
+	const UINT32 kLayoutDeleteVa = 0x10004706;		// operator delete 썽크 (cdecl)
+	const UINT32 kLayoutEmptyVa = 0x10006c84;		// 머리 노드가 가리키는 빈 문자열
+
 	struct PeSection { string name; UINT32 vs, va, rs, ro; };
 
 
@@ -170,6 +178,39 @@ namespace {
 		return a.bytes;
 	}
 
+
+	// 레이아웃 후크: 글자표가 있고(rd+0x418) 폭 합산 플래그(rd+0x41c bit0)가 켜져 있고 상자 플래그(0x20000)가 없으면 kfont_layout,
+	// 아니면 원래 함수를 그대로 실행한다. 노드 함수 / 해제 함수 / 빈 문자열의 주소는 위치 독립으로 구한다
+	Bytes buildLayoutTrampoline(UINT32 startVa, UINT32 layoutFuncVa)
+	{
+		Asm a(startVa);
+		a.op({ 0x8b, 0x44, 0x24, 0x04 });												// mov eax,[esp+4]            개체
+		a.op({ 0x83, 0xb8, 0x18, 0x04, 0x00, 0x00, 0x00 });								// cmp dword [eax+0x418],0
+		a.branch({ 0x0f, 0x84 }, "orig");												// je 원래 함수
+		a.op({ 0xf6, 0x80, 0x1c, 0x04, 0x00, 0x00, 0x01 });								// test byte [eax+0x41c],1
+		a.branch({ 0x0f, 0x84 }, "orig");												// jz 원래 함수
+		a.op({ 0xf7, 0x80, 0xe8, 0x02, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00 });			// test dword [eax+0x2e8],0x20000
+		a.branch({ 0x0f, 0x85 }, "orig");												// jnz 원래 함수
+		a.op({ 0xe8, 0, 0, 0, 0 });														// call $+5
+		const UINT32 land = startVa + (UINT32)a.bytes.size();							// pop ecx 의 주소
+		a.op({ 0x59 });																	// pop ecx
+		a.op({ 0x8d, 0x91 }); append32(a.bytes, kLayoutEmptyVa - land);					// lea edx,[ecx+<빈 문자열까지>]
+		a.op({ 0x52 });																	// push edx
+		a.op({ 0x8d, 0x91 }); append32(a.bytes, kLayoutDeleteVa - land);				// lea edx,[ecx+<해제 함수까지>]
+		a.op({ 0x52 });
+		a.op({ 0x8d, 0x91 }); append32(a.bytes, kLayoutNewNodeVa - land);				// lea edx,[ecx+<노드 함수까지>]
+		a.op({ 0x52 });
+		a.op({ 0x50 });																	// push eax (개체)
+		a.jumpVa(0xe8, layoutFuncVa);													// call kfont_layout (cdecl)
+		a.op({ 0x83, 0xc4, 0x10 });														// add esp,16
+		a.op({ 0xc3 });																	// ret
+		a.label("orig");
+		a.raw(kLayoutOrg, sizeof(kLayoutOrg));											// 밀려난 명령 9바이트
+		a.jumpVa(0xe9, kLayoutRet);
+		a.resolve();
+		return a.bytes;
+	}
+
 }
 
 
@@ -225,8 +266,8 @@ bool CTT::Glyph::patchTxtbltFont(vector<unsigned char>& data, const vector<Txtbl
 		}
 	};
 	struct Site { UINT32 va; const unsigned char* org; size_t len; size_t off; };
-	Site sites[3] = { { kSizeVa, kSizeOrg, sizeof(kSizeOrg), 0 }, { kBindVa, kBindOrg, sizeof(kBindOrg), 0 }, { kDrawVa, kDrawOrg, sizeof(kDrawOrg), 0 } };
-	for (int i = 0; i < 3; i++) {
+	Site sites[4] = { { kSizeVa, kSizeOrg, sizeof(kSizeOrg), 0 }, { kBindVa, kBindOrg, sizeof(kBindOrg), 0 }, { kDrawVa, kDrawOrg, sizeof(kDrawOrg), 0 }, { kLayoutVa, kLayoutOrg, sizeof(kLayoutOrg), 0 } };
+	for (int i = 0; i < 4; i++) {
 		if (!Local::va2off(secs, sites[i].va, sites[i].off) || sites[i].off + sites[i].len > data.size() || memcmp(&data[sites[i].off], sites[i].org, sites[i].len) != 0) {
 			error = L"원본 txtblt.mfx(37376바이트 판)의 패치 지점이 맞지 않습니다.";
 			return false;
@@ -271,15 +312,17 @@ bool CTT::Glyph::patchTxtbltFont(vector<unsigned char>& data, const vector<Txtbl
 		entries.push_back(make_pair(assignments[i].id, i));
 	}
 
-	// 새 섹션 .kfont: [CreateRunObject 후크][글자 그리기][헬퍼 코드][등록 표][글자표들]
+	// 새 섹션 .kfont: [CreateRunObject 후크][글자 그리기][레이아웃][헬퍼 코드][등록 표][글자표들]
 	const UINT32 newVa = (sizeOfImage + secAlign - 1) & ~(secAlign - 1);
 	const UINT32 baseVa = kImageBase + newVa;
 	const UINT32 codeLen = (UINT32)sizeof(kTxtbltFontCode);
 	UINT32 bindTrampolineLen = (UINT32)buildBindTrampoline(0, 0, 0).size();
 	UINT32 drawTrampolineLen = (UINT32)buildDrawTrampoline(0, 0).size();
+	UINT32 layoutTrampolineLen = (UINT32)buildLayoutTrampoline(0, 0).size();
 	UINT32 bindRel = 0;
 	UINT32 drawRel = align4(bindRel + bindTrampolineLen);
-	UINT32 codeRel = align4(drawRel + drawTrampolineLen);
+	UINT32 layoutRel = align4(drawRel + drawTrampolineLen);
+	UINT32 codeRel = align4(layoutRel + layoutTrampolineLen);
 	UINT32 registryRel = align4(codeRel + codeLen);
 	UINT32 registryLen = 8 + (UINT32)entries.size() * 8;
 	UINT32 tablesRel = align4(registryRel + registryLen);
@@ -294,7 +337,8 @@ bool CTT::Glyph::patchTxtbltFont(vector<unsigned char>& data, const vector<Txtbl
 
 	Bytes bindCode = buildBindTrampoline(baseVa + bindRel, baseVa + codeRel + kTxtbltFontBindOffset, baseVa + registryRel);
 	Bytes drawCode = buildDrawTrampoline(baseVa + drawRel, baseVa + codeRel + kTxtbltFontGetOffset);
-	if (bindCode.size() != bindTrampolineLen || drawCode.size() != drawTrampolineLen) {
+	Bytes layoutCode = buildLayoutTrampoline(baseVa + layoutRel, baseVa + codeRel + kTxtbltFontLayoutOffset);
+	if (bindCode.size() != bindTrampolineLen || drawCode.size() != drawTrampolineLen || layoutCode.size() != layoutTrampolineLen) {
 		error = L"후크 코드 크기가 예상과 다릅니다.";
 		return false;
 	}
@@ -302,6 +346,7 @@ bool CTT::Glyph::patchTxtbltFont(vector<unsigned char>& data, const vector<Txtbl
 	Bytes section(newRs, 0xcc);
 	memcpy(&section[bindRel], &bindCode[0], bindCode.size());
 	memcpy(&section[drawRel], &drawCode[0], drawCode.size());
+	memcpy(&section[layoutRel], &layoutCode[0], layoutCode.size());
 	memcpy(&section[codeRel], kTxtbltFontCode, codeLen);
 	memset(&section[registryRel], 0, need - registryRel);
 	put32(section, registryRel, 0x3152464B);						// 'KFR1'
@@ -335,6 +380,9 @@ bool CTT::Glyph::patchTxtbltFont(vector<unsigned char>& data, const vector<Txtbl
 	memset(&data[sites[2].off], 0xcc, sizeof(kDrawOrg));			// 일반 글자 그리기: 처음에 jmp, 나머지는 쓰이지 않는다
 	data[sites[2].off] = 0xe9;
 	put32(data, sites[2].off + 1, (baseVa + drawRel) - (sites[2].va + 5));
+	data[sites[3].off] = 0xe9;										// 레이아웃 함수: 9바이트 -> jmp + nop
+	put32(data, sites[3].off + 1, (baseVa + layoutRel) - (sites[3].va + 5));
+	memset(&data[sites[3].off + 5], 0x90, sizeof(kLayoutOrg) - 5);
 	return true;
 }
 

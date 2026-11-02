@@ -63,7 +63,9 @@ static const size_t kTextBlitterImageHandle = 0x5d0;			// u16. 실행 중에는 
 // 글자표 번호: 빈 꼬리 영역에 둔다 (원본 오브젝트는 이 영역이 전부 0이고 런타임도 건드리지 않는다)
 static const size_t kTextBlitterFontTableMagic = 0x2030;		// u32 'KFNT' (4B 46 4E 54)
 static const size_t kTextBlitterFontTable = 0x2034;				// u32 글자표 번호 (1 이상)
+static const size_t kTextBlitterLayoutFlags = 0x2038;			// u32 레이아웃 플래그: bit0 = 줄 폭을 글자 폭의 합으로 계산 (블록 크기 0x203C 이상)
 static const size_t kTextBlitterMinBlock = 0x2038;
+static const size_t kTextBlitterFlagsBlock = 0x203C;
 static const UINT32 kTextBlitterFontTableMagicValue = 0x544E464B;
 
 static bool isTextBlitter(ObjectCommon& common)
@@ -209,6 +211,8 @@ bool CTT::Chunk::decompileObjectScript(INT32 index, const string& name, INT16 ob
 			blitter["imageHandle"] = (int)(block[kTextBlitterImageHandle] | (block[kTextBlitterImageHandle + 1] << 8));
 			bool hasFontTable = ((UINT32)readBlockI32(block, kTextBlitterFontTableMagic) == kTextBlitterFontTableMagicValue);
 			blitter["fontTable"] = hasFontTable ? readBlockI32(block, kTextBlitterFontTable) : 0;
+			bool pixelLayout = hasFontTable && (block.size() >= kTextBlitterFlagsBlock) && ((readBlockI32(block, kTextBlitterLayoutFlags) & 1) != 0);
+			blitter["layout"] = pixelLayout ? "pixel" : "byte";
 			value["textBlitter"] = blitter;
 		}
 	}
@@ -424,6 +428,16 @@ bool CTT::Chunk::recompileObjectScript(ObjectCommon& common, const Json::Value& 
 			}
 			writeBlockI32(updated, kTextBlitterFontTableMagic, (v > 0) ? (INT32)kTextBlitterFontTableMagicValue : 0);
 			writeBlockI32(updated, kTextBlitterFontTable, (INT32)v);
+		}
+		if (blitter.isMember("layout")) {
+			const string layout = blitter["layout"].isString() ? blitter["layout"].asString() : string();
+			if ((layout != "byte" && layout != "pixel") || (block.size() < kTextBlitterFlagsBlock)) {
+				errorMessage = "bad textBlitter.layout (byte or pixel)";
+				return false;
+			}
+			INT32 flagsValue = readBlockI32(updated, kTextBlitterLayoutFlags);
+			flagsValue = (layout == "pixel") ? (flagsValue | 1) : (flagsValue & ~1);
+			writeBlockI32(updated, kTextBlitterLayoutFlags, flagsValue);
 		}
 		if (updated != block) {
 			common.setExtensionBlock(updated);

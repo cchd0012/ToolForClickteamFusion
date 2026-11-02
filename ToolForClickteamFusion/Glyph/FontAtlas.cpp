@@ -22,6 +22,9 @@ using namespace CTT::PngUtil;
 //       "lineHeight": 0,                    0 이면 폰트 지표(ascent + descent)
 //       "dy": 0,                            글자를 그릴 세로 보정
 //       "threshold": 128,                   0 이면 안티앨리어싱 유지, 1~255 이면 그 이상만 불투명 (기본 128)
+//       "color": [255, 255, 255],           글자 색 (기본 흰색)
+//       "outlineSize": 0,                   외곽선 두께 (픽셀). 1 이상이면 글자 둘레를 outlineColor 로 두르고 줄 높이가 2 x 두께만큼 늘어난다
+//       "outlineColor": [0, 0, 0],
 //       "letterSpacing": 0,                 모든 글자의 폭에 더하는 값
 //       "spaceWidth": 0,                    0 이면 폰트 값
 //       "missingAdvance": 0,                글자표에 없는 코드의 폭. 0 이면 공백 폭
@@ -312,15 +315,14 @@ bool CTT::Glyph::buildFontAtlas(const wstring& configPath)
 		return false;
 	}
 
-	FT_Library library = NULL;
+	FtLibrary freeType;					// font 보다 먼저 선언해서 나중에 해제한다
 	FtFont font;
-	if (FT_Init_FreeType(&library) != 0) {
+	if (!freeType.isOpen()) {
 		return false;
 	}
-	bool opened = font.open(library, FtFont::readFile(resolvePath(baseDir, fromUtf8(c["font"].asString()))), c["size"].asInt());
+	bool opened = font.open(freeType.get(), FtFont::readFile(resolvePath(baseDir, fromUtf8(c["font"].asString()))), c["size"].asInt());
 	if (!opened) {
 		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 폰트를 열지 못했습니다." << endl;
-		FT_Done_FreeType(library);
 		return false;
 	}
 
@@ -331,11 +333,22 @@ bool CTT::Glyph::buildFontAtlas(const wstring& configPath)
 	const int lineHeight = c.get("lineHeight", 0).asInt() > 0 ? c["lineHeight"].asInt() : (ascent + font.descent());
 	const int dy = c.get("dy", 0).asInt();
 	const int threshold = c.get("threshold", 128).asInt();
+	const int outlineSize = c.get("outlineSize", 0).asInt();
+	BYTE fillColor[3] = { 255, 255, 255 }, outlineColor[3] = { 0, 0, 0 };		// B, G, R
+	for (int k = 0; k < 3; k++) {
+		if (c["color"].isArray() && c["color"].size() == 3) {
+			fillColor[2 - k] = (BYTE)c["color"][k].asInt();
+		}
+		if (c["outlineColor"].isArray() && c["outlineColor"].size() == 3) {
+			outlineColor[2 - k] = (BYTE)c["outlineColor"][k].asInt();
+		}
+	}
+	// 외곽선이 있으면 글자 칸의 높이가 늘어난다
+	const int cellHeight = lineHeight + 2 * outlineSize;
 	const int letterSpacing = c.get("letterSpacing", 0).asInt();
 	const int atlasWidth = c.get("atlasWidth", 2048).asInt();
-	if (lineHeight <= 0 || lineHeight > 255 || atlasWidth < 64 || atlasWidth > 0xFFFF) {
+	if (lineHeight <= 0 || cellHeight > 255 || outlineSize < 0 || outlineSize > 8 || atlasWidth < 64 || atlasWidth > 0xFFFF) {
 		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 줄 높이(1~255) 또는 아틀라스 폭이 올바르지 않습니다: " << dec << lineHeight << L", " << atlasWidth << endl;
-		FT_Done_FreeType(library);
 		return false;
 	}
 
@@ -357,7 +370,7 @@ bool CTT::Glyph::buildFontAtlas(const wstring& configPath)
 		int left;
 		int width;
 		int advance;
-		vector<BYTE> alpha;			// width x lineHeight
+		vector<BYTE> bgra;			// width x cellHeight x 4 (B, G, R, A)
 	};
 	vector<Cell> cells;
 	size_t missingInFont = 0;
@@ -411,9 +424,8 @@ bool CTT::Glyph::buildFontAtlas(const wstring& configPath)
 		cell.left = 0;
 		cell.width = 0;
 		if (bitmap.buffer != NULL && bitmap.width > 0 && bitmap.rows > 0) {
-			cell.left = bitmap.left;
-			cell.width = bitmap.width;
-			cell.alpha.assign((size_t)cell.width * lineHeight, 0);
+			// 글자만 그린 알파 (폭 x 줄 높이)
+			vector<BYTE> alpha((size_t)bitmap.width * lineHeight, 0);
 			const int originY = dy + ascent - bitmap.top;
 			for (int gy = 0; gy < bitmap.rows; gy++) {
 				const int py = originY + gy;
@@ -425,13 +437,40 @@ bool CTT::Glyph::buildFontAtlas(const wstring& configPath)
 					if (threshold > 0) {
 						v = (v >= threshold) ? 255 : 0;
 					}
-					cell.alpha[(size_t)py * cell.width + gx] = (BYTE)v;
+					alpha[(size_t)py * bitmap.width + gx] = (BYTE)v;
+				}
+			}
+			// 칸: 글자 둘레 outlineSize 픽셀을 더하고, 글자 픽셀에서 가까운 곳을 외곽선 색으로 채운다
+			const int pw = bitmap.width + 2 * outlineSize;
+			cell.left = bitmap.left - outlineSize;
+			cell.width = pw;
+			cell.bgra.assign((size_t)pw * cellHeight * 4, 0);
+			for (int py = 0; py < cellHeight; py++) {
+				for (int px = 0; px < pw; px++) {
+					const int gx = px - outlineSize, gy = py - outlineSize;
+					BYTE* out = &cell.bgra[((size_t)py * pw + px) * 4];
+					const int own = (gx >= 0 && gx < bitmap.width && gy >= 0 && gy < lineHeight) ? alpha[(size_t)gy * bitmap.width + gx] : 0;
+					if (own > 0) {
+						out[0] = fillColor[0]; out[1] = fillColor[1]; out[2] = fillColor[2]; out[3] = (BYTE)own;
+						continue;
+					}
+					bool nearInk = false;
+					for (int oy = -outlineSize; oy <= outlineSize && !nearInk; oy++) {
+						for (int ox = -outlineSize; ox <= outlineSize && !nearInk; ox++) {
+							const int ax = gx + ox, ay = gy + oy;
+							if (ax >= 0 && ax < bitmap.width && ay >= 0 && ay < lineHeight && alpha[(size_t)ay * bitmap.width + ax] > 0) {
+								nearInk = true;
+							}
+						}
+					}
+					if (nearInk && outlineSize > 0) {
+						out[0] = outlineColor[0]; out[1] = outlineColor[1]; out[2] = outlineColor[2]; out[3] = 255;
+					}
 				}
 			}
 		}
 		if (cell.width > 255 || cell.left < -128 || cell.left > 127) {
 			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 글자 0x" << hex << codes[i] << dec << L" 의 크기/보정이 형식 범위를 넘습니다." << endl;
-			FT_Done_FreeType(library);
 			return false;
 		}
 		cells.push_back(cell);
@@ -447,36 +486,32 @@ bool CTT::Glyph::buildFontAtlas(const wstring& configPath)
 		if (cells[i].width > 0) {
 			if (x + cells[i].width > atlasWidth) {
 				x = 0;
-				y += lineHeight + 1;
+				y += cellHeight + 1;
 			}
 			g.x = (UINT16)x;
 			g.y = (UINT16)y;
 			g.width = (BYTE)cells[i].width;
-			g.height = (BYTE)lineHeight;
+			g.height = (BYTE)cellHeight;
 			g.offsetX = (INT8)cells[i].left;
 			x += cells[i].width + 1;
 		}
 		placed[i] = g;
 	}
-	const int atlasHeight = y + lineHeight;
+	const int atlasHeight = y + cellHeight;
 	if (atlasHeight > 4096) {
 		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 아틀라스 높이가 4096 을 넘습니다 (" << dec << atlasHeight << L"). atlasWidth 를 늘리세요." << endl;
-		FT_Done_FreeType(library);
 		return false;
 	}
 
-	atlas.lineHeight = (UINT16)lineHeight;
+	atlas.lineHeight = (UINT16)cellHeight;
 	atlas.atlasWidth = (UINT16)atlasWidth;
 	atlas.atlasHeight = (UINT16)atlasHeight;
 	atlas.bgra.assign((size_t)atlasWidth * atlasHeight * 4, 0);
 	for (size_t i = 0; i < cells.size(); i++) {
 		atlas.glyphs[cells[i].code] = placed[i];
-		for (int row = 0; row < lineHeight && cells[i].width > 0; row++) {
+		for (int row = 0; row < cellHeight && cells[i].width > 0; row++) {
 			for (int col = 0; col < cells[i].width; col++) {
-				BYTE a = cells[i].alpha[(size_t)row * cells[i].width + col];
-				BYTE* p = &atlas.bgra[((size_t)(placed[i].y + row) * atlasWidth + placed[i].x + col) * 4];
-				p[0] = p[1] = p[2] = 255;
-				p[3] = a;
+				memcpy(&atlas.bgra[((size_t)(placed[i].y + row) * atlasWidth + placed[i].x + col) * 4], &cells[i].bgra[((size_t)row * cells[i].width + col) * 4], 4);
 			}
 		}
 	}
@@ -489,12 +524,11 @@ bool CTT::Glyph::buildFontAtlas(const wstring& configPath)
 	}
 	atlas.missingAdvance = (UINT16)(std::max)(1, missing);
 
-	FT_Done_FreeType(library);
 
 	if (!saveFontAtlas(atlas, resolvePath(baseDir, fromUtf8(c["outputDir"].asString())))) {
 		return false;
 	}
-	wcout << infoPrefix << atlas.name << L": 글자 " << dec << atlas.glyphs.size() << L"개, 줄 높이 " << lineHeight << L", 아틀라스 " << atlasWidth << L"x" << atlasHeight << L" (폰트에 없던 코드 " << missingInFont << L"개)" << endl;
+	wcout << infoPrefix << atlas.name << L": 글자 " << dec << atlas.glyphs.size() << L"개, 줄 높이 " << cellHeight << L", 아틀라스 " << atlasWidth << L"x" << atlasHeight << L" (폰트에 없던 코드 " << missingInFont << L"개)" << endl;
 	if (blankGlyphs > 0) {
 		wcout << infoPrefix << L"주의: 폰트가 이 크기에서 그림을 비워 둔 글자가 " << dec << blankGlyphs << L"개 있습니다 (빈 칸으로 출력됩니다). 예: " << blankSamples << L" ... 크기를 바꾸거나 다른 폰트를 쓰세요." << endl;
 	}

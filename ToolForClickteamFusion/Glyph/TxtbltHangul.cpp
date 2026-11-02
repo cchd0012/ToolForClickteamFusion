@@ -420,12 +420,11 @@ bool CTT::Glyph::patchTxtbltHangul(const wstring& gameDir, const wstring& config
 		return false;
 	}
 
-	FT_Library library = NULL;
+	FtLibrary freeType;					// font 보다 먼저 선언해서 나중에 해제한다
 	FtFont font;
-	if (FT_Init_FreeType(&library) != 0 || !font.open(library, FtFont::readFile(gameDir + L"/" + fromUtf8(c["font"].asString())), fontSize)) {
+	if (!freeType.isOpen() || !font.open(freeType.get(), FtFont::readFile(gameDir + L"/" + fromUtf8(c["font"].asString())), fontSize)) {
 		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 한글 폰트를 열지 못했습니다." << endl;
 		free(orgBuffer);
-		if (library != NULL) { FT_Done_FreeType(library); }
 		return false;
 	}
 
@@ -481,7 +480,6 @@ bool CTT::Glyph::patchTxtbltHangul(const wstring& gameDir, const wstring& config
 			}
 		}
 	}
-	FT_Done_FreeType(library);
 	if (!missing.empty()) {
 		wcout << L"[*] warning: 폰트에 없는 음절 " << dec << missing.size() << L"종: " << missing << endl;
 	}

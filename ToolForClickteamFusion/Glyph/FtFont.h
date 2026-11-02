@@ -25,6 +25,21 @@ namespace CTT {
 			int advance;				// 다음 글자까지의 픽셀 거리
 		};
 
+		// FreeType 라이브러리. 이 객체를 쓰는 FtFont 보다 먼저 선언해서 나중에 해제되게 한다
+		// (라이브러리가 먼저 해제되면 FtFont 가 소멸할 때 이미 해제된 라이브러리를 건드려서 접근 위반이 난다)
+		class FtLibrary
+		{
+		public:
+			FtLibrary() : library(NULL) { if (FT_Init_FreeType(&library) != 0) { library = NULL; } }
+			~FtLibrary() { if (library != NULL) { FT_Done_FreeType(library); } }
+			bool isOpen() const { return library != NULL; }
+			FT_Library get() const { return library; }
+		private:
+			FtLibrary(const FtLibrary&);
+			FtLibrary& operator=(const FtLibrary&);
+			FT_Library library;
+		};
+
 		// 크기를 정한 TrueType 폰트 하나. Pillow(파이썬 시제품)와 같은 방식으로 글자를 그린다:
 		// 내장 비트맵은 쓰지 않고(FT_LOAD_NO_BITMAP), 기본 힌팅 + 8비트 안티앨리어싱
 		class FtFont

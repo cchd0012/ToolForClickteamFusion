@@ -4,6 +4,7 @@
 #include "../Util/PngUtil.h"
 
 #include <algorithm>
+#include <set>
 
 #include "FtFont.h"
 
@@ -18,7 +19,9 @@ using namespace CTT::PngUtil;
 //       "name": "galmuri9",                 아틀라스 이름 (출력 파일 이름)
 //       "font": "fonts/galmuri9.ttf",
 //       "size": 9,                          폰트 픽셀 크기
-//       "mode": "hangul",                   hangul | extendedHangul
+//       "mode": "hangul",                   hangul | extendedHangul | limitedHangul
+//       "textSources": [ "../text" ],       limitedHangul 일 때 글자를 모을 곳. json 파일, 폴더(안의 *.json), 그 밖의 텍스트 파일(UTF-8 이 아니면 CP949)
+//       "extraChars": "",                   limitedHangul 일 때 더 넣을 글자
 //       "lineHeight": 0,                    0 이면 폰트 지표(ascent + descent)
 //       "dy": 0,                            글자를 그릴 세로 보정
 //       "threshold": 128,                   0 이면 안티앨리어싱 유지, 1~255 이면 그 이상만 불투명 (기본 128)
@@ -58,6 +61,99 @@ namespace {
 			return false;
 		}
 		out = wide[0];
+		return true;
+	}
+
+
+	// 문자열 안의 글자를 모두 모은다 (제어 문자는 뺀다)
+	void addChars(set<wchar_t>& chars, const wstring& text)
+	{
+		for (size_t i = 0; i < text.size(); i++) {
+			if (text[i] >= 0x20) {
+				chars.insert(text[i]);
+			}
+		}
+	}
+
+	// JSON 안의 모든 문자열 값에서 글자를 모은다
+	void collectJsonChars(const Json::Value& value, set<wchar_t>& chars)
+	{
+		if (value.isString()) {
+			addChars(chars, getUniStr(value.asString(), CodePage::CP_UTF_8));
+		}
+		else if (value.isArray()) {
+			for (Json::ArrayIndex i = 0; i < value.size(); i++) {
+				collectJsonChars(value[i], chars);
+			}
+		}
+		else if (value.isObject()) {
+			for (Json::Value::const_iterator it = value.begin(); it != value.end(); ++it) {
+				collectJsonChars(*it, chars);
+			}
+		}
+	}
+
+	// 파일 하나에서 글자를 모은다. .json 이면 문자열 값만, 그 밖에는 텍스트로 읽는다 (UTF-8 이 아니면 CP949)
+	bool collectFileChars(const wstring& path, set<wchar_t>& chars)
+	{
+		if (path.size() > 5 && _wcsicmp(path.c_str() + path.size() - 5, L".json") == 0) {
+			Json::Value root;
+			wstring file = path;
+			if (!readFromJson(root, file)) {
+				return false;
+			}
+			collectJsonChars(root, chars);
+			return true;
+		}
+		shared_ptr<vector<unsigned char> > data = FtFont::readFile(path);
+		if (!data) {
+			return false;
+		}
+		const char* bytes = data->empty() ? "" : (const char*)&(*data)[0];
+		int size = (int)data->size();
+		if (size >= 3 && (BYTE)bytes[0] == 0xEF && (BYTE)bytes[1] == 0xBB && (BYTE)bytes[2] == 0xBF) {
+			bytes += 3;
+			size -= 3;
+		}
+		int codePage = CP_UTF8;
+		int length = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, bytes, size, NULL, 0);
+		if (length <= 0 && size > 0) {
+			codePage = 949;
+			length = MultiByteToWideChar(949, 0, bytes, size, NULL, 0);
+		}
+		wstring text(length > 0 ? length : 0, L'\0');
+		if (length > 0) {
+			MultiByteToWideChar(codePage, 0, bytes, size, &text[0], length);
+		}
+		addChars(chars, text);
+		return true;
+	}
+
+	// 글자를 모을 곳(파일 또는 폴더)을 처리한다. 폴더면 안의 *.json 을 모두 읽는다
+	bool collectSourceChars(const wstring& path, set<wchar_t>& chars, UINT32& fileCount)
+	{
+		DWORD attr = GetFileAttributesW(path.c_str());
+		if (attr == INVALID_FILE_ATTRIBUTES) {
+			return false;
+		}
+		if ((attr & FILE_ATTRIBUTE_DIRECTORY) == 0) {
+			bool ok = collectFileChars(path, chars);
+			fileCount += ok ? 1 : 0;
+			return ok;
+		}
+		WIN32_FIND_DATAW data;
+		HANDLE h = FindFirstFileW((path + L"/*.json").c_str(), &data);
+		if (h == INVALID_HANDLE_VALUE) {
+			return true;
+		}
+		do {
+			if ((data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
+				if (collectFileChars(path + L"/" + data.cFileName, chars)) {
+					fileCount++;
+				}
+			}
+		} while (FindNextFileW(h, &data));
+		FindClose(h);
 		return true;
 	}
 
@@ -310,8 +406,11 @@ bool CTT::Glyph::buildFontAtlas(const wstring& configPath)
 	if (modeText == "extendedHangul") {
 		mode = FontAtlasMode::ExtendedHangul;
 	}
+	else if (modeText == "limitedHangul") {
+		mode = FontAtlasMode::LimitedHangul;
+	}
 	else if (modeText != "hangul") {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": mode 는 hangul 또는 extendedHangul 이어야 합니다." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": mode 는 hangul, extendedHangul, limitedHangul 중 하나여야 합니다." << endl;
 		return false;
 	}
 
@@ -381,10 +480,55 @@ bool CTT::Glyph::buildFontAtlas(const wstring& configPath)
 	for (UINT32 b = 0x20; b <= 0x7E; b++) {
 		codes.push_back((UINT16)b);
 	}
-	for (UINT32 lead = 0x81; lead <= 0xFE; lead++) {
-		for (UINT32 trail = 0x41; trail <= 0xFE; trail++) {
-			if (inMode(mode, (BYTE)lead, (BYTE)trail)) {
-				codes.push_back((UINT16)((lead << 8) | trail));
+	if (mode == FontAtlasMode::LimitedHangul) {
+		// 번역문에 쓰인 글자(와 extraChars)만 담는다. CP949 로 표현할 수 없는 글자는 건너뛰고 알려 준다
+		set<wchar_t> chars;
+		UINT32 sourceFileCount = 0;
+		const Json::Value& sources = c["textSources"];
+		for (Json::ArrayIndex i = 0; i < sources.size(); i++) {
+			wstring path = resolvePath(baseDir, fromUtf8(sources[i].asString()));
+			if (!collectSourceChars(path, chars, sourceFileCount)) {
+				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 글자를 모을 곳을 읽지 못했습니다: " << path << endl;
+				return false;
+			}
+		}
+		addChars(chars, fromUtf8(c.get("extraChars", "").asString()));
+		set<UINT16> limited;
+		wstring unmappable;
+		bool outsideHangulArea = false;
+		for (set<wchar_t>::const_iterator it = chars.begin(); it != chars.end(); ++it) {
+			if (*it < 0x80) {
+				continue;		// 아스키는 이미 들어 있다
+			}
+			char bytes[4] = { 0, 0, 0, 0 };
+			BOOL usedDefault = FALSE;
+			int n = WideCharToMultiByte(949, WC_NO_BEST_FIT_CHARS, &(*it), 1, bytes, 4, NULL, &usedDefault);
+			if (n == 2 && !usedDefault) {
+				UINT16 code = (UINT16)(((BYTE)bytes[0] << 8) | (BYTE)bytes[1]);
+				limited.insert(code);
+				if ((BYTE)bytes[0] < 0xA1 || (BYTE)bytes[1] < 0xA1) {
+					outsideHangulArea = true;
+				}
+			}
+			else if (unmappable.size() < 12) {
+				unmappable.push_back(*it);
+			}
+		}
+		for (set<UINT16>::const_iterator it = limited.begin(); it != limited.end(); ++it) {
+			codes.push_back(*it);
+		}
+		atlas.flags = outsideHangulArea ? 1 : 0;
+		wcout << infoPrefix << L"LimitedHangul: 글자 " << dec << limited.size() << L"종 (읽은 파일 " << sourceFileCount << L"개)" << endl;
+		if (!unmappable.empty()) {
+			wcout << infoPrefix << L"주의: CP949 로 표현할 수 없어 뺀 글자가 있습니다. 예: " << unmappable << endl;
+		}
+	}
+	else {
+		for (UINT32 lead = 0x81; lead <= 0xFE; lead++) {
+			for (UINT32 trail = 0x41; trail <= 0xFE; trail++) {
+				if (inMode(mode, (BYTE)lead, (BYTE)trail)) {
+					codes.push_back((UINT16)((lead << 8) | trail));
+				}
 			}
 		}
 	}

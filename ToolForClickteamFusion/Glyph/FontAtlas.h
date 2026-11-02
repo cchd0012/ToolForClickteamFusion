@@ -9,7 +9,7 @@ namespace CTT {
 
 		using namespace std;
 
-		// 폰트 아틀라스 + 글자표 (txtblt 의 Hangul / ExtendedHangul 방식에 쓰는 데이터)
+		// 폰트 아틀라스 + 글자표 (txtblt 의 Hangul / ExtendedHangul / LimitedHangul 방식에 쓰는 데이터)
 		//  - 아틀라스: 모든 글자를 한 장에 모은 PNG (흰색 + 알파). 글자 하나는 줄 높이 전체를 차지하는 칸이다
 		//  - 글자표 : 코드(1바이트 또는 CP949 2바이트) -> 아틀라스 위치, 크기, 그릴 위치 보정, 다음 글자까지의 폭(advance)
 		// 글자표는 모듈에 내장되어 코드로 바로 찾을 수 있게 앞바이트(상위 바이트) 별 페이지로 나눠 둔다 (KFT1)
@@ -29,6 +29,7 @@ namespace CTT {
 		{
 			Hangul,				// 아스키 + CP949 [A1-FE][A1-FE] (KS X 1001: 한글 2350자, 기호, 한자)
 			ExtendedHangul,		// Hangul + 확장 완성형(UHC) 영역까지 (한글 11172자)
+			LimitedHangul,		// 아스키 + 번역문에 실제로 쓰인 글자(와 extraChars)만. 아틀라스가 작아진다. 글자는 CP949 로 표현되는 것만 담는다
 		};
 
 		struct FontAtlasGlyph

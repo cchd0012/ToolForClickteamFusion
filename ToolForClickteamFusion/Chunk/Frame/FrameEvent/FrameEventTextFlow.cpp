@@ -1,0 +1,296 @@
+﻿#include <cstring>
+#include "FrameEventTextFlow.h"
+#include "../../../Util/CommonUtil.h"
+
+using namespace CTT::Chunk;
+using namespace CTT::CommonUtil;
+
+
+static const char* frameEventTextFlowJsonType = "textFlow";
+static const UINT32 frameEventTextFlowJsonVersion = 1;
+
+// txtblt.mfx 의 "텍스트 설정" 동작 번호. 같은 모듈은 어느 게임에서나 같은 번호를 쓴다
+static const INT32 kTextBlitterSetTextAction = 80;
+// 오브젝트의 알터러블 문자열을 설정하는 동작 (오브젝트 공통 동작). 파라미터: 문자열 번호, 식
+static const INT32 kSetAlterableStringAction = 49;
+// 식: 오브젝트의 알터러블 문자열 / 알터러블 값
+static const INT32 kAlterableStringExpression = 19;
+static const INT32 kAlterableValueExpression = 16;
+// 확장 오브젝트의 objectType 은 32 이상이다
+static const INT32 kFirstExtensionObjectType = 32;
+
+static const char* kQualifierPrefix = "qualifier#";
+
+
+// 식 하나의 토큰을 보고 문자열 상수, 알터러블 문자열 참조, INI 조회, 계산식 여부를 요약한다
+static void describeExpression(const Json::Value& param, FrameEventFlowExpression& expression)
+{
+	const Json::Value& tokens = param["tokens"];
+	for (Json::ArrayIndex i = 0; i < tokens.size(); i++) {
+		const Json::Value& token = tokens[i];
+		const string kind = token.get("kind", "").asString();
+		if (kind == "string") {
+			expression.literals.push_back(token.get("value", "").asString());
+		}
+		else if (kind == "object") {
+			INT32 num = token.get("num", 0).asInt();
+			string objectName = token.get("objectName", "").asString();
+			if (num == kAlterableStringExpression) {
+				expression.references.push_back(make_pair(objectName, (INT32)token.get("value", 0).asInt()));
+			}
+			else if (num == kAlterableValueExpression) {
+				expression.calculation = true;
+			}
+			else if (objectName.size() >= 3 && _strnicmp(objectName.c_str(), "ini", 3) == 0) {
+				expression.ini = true;
+			}
+			else {
+				expression.calculation = true;
+			}
+		}
+	}
+}
+
+
+// 한 동작이 문자열을 얼마나 단순하게 만드는지: INI > 참조 > 상수 > 계산식
+static const char* classifyExpression(const FrameEventFlowExpression& expression)
+{
+	if (expression.ini) {
+		return "ini";
+	}
+	if (!expression.references.empty()) {
+		return "reference";
+	}
+	if (!expression.literals.empty() && !expression.calculation) {
+		return "literal";
+	}
+	return "calculation";
+}
+
+
+void FrameEventTextFlow::clear()
+{
+	assignments.clear();
+	setters.clear();
+	blitters.clear();
+}
+
+
+void FrameEventTextFlow::addFrameScript(UINT32 frameIndex, const Json::Value& frameScript)
+{
+	const string frameName = frameScript.get("name", "").asString();
+	const Json::Value& blocks = frameScript["events"]["blocks"];
+	for (Json::ArrayIndex b = 0; b < blocks.size(); b++) {
+		const Json::Value& groups = blocks[b]["groups"];
+		for (Json::ArrayIndex g = 0; g < groups.size(); g++) {
+			const Json::Value& actions = groups[g]["actions"];
+			for (Json::ArrayIndex a = 0; a < actions.size(); a++) {
+				const Json::Value& action = actions[a];
+				const Json::Value& params = action["params"];
+				INT32 objectType = action.get("objectType", 0).asInt();
+				INT32 num = action.get("num", 0).asInt();
+				const string objectName = action.get("objectName", "").asString();
+
+				if ((num == kSetAlterableStringAction) && (objectType >= 2) && (params.size() >= 2) && (params[0].get("kind", "").asString() == "short")) {
+					FrameEventFlowSetter setter;
+					setter.frame = frameIndex;
+					setter.object = objectName;
+					setter.index = params[0].get("value", 0).asInt();
+					FrameEventFlowExpression expression;
+					describeExpression(params[1], expression);
+					setter.literals = expression.literals;
+					setters.push_back(setter);
+				}
+				else if ((num == kTextBlitterSetTextAction) && (objectType >= kFirstExtensionObjectType) && (params.size() >= 1)
+					&& (params[0].get("kind", "").asString() == "expression")) {
+					FrameEventFlowAssignment assignment;
+					assignment.frame = frameIndex;
+					assignment.frameName = frameName;
+					assignment.group = groups[g].get("uid", 0).asInt();
+					assignment.target = objectName;
+					describeExpression(params[0], assignment.expression);
+					assignments.push_back(assignment);
+				}
+			}
+		}
+	}
+}
+
+
+void FrameEventTextFlow::addObjectScript(const Json::Value& objectScript)
+{
+	if ((objectScript.get("identifier", "").asString() != "TLBT") || !objectScript.isMember("textBlitter")) {
+		return;
+	}
+	FrameEventFlowBlitter blitter;
+	blitter.index = objectScript.get("index", 0).asInt();
+	blitter.name = objectScript.get("name", "").asString();
+	const Json::Value& strings = objectScript["alterableStrings"];
+	if (strings.isArray() && (strings.size() > 0)) {
+		blitter.font = strings[0].asString();
+	}
+	blitter.text = objectScript["textBlitter"].get("text", "").asString();
+	blitters.push_back(blitter);
+}
+
+
+// 같은 문자열이 이미 있거나 빈 문자열이면 넣지 않는다
+static void appendUnique(vector<string>& list, const string& value)
+{
+	if (value.empty()) {
+		return;
+	}
+	for (size_t i = 0; i < list.size(); i++) {
+		if (list[i] == value) {
+			return;
+		}
+	}
+	list.push_back(value);
+}
+
+
+static Json::Value toJsonArray(const vector<string>& list)
+{
+	Json::Value array(Json::arrayValue);
+	for (size_t i = 0; i < list.size(); i++) {
+		array.append(list[i]);
+	}
+	return array;
+}
+
+
+// 한 동작을 JSON 으로 만든다. 참조는 같은 프레임의 문자열 설정 동작으로 상수까지 따라간다
+static Json::Value assignmentToJson(const FrameEventFlowAssignment& assignment, const vector<FrameEventFlowSetter>& setters, vector<string>& reachable)
+{
+	Json::Value item(Json::objectValue);
+	item["frame"] = assignment.frame;
+	item["frameName"] = assignment.frameName;
+	item["group"] = assignment.group;
+	item["kind"] = classifyExpression(assignment.expression);
+	item["literals"] = toJsonArray(assignment.expression.literals);
+	for (size_t i = 0; i < assignment.expression.literals.size(); i++) {
+		appendUnique(reachable, assignment.expression.literals[i]);
+	}
+	Json::Value references(Json::arrayValue);
+	for (size_t r = 0; r < assignment.expression.references.size(); r++) {
+		const pair<string, INT32>& reference = assignment.expression.references[r];
+		vector<string> literals;
+		UINT32 setCount = 0;
+		for (size_t s = 0; s < setters.size(); s++) {
+			if ((setters[s].frame == assignment.frame) && (setters[s].object == reference.first) && (setters[s].index == reference.second)) {
+				setCount++;
+				for (size_t l = 0; l < setters[s].literals.size(); l++) {
+					appendUnique(literals, setters[s].literals[l]);
+				}
+			}
+		}
+		Json::Value entry(Json::objectValue);
+		entry["object"] = reference.first;
+		entry["string"] = reference.second;
+		entry["setCount"] = setCount;
+		entry["literals"] = toJsonArray(literals);
+		references.append(entry);
+		for (size_t l = 0; l < literals.size(); l++) {
+			appendUnique(reachable, literals[l]);
+		}
+	}
+	if (references.size() > 0) {
+		item["references"] = references;
+	}
+	if (assignment.expression.ini) {
+		item["ini"] = true;
+	}
+	if (assignment.expression.calculation) {
+		item["calculation"] = true;
+	}
+	return item;
+}
+
+
+bool FrameEventTextFlow::exportJson(Json::Value& value) const
+{
+	value = Json::Value(Json::objectValue);
+	value["type"] = frameEventTextFlowJsonType;
+	value["version"] = frameEventTextFlowJsonVersion;
+
+	map<string, UINT32> counts;
+	UINT32 total = 0;
+	Json::Value blitterArray(Json::arrayValue);
+	set<string> handled;
+	for (size_t i = 0; i < blitters.size(); i++) {
+		const string& name = blitters[i].name;
+		if (handled.count(name) > 0) {
+			continue;
+		}
+		handled.insert(name);
+
+		Json::Value indices(Json::arrayValue);
+		vector<string> initialTexts;
+		vector<string> strings0;
+		for (size_t k = i; k < blitters.size(); k++) {
+			if (blitters[k].name == name) {
+				indices.append(blitters[k].index);
+				appendUnique(initialTexts, blitters[k].text);
+				appendUnique(strings0, blitters[k].font);
+			}
+		}
+		vector<string> reachable = initialTexts;
+		Json::Value assignmentArray(Json::arrayValue);
+		for (size_t a = 0; a < assignments.size(); a++) {
+			if (assignments[a].target != name) {
+				continue;
+			}
+			assignmentArray.append(assignmentToJson(assignments[a], setters, reachable));
+			counts[classifyExpression(assignments[a].expression)]++;
+			total++;
+		}
+		// 글꼴 이름(알터러블 문자열 0)을 런타임에 바꾸는 동작
+		vector<string> fontValues;
+		for (size_t s = 0; s < setters.size(); s++) {
+			if ((setters[s].object == name) && (setters[s].index == 0)) {
+				for (size_t l = 0; l < setters[s].literals.size(); l++) {
+					appendUnique(fontValues, setters[s].literals[l]);
+				}
+			}
+		}
+
+		Json::Value blitter(Json::objectValue);
+		blitter["name"] = name;
+		blitter["indices"] = indices;
+		blitter["initialTexts"] = toJsonArray(initialTexts);
+		blitter["string0"] = toJsonArray(strings0);
+		if (!fontValues.empty()) {
+			blitter["string0Values"] = toJsonArray(fontValues);
+		}
+		blitter["assignments"] = assignmentArray;
+		blitter["texts"] = toJsonArray(reachable);
+		blitterArray.append(blitter);
+	}
+
+	// 한정자(여러 오브젝트를 한꺼번에 가리키는 대상)로 가는 동작은 어느 블리터인지 알 수 없어 따로 나열한다
+	Json::Value qualifierArray(Json::arrayValue);
+	for (size_t a = 0; a < assignments.size(); a++) {
+		if (assignments[a].target.compare(0, strlen(kQualifierPrefix), kQualifierPrefix) == 0) {
+			vector<string> unused;
+			Json::Value item = assignmentToJson(assignments[a], setters, unused);
+			item["target"] = assignments[a].target;
+			qualifierArray.append(item);
+			counts[classifyExpression(assignments[a].expression)]++;
+			total++;
+		}
+	}
+
+	Json::Value summary(Json::objectValue);
+	summary["blitters"] = (UINT32)blitterArray.size();
+	summary["assignments"] = total;
+	const char* kinds[4] = { "literal", "reference", "calculation", "ini" };
+	for (int k = 0; k < 4; k++) {
+		summary[kinds[k]] = counts[kinds[k]];
+	}
+	value["summary"] = summary;
+	value["blitters"] = blitterArray;
+	if (qualifierArray.size() > 0) {
+		value["qualifierAssignments"] = qualifierArray;
+	}
+	return true;
+}

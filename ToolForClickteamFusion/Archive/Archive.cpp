@@ -238,7 +238,7 @@ void Archive::setDataCount(vector<wstring>& extractingDataTypes)
 			// Frame (이벤트 텍스트)
 			case ChunkType::CHUNK_FRAME:
 			{
-				if (contains(extractingDataTypes, L"text")) {
+				if (contains(extractingDataTypes, L"text") || contains(extractingDataTypes, L"flow")) {
 					getStates()->totalDataCount++;
 				}
 				SetFilePointer(hArchive, sizeof(ChunkInfo) + chunkInfo.size, NULL, FILE_CURRENT);
@@ -248,7 +248,7 @@ void Archive::setDataCount(vector<wstring>& extractingDataTypes)
 			// Object 2.5+ (오브젝트 텍스트 / 스크립트)
 			case ChunkType::CHUNK_2_5_PLUS_OBJECT_DATA:
 			{
-				if (contains(extractingDataTypes, L"text") || contains(extractingDataTypes, L"script")) {
+				if (contains(extractingDataTypes, L"text") || contains(extractingDataTypes, L"script") || contains(extractingDataTypes, L"flow")) {
 					getStates()->totalDataCount++;
 				}
 				SetFilePointer(hArchive, sizeof(ChunkInfo) + chunkInfo.size, NULL, FILE_CURRENT);
@@ -492,6 +492,7 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 	UINT32 frameIndex = 0;
 	frameEventTextTable.clear();
 	objectTextTable.clear();
+	frameEventTextFlow.clear();
 	frameScriptContext.objectNames.clear();
 	frameScriptContextLoaded = false;
 
@@ -759,7 +760,7 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 			// Frame (이벤트 텍스트 / 스크립트)
 			case ChunkType::CHUNK_FRAME:
 			{
-				if (contains(extractingDataTypes, L"text") || contains(extractingDataTypes, L"script")) {
+				if (contains(extractingDataTypes, L"text") || contains(extractingDataTypes, L"script") || contains(extractingDataTypes, L"flow")) {
 					FrameChunk chunk;
 					if (!chunk.readFromArchive(hArchive)) {
 						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Frame 데이터를 읽어들이지 못했습니다." << endl;
@@ -773,7 +774,7 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 							return false;
 						}
 					}
-					if (contains(extractingDataTypes, L"script")) {
+					if (contains(extractingDataTypes, L"script") || contains(extractingDataTypes, L"flow")) {
 						// 오브젝트 이름은 처음 필요할 때 한 번만 읽는다 (이벤트의 오브젝트 번호에 이름을 붙이기 위함)
 						if (!frameScriptContextLoaded) {
 							frameScriptContextLoaded = true;
@@ -790,14 +791,19 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 							triggerError(__FUNCTION__, u8"Frame 스크립트를 디컴파일하지 못했습니다");
 							return false;
 						}
-						wostringstream indexStream;
-						indexStream << setw(6) << setfill(L'0') << frameIndex;
-						wstring exportJsonPath = getExtentionRemovedPath(archivePath) + L"/script/frame/" + indexStream.str() + L".json";
-						// 조건/동작 하나가 한 줄이 되도록 압축해서 쓴다 (들여쓰기만 줄여도 크기가 절반 이하)
-						if (!writeIntoJson(scriptValue, exportJsonPath, 700)) {
-							wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Frame 스크립트를 json 으로 저장하지 못했습니다." << endl;
-							triggerError(__FUNCTION__, u8"Frame 스크립트를 json 으로 저장하지 못했습니다");
-							return false;
+						if (contains(extractingDataTypes, L"flow")) {
+							frameEventTextFlow.addFrameScript(frameIndex, scriptValue);
+						}
+						if (contains(extractingDataTypes, L"script")) {
+							wostringstream indexStream;
+							indexStream << setw(6) << setfill(L'0') << frameIndex;
+							wstring exportJsonPath = getExtentionRemovedPath(archivePath) + L"/script/frame/" + indexStream.str() + L".json";
+							// 조건/동작 하나가 한 줄이 되도록 압축해서 쓴다 (들여쓰기만 줄여도 크기가 절반 이하)
+							if (!writeIntoJson(scriptValue, exportJsonPath, 700)) {
+								wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Frame 스크립트를 json 으로 저장하지 못했습니다." << endl;
+								triggerError(__FUNCTION__, u8"Frame 스크립트를 json 으로 저장하지 못했습니다");
+								return false;
+							}
 						}
 					}
 					frameIndex++;
@@ -812,7 +818,7 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 			// Object 2.5+ (오브젝트 텍스트 / 스크립트)
 			case ChunkType::CHUNK_2_5_PLUS_OBJECT_DATA:
 			{
-				if (contains(extractingDataTypes, L"text") || contains(extractingDataTypes, L"script")) {
+				if (contains(extractingDataTypes, L"text") || contains(extractingDataTypes, L"script") || contains(extractingDataTypes, L"flow")) {
 					ObjectElementDataChunk chunk;
 					if (!chunk.readFromArchive(hArchive)) {
 						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 오브젝트 속성 데이터를 읽어들이지 못했습니다." << endl;
@@ -845,6 +851,11 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 						string objectName = (i < names.size()) ? names[i] : string();
 						if (contains(extractingDataTypes, L"text")) {
 							objectTextTable.addObject((INT32)i, objectName, common);
+						}
+						if (contains(extractingDataTypes, L"flow")) {
+							Json::Value flowScriptValue;
+							decompileObjectScript((INT32)i, objectName, headers[i].type, common, flowScriptValue);
+							frameEventTextFlow.addObjectScript(flowScriptValue);
 						}
 						if (contains(extractingDataTypes, L"script")) {
 							// 오브젝트 하나당 json 파일 하나로 풀어낸다 (디컴파일)
@@ -905,6 +916,19 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 		wcout << infoPrefix << L"오브젝트 텍스트 " << dec << objectTextTable.getEntryCount() << L"개 오브젝트를 추출했습니다." << endl;
 	}
 
+	// 텍스트 흐름 분석 결과를 JSON 으로 저장한다
+	if (contains(extractingDataTypes, L"flow") && (frameEventTextFlow.getBlitterCount() > 0)) {
+		Json::Value flowValue;
+		frameEventTextFlow.exportJson(flowValue);
+		wstring exportJsonPath = getExtentionRemovedPath(archivePath) + L"/text/textFlow.json";
+		if (!writeIntoJson(flowValue, exportJsonPath)) {
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 텍스트 흐름을 json 으로 저장하지 못했습니다." << endl;
+			triggerError(__FUNCTION__, u8"텍스트 흐름을 json 으로 저장하지 못했습니다");
+			return false;
+		}
+		wcout << infoPrefix << L"텍스트 흐름: 블리터 " << dec << frameEventTextFlow.getBlitterCount() << L"개 (이름 " << flowValue["summary"]["blitters"].asUInt() << L"종), 텍스트 설정 동작 " << flowValue["summary"]["assignments"].asUInt() << L"개를 분석했습니다." << endl;
+	}
+
 	// 만일 개수를 다 세어도 합이 0이라면 그냥 1/1로 맞춘다
 	if (getStates()->totalDataCount == 0) {
 		getStates()->totalDataCount = 1;
@@ -945,6 +969,7 @@ bool Archive::rewriteNewArchive(vector<wstring>& replacingDataTypes)
 	// 프레임 이벤트 텍스트와 오브젝트 텍스트 번역 표는 처음 필요할 때 다시 읽어 들인다
 	frameEventTextTable.clear();
 	objectTextTable.clear();
+	frameEventTextFlow.clear();
 	rewriteFrameIndex = 0;
 
 	// chunkStartOffset : 현재 아카이브 데이터에서 chunk가 시작하는 위치

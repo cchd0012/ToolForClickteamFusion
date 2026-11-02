@@ -7,6 +7,7 @@
 #include "../Chunk/Frame/Headers.h"
 #include "../Chunk/AppInfo/Headers.h"
 #include "../Chunk/Literal/Headers.h"
+#include "../Chunk/Frame/FrameEvent/FrameEventTextFlow.h"
 #include "../Chunk/Object/ObjectText.h"
 #include "../Chunk/TwoFivePlusObject/ObjectHeaderListChunk.h"
 #include "../Common.h"
@@ -116,6 +117,9 @@ namespace CTT {
 
 			// 오브젝트 텍스트 번역 표 (2.5+ 오브젝트의 Alterable 문자열과 Text 문단)
 			ObjectTextTable objectTextTable;
+
+			// 텍스트 흐름 분석 (추출할 때 "flow" 종류를 고르면 프레임/오브젝트 스크립트를 보면서 모은다)
+			FrameEventTextFlow frameEventTextFlow;
 
 			// 프레임 스크립트 디컴파일 / 리컴파일에 쓰는 정보 (오브젝트 이름은 처음 필요할 때 한 번만 읽는다)
 			FrameEventScriptContext frameScriptContext;

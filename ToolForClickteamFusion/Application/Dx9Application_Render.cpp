@@ -235,27 +235,27 @@ void Dx9Application::renderMenuTab()
 				if (ImGui::BeginMenu(u8"폰트")) {
 					folderItem(u8"폰트 폴더 열기", L"font", u8"TrueType/LogFont 폰트 파일을 바꿉니다");
 					ImGui::Separator();
-					ImGui::TextDisabled(u8"한글화 도구: 글자 세트를 만들어 오브젝트에 적용하고 모듈에 심습니다");
-					if (ImGui::MenuItem(u8"가. 글자 세트 만들기...")) {
+					ImGui::TextDisabled(u8"한글화 도구: 폰트 아틀라스를 만들어 오브젝트에 적용하고 모듈에 심습니다");
+					if (ImGui::MenuItem(u8"가. 폰트 아틀라스 만들기...")) {
 						hangul.showWindow = true;
 						hangul.requestTab = 0;
 					}
 					if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
-						ImGui::SetTooltip(u8"폰트 파일에서 한글 글자 그림(글자 세트)을 만듭니다");
+						ImGui::SetTooltip(u8"폰트 파일에서 한글 글자 그림(폰트 아틀라스)을 만듭니다");
 					}
 					if (ImGui::MenuItem(u8"나. 오브젝트에 적용...")) {
 						hangul.showWindow = true;
 						hangul.requestTab = 1;
 					}
 					if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
-						ImGui::SetTooltip(u8"글자를 그리는 오브젝트마다 쓸 글자 세트와 줄 폭 계산 방식을 정하고,\n그 오브젝트에 나올 문구를 미리 봅니다");
+						ImGui::SetTooltip(u8"글자를 그리는 오브젝트마다 쓸 폰트 아틀라스와 줄 폭 계산 방식을 정하고,\n그 오브젝트에 나올 문구를 미리 봅니다");
 					}
 					if (ImGui::MenuItem(u8"다. 게임에 넣기...")) {
 						hangul.showWindow = true;
 						hangul.requestTab = 2;
 					}
 					if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
-						ImGui::SetTooltip(u8"글자 세트를 txtblt.mfx 모듈에 심어 새 모듈을 만듭니다");
+						ImGui::SetTooltip(u8"폰트 아틀라스를 txtblt.mfx 모듈에 심어 새 모듈을 만듭니다");
 					}
 					ImGui::EndMenu();
 				}

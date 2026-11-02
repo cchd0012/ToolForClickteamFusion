@@ -581,7 +581,7 @@ namespace {
 }
 
 
-// 글자 세트 만들기 탭
+// 폰트 아틀라스 만들기 탭
 void Dx9Application::renderHangulAtlasTab()
 {
 	HangulUiState& h = hangul;
@@ -591,25 +591,25 @@ void Dx9Application::renderHangulAtlasTab()
 	if (InterlockedCompareExchange(&h.buildDone, 0, 1) == 1) {
 		InterlockedExchange(&h.buildRunning, 0);
 		if (h.buildOk) {
-			setMessage(h, u8"글자 세트를 만들었습니다. 아래 목록에서 번호를 배정하세요", false);
+			setMessage(h, u8"폰트 아틀라스를 만들었습니다. 아래 목록에서 번호를 배정하세요", false);
 			loadAtlasList(archive, h);
 		}
 		else {
-			setMessage(h, u8"글자 세트를 만들지 못했습니다. 폰트 파일과 설정을 확인하세요", true);
+			setMessage(h, u8"폰트 아틀라스를 만들지 못했습니다. 폰트 파일과 설정을 확인하세요", true);
 		}
 	}
 	if (!h.atlasesLoaded) {
 		loadAtlasList(archive, h);
 	}
 
-	ImGui::TextWrapped(u8"폰트 파일(.ttf, .otf)에서 글자 그림을 만들어 '글자 세트'로 저장합니다. 게임 글꼴이 한글을 갖고 있지 않을 때 필요합니다.");
+	ImGui::TextWrapped(u8"폰트 파일(.ttf, .otf)에서 글자 그림을 만들어 '폰트 아틀라스'로 저장합니다. 게임 글꼴이 한글을 갖고 있지 않을 때 필요합니다.");
 	ImGui::Spacing();
 
-	// ---- 새 글자 세트
-	ImGui::SeparatorText(u8"새 글자 세트 만들기");
+	// ---- 새 폰트 아틀라스
+	ImGui::SeparatorText(u8"새 폰트 아틀라스 만들기");
 	float full = ImGui::GetContentRegionAvail().x;
 	ImGui::SetNextItemWidth(full * 0.35f);
-	ImGui::InputText(u8"세트 이름", h.atlasName, IM_ARRAYSIZE(h.atlasName));
+	ImGui::InputText(u8"아틀라스 이름", h.atlasName, IM_ARRAYSIZE(h.atlasName));
 	helpMarker(u8"저장할 이름입니다. 영문/숫자를 권장합니다 (예: 본문10)");
 	ImGui::SetNextItemWidth(full * 0.6f);
 	ImGui::InputText(u8"폰트 파일", h.fontPath, IM_ARRAYSIZE(h.fontPath));
@@ -652,14 +652,14 @@ void Dx9Application::renderHangulAtlasTab()
 		helpMarker(u8"글자를 칸 안에서 위/아래로 옮깁니다(px). 글자가 위나 아래로 잘리면 조정하세요.");
 		ImGui::SetNextItemWidth(80.0f);
 		ImGui::InputInt(u8"이미지 폭", &h.atlasWidth, 0);
-		helpMarker(u8"글자 세트 이미지(PNG)의 폭입니다. 보통 그대로 두면 됩니다.");
+		helpMarker(u8"폰트 아틀라스 이미지(PNG)의 폭입니다. 보통 그대로 두면 됩니다.");
 	}
 
 	bool canBuild = (strlen(h.atlasName) > 0) && (strlen(h.fontPath) > 0) && (h.fontSize > 0) && !h.buildRunning;
 	if (!canBuild) {
 		ImGui::BeginDisabled(true);
 	}
-	if (ImGui::Button(u8"글자 세트 만들기")) {
+	if (ImGui::Button(u8"폰트 아틀라스 만들기")) {
 		Json::Value cfg(Json::objectValue);
 		Json::Value atlasCfg(Json::objectValue);
 		atlasCfg["name"] = h.atlasName;
@@ -697,7 +697,7 @@ void Dx9Application::renderHangulAtlasTab()
 			job->config = configPath;
 			InterlockedExchange(&h.buildRunning, 1);
 			InterlockedExchange(&h.buildDone, 0);
-			setMessage(h, u8"글자 세트를 만드는 중입니다...", false);
+			setMessage(h, u8"폰트 아틀라스를 만드는 중입니다...", false);
 			CreateThread(NULL, 0, buildThread, job, 0, NULL);
 		}
 		else {
@@ -712,15 +712,15 @@ void Dx9Application::renderHangulAtlasTab()
 		ImGui::TextDisabled(u8"만드는 중...");
 	}
 
-	// ---- 만든 글자 세트 / 번호
-	ImGui::SeparatorText(u8"만든 글자 세트와 번호");
-	ImGui::TextWrapped(u8"오브젝트는 번호로 글자 세트를 가리킵니다. 사용할 세트에 1 이상의 서로 다른 번호를 붙이고 [번호 저장]을 누르세요.");
+	// ---- 만든 폰트 아틀라스 / 번호
+	ImGui::SeparatorText(u8"만든 폰트 아틀라스와 번호");
+	ImGui::TextWrapped(u8"오브젝트는 번호로 폰트 아틀라스를 가리킵니다. 사용할 폰트 아틀라스에 1 이상의 서로 다른 번호를 붙이고 [번호 저장]을 누르세요.");
 	if (ImGui::Button(u8"목록 새로고침")) {
 		loadAtlasList(archive, h);
 		h.releaseTextures();
 	}
 	if (h.atlases.empty()) {
-		ImGui::TextDisabled(u8"만든 글자 세트가 없습니다. 위에서 먼저 만드세요");
+		ImGui::TextDisabled(u8"만든 폰트 아틀라스가 없습니다. 위에서 먼저 만드세요");
 	}
 	else if (ImGui::BeginTable("##atlasTable", 5, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingStretchProp)) {
 		ImGui::TableSetupColumn(u8"번호", ImGuiTableColumnFlags_WidthFixed, 80.0f);
@@ -763,12 +763,12 @@ void Dx9Application::renderHangulAtlasTab()
 		}
 	}
 	ImGui::SameLine();
-	ImGui::TextDisabled(u8"번호가 0 인 세트는 게임에 넣지 않습니다");
+	ImGui::TextDisabled(u8"번호가 0 인 폰트 아틀라스는 게임에 넣지 않습니다");
 
 	// ---- 미리보기
 	ImGui::SeparatorText(u8"미리보기");
 	if (h.previewAtlas >= 0 && h.previewAtlas < (int)h.atlases.size()) {
-		ImGui::Text(u8"글자 세트: %s", utf8(h.atlases[h.previewAtlas].name).c_str());
+		ImGui::Text(u8"폰트 아틀라스: %s", utf8(h.atlases[h.previewAtlas].name).c_str());
 		ImGui::InputTextMultiline("##sample", h.sample, IM_ARRAYSIZE(h.sample), ImVec2(ImGui::GetContentRegionAvail().x, 52.0f));
 		ImGui::SetNextItemWidth(100.0f);
 		ImGui::InputInt(u8"상자 폭(px)", &h.previewWidth, 0);
@@ -784,11 +784,11 @@ void Dx9Application::renderHangulAtlasTab()
 			ImGui::TextDisabled(u8"게임 안의 줄바꿈 규칙(글자 폭 합산)을 따른 근사 미리보기입니다");
 		}
 		else {
-			ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.4f, 1.0f), u8"글자 세트를 읽지 못했습니다");
+			ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.4f, 1.0f), u8"폰트 아틀라스를 읽지 못했습니다");
 		}
 	}
 	else {
-		ImGui::TextDisabled(u8"목록에서 [보기]를 누르면 예시 문장을 그 글자 세트로 그려 봅니다");
+		ImGui::TextDisabled(u8"목록에서 [보기]를 누르면 예시 문장을 그 폰트 아틀라스로 그려 봅니다");
 	}
 
 	messageLine(h);
@@ -807,7 +807,7 @@ void Dx9Application::renderHangulBlitterTab()
 	bool hasObjects = dirExists(base + L"/script/object");
 	bool hasFlow = fileExists(base + L"/text/textFlow.json");
 
-	ImGui::TextWrapped(u8"텍스트를 그려 주는 오브젝트(Text Blitter. 아래에서는 '글자 오브젝트')마다, 어떤 글자 세트로 그릴지와 줄 폭을 재는 방식을 정합니다.");
+	ImGui::TextWrapped(u8"텍스트를 그려 주는 오브젝트(Text Blitter. 아래에서는 '글자 오브젝트')마다, 어떤 폰트 아틀라스로 그릴지와 줄 폭을 재는 방식을 정합니다.");
 	ImGui::Spacing();
 
 	if (ImGui::Button(u8"글자 오브젝트 불러오기")) {
@@ -838,7 +838,7 @@ void Dx9Application::renderHangulBlitterTab()
 		states.usingScript = true;
 		states.usingFlow = true;
 	}
-	helpMarker(u8"'텍스트 흐름'은 각 글자 오브젝트가 받는 문구의 목록입니다. 아래 미리보기에서 그 문구를 실제 글자 세트로 그려 볼 수 있습니다.");
+	helpMarker(u8"'텍스트 흐름'은 각 글자 오브젝트가 받는 문구의 목록입니다. 아래 미리보기에서 그 문구를 실제 폰트 아틀라스로 그려 볼 수 있습니다.");
 	ImGui::SameLine();
 	ImGui::TextDisabled(u8"오브젝트 파일 %s / 텍스트 흐름 %s", hasObjects ? u8"있음" : u8"없음", hasFlow ? u8"있음" : u8"없음");
 
@@ -851,7 +851,7 @@ void Dx9Application::renderHangulBlitterTab()
 
 	// ---- 원래 글꼴 이름별 자동 배정
 	if (ImGui::CollapsingHeader(u8"원래 글꼴 이름별로 한꺼번에 정하기")) {
-		ImGui::TextDisabled(u8"게임은 글꼴 이름을 오브젝트의 문자열 0 에 둡니다. 같은 글꼴을 쓰는 오브젝트들에 같은 글자 세트를 지정할 때 편리합니다.");
+		ImGui::TextDisabled(u8"게임은 글꼴 이름을 오브젝트의 문자열 0 에 둡니다. 같은 글꼴을 쓰는 오브젝트들에 같은 폰트 아틀라스를 지정할 때 편리합니다.");
 		for (map<string, INT32>::iterator it = h.tableByFont.begin(); it != h.tableByFont.end(); ++it) {
 			ImGui::PushID(it->first.c_str());
 			ImGui::SetNextItemWidth(260.0f);
@@ -887,7 +887,7 @@ void Dx9Application::renderHangulBlitterTab()
 		ImGui::TableSetupColumn(u8"번호", ImGuiTableColumnFlags_WidthFixed, 46.0f);
 		ImGui::TableSetupColumn(u8"이름");
 		ImGui::TableSetupColumn(u8"원래 글꼴", ImGuiTableColumnFlags_WidthFixed, 80.0f);
-		ImGui::TableSetupColumn(u8"글자 세트", ImGuiTableColumnFlags_WidthFixed, 72.0f);
+		ImGui::TableSetupColumn(u8"아틀라스", ImGuiTableColumnFlags_WidthFixed, 72.0f);
 		ImGui::TableSetupColumn(u8"줄 폭 계산", ImGuiTableColumnFlags_WidthFixed, 80.0f);
 		ImGui::TableSetupColumn(u8"처음 문자열");
 		ImGui::TableHeadersRow();
@@ -929,8 +929,8 @@ void Dx9Application::renderHangulBlitterTab()
 	// ---- 적용
 	ImGui::SeparatorText(u8"체크한 오브젝트에 적용");
 	ImGui::SetNextItemWidth(260.0f);
-	tableCombo(u8"글자 세트##apply", h, h.applyTable);
-	helpMarker(u8"'없음'은 원래 방식(게임의 이미지 글꼴)으로 그립니다. 번호는 [가. 글자 세트 만들기]에서 붙인 번호입니다.");
+	tableCombo(u8"폰트 아틀라스##apply", h, h.applyTable);
+	helpMarker(u8"'없음'은 원래 방식(게임의 이미지 글꼴)으로 그립니다. 번호는 [가. 폰트 아틀라스 만들기]에서 붙인 번호입니다.");
 	ImGui::SetNextItemWidth(260.0f);
 	ImGui::Combo(u8"줄 폭 계산", &h.applyLayout, kLayoutNames, 2);
 	helpMarker(u8"자동 줄바꿈과 정렬(가운데/오른쪽)을 위해 한 줄의 폭을 재는 방식입니다.\n원래 방식: 글자 수 x 칸 폭. 영문처럼 폭이 같은 글꼴에 맞습니다.\n글자 폭 합산: 글자마다 실제 폭을 더합니다. 한글처럼 폭이 제각각인 글자에서 줄바꿈 위치가 맞고, 공백으로 폭을 맞출 필요가 없습니다.");
@@ -962,7 +962,7 @@ void Dx9Application::renderHangulBlitterTab()
 			b.dirty = true;
 			count++;
 		}
-		setMessage(h, to_string(count) + u8"개에 글꼴 이름별 글자 세트를 적용했습니다", false);
+		setMessage(h, to_string(count) + u8"개에 글꼴 이름별 폰트 아틀라스를 적용했습니다", false);
 	}
 	ImGui::SameLine();
 	bool anyDirty = false;
@@ -987,7 +987,7 @@ void Dx9Application::renderHangulBlitterTab()
 	messageLine(h);
 
 	// ---- 문구 미리보기
-	ImGui::SeparatorText(u8"이 오브젝트에 나올 수 있는 문구 (정한 글자 세트로 미리보기)");
+	ImGui::SeparatorText(u8"이 오브젝트에 나올 수 있는 문구 (정한 폰트 아틀라스로 미리보기)");
 	if (h.currentBlitter >= 0 && h.currentBlitter < (int)h.blitters.size()) {
 		const HangulBlitterItem& b = h.blitters[h.currentBlitter];
 		ImGui::Text(u8"%d번 %s (원래 글꼴 %s)", b.index, b.name.c_str(), b.font.c_str());
@@ -1010,7 +1010,7 @@ void Dx9Application::renderHangulBlitterTab()
 			texts.push_back(b.initialText);
 		}
 		if (pa == NULL) {
-			ImGui::TextDisabled(u8"글자 세트를 지정하면(번호가 있는 세트) 그 글자 세트로 그려 보여 줍니다");
+			ImGui::TextDisabled(u8"폰트 아틀라스를 지정하면(번호가 있는 폰트 아틀라스) 그 폰트 아틀라스로 그려 보여 줍니다");
 		}
 		if (texts.empty()) {
 			ImGui::TextDisabled(u8"문구가 없습니다 (텍스트 흐름을 추출하면 이벤트가 넣는 문구도 나옵니다)");
@@ -1042,7 +1042,7 @@ void Dx9Application::renderHangulModuleTab()
 		loadAtlasList(archive, h);
 	}
 
-	ImGui::TextWrapped(u8"글자 세트를 게임의 txtblt.mfx(텍스트 글자 표시 확장 모듈)에 심어, 새 모듈 파일을 만듭니다. 번호를 붙인 글자 세트가 모두 들어갑니다.");
+	ImGui::TextWrapped(u8"폰트 아틀라스를 게임의 txtblt.mfx(텍스트 글자 표시 확장 모듈)에 심어, 새 모듈 파일을 만듭니다. 번호를 붙인 폰트 아틀라스가 모두 들어갑니다.");
 	ImGui::Spacing();
 
 	ImGui::SeparatorText(u8"새 모듈 만들기");
@@ -1075,7 +1075,7 @@ void Dx9Application::renderHangulModuleTab()
 	if (strlen(h.moduleInput) == 0) {
 		ImGui::BeginDisabled(true);
 	}
-	if (ImGui::Button(u8"글자 세트를 심은 모듈 만들기")) {
+	if (ImGui::Button(u8"폰트 아틀라스를 심은 모듈 만들기")) {
 		string error;
 		vector<TxtbltFontAssignment> assignments;
 		set<INT32> used;
@@ -1085,14 +1085,14 @@ void Dx9Application::renderHangulModuleTab()
 				continue;
 			}
 			if (used.count(h.atlases[i].id) > 0) {
-				error = u8"같은 번호를 두 글자 세트에 붙일 수 없습니다";
+				error = u8"같은 번호를 두 폰트 아틀라스에 붙일 수 없습니다";
 				ok = false;
 				break;
 			}
 			used.insert(h.atlases[i].id);
 			shared_ptr<vector<unsigned char> > table = FtFont::readFile(atlasDir(archive) + L"/" + h.atlases[i].name + L".kft");
 			if (!table) {
-				error = u8"글자 세트 파일(.kft)을 읽지 못했습니다: " + utf8(h.atlases[i].name);
+				error = u8"폰트 아틀라스 파일(.kft)을 읽지 못했습니다: " + utf8(h.atlases[i].name);
 				ok = false;
 				break;
 			}
@@ -1102,7 +1102,7 @@ void Dx9Application::renderHangulModuleTab()
 			assignments.push_back(a);
 		}
 		if (ok && assignments.empty()) {
-			error = u8"번호를 붙인 글자 세트가 없습니다. [가. 글자 세트 만들기]에서 번호를 저장하세요";
+			error = u8"번호를 붙인 폰트 아틀라스가 없습니다. [가. 폰트 아틀라스 만들기]에서 번호를 저장하세요";
 			ok = false;
 		}
 		shared_ptr<vector<unsigned char> > module;
@@ -1134,7 +1134,7 @@ void Dx9Application::renderHangulModuleTab()
 			}
 		}
 		if (ok) {
-			setMessage(h, u8"글자 세트 " + to_string(assignments.size()) + u8"종을 심은 모듈을 저장했습니다: " + h.moduleOutput, false);
+			setMessage(h, u8"폰트 아틀라스 " + to_string(assignments.size()) + u8"종을 심은 모듈을 저장했습니다: " + h.moduleOutput, false);
 		}
 		else {
 			setMessage(h, error, true);
@@ -1150,7 +1150,7 @@ void Dx9Application::renderHangulModuleTab()
 	ImGui::BulletText(u8"exe 게임이면 추출 폴더의 modules 안 파일을 바꾼 뒤 [3.교체 (재합성)]에서 '모듈'을 체크합니다.");
 	ImGui::BulletText(u8"dat/ccn 게임이면 게임 폴더의 Data/Modules 등 외부 모듈 파일을 직접 바꿉니다.");
 	ImGui::BulletText(u8"[나. 오브젝트에 적용]에서 저장한 파일은 [3.교체 (재합성)]의 '스크립트'로 아카이브에 반영합니다.");
-	ImGui::BulletText(u8"이 게임이 실행 중에 글꼴 이미지를 다시 불러온다면(Data/Fonts 등), 그 이미지도 글자 세트 PNG 로 바꿔야 합니다.");
+	ImGui::BulletText(u8"이 게임이 실행 중에 글꼴 이미지를 다시 불러온다면(Data/Fonts 등), 그 이미지도 폰트 아틀라스 PNG 로 바꿔야 합니다.");
 }
 
 
@@ -1167,7 +1167,7 @@ void Dx9Application::renderHangulToolWindow()
 		return;
 	}
 
-	ImGui::TextWrapped(u8"게임 글자를 한글로 그리려면: 가. 글자 세트를 만들고, 나. 글자를 그리는 오브젝트마다 쓸 세트를 정한 뒤, 다. 게임 모듈에 심습니다. 바뀐 파일은 [3.교체 (재합성)]로 아카이브에 반영합니다.");
+	ImGui::TextWrapped(u8"게임 글자를 한글로 그리려면: 가. 폰트 아틀라스를 만들고, 나. 글자를 그리는 오브젝트마다 쓸 폰트 아틀라스를 정한 뒤, 다. 게임 모듈에 심습니다. 바뀐 파일은 [3.교체 (재합성)]로 아카이브에 반영합니다.");
 
 	// 진행 상황
 	if (!h.atlasesLoaded) {
@@ -1183,16 +1183,16 @@ void Dx9Application::renderHangulToolWindow()
 	}
 	wstring outPath = fromUtf8(h.moduleOutput);
 	bool moduleMade = (strlen(h.moduleOutput) > 0) && fileExists(outPath);
-	stepText(assignedAtlases > 0, u8"가. 글자 세트 " + to_string(h.atlases.size()) + u8"개 (번호를 붙인 것 " + to_string(assignedAtlases) + u8"개)");
+	stepText(assignedAtlases > 0, u8"가. 폰트 아틀라스 " + to_string(h.atlases.size()) + u8"개 (번호를 붙인 것 " + to_string(assignedAtlases) + u8"개)");
 	ImGui::SameLine();
-	stepText(appliedBlitters > 0, u8"나. 글자 오브젝트 " + (h.blittersLoaded ? to_string(h.blitters.size()) + u8"개 중 " + to_string(appliedBlitters) + u8"개에 글자 세트 지정" : string(u8"(아직 불러오지 않음)")));
+	stepText(appliedBlitters > 0, u8"나. 글자 오브젝트 " + (h.blittersLoaded ? to_string(h.blitters.size()) + u8"개 중 " + to_string(appliedBlitters) + u8"개에 폰트 아틀라스 지정" : string(u8"(아직 불러오지 않음)")));
 	ImGui::SameLine();
 	stepText(moduleMade, u8"다. 새 모듈 " + string(moduleMade ? u8"만듦" : u8"아직"));
 	ImGui::TextDisabled(u8"작업 폴더: %s", utf8(glyphDir(archive)).c_str());
 
 	if (ImGui::CollapsingHeader(u8"용어 설명 (처음이라면 먼저 읽어 보세요)")) {
-		ImGui::BulletText(u8"글자 세트: 폰트에서 만든 글자 그림(PNG)과, 글자마다의 위치와 폭 정보(.kft)를 묶은 것입니다.");
-		ImGui::BulletText(u8"글자 세트 번호: 오브젝트가 어떤 글자 세트를 쓸지 가리키는 1 이상의 번호입니다.");
+		ImGui::BulletText(u8"폰트 아틀라스: 폰트에서 만든 글자 그림(PNG)과, 글자마다의 위치와 폭 정보(.kft)를 묶은 것입니다.");
+		ImGui::BulletText(u8"폰트 아틀라스 번호: 오브젝트가 어떤 폰트 아틀라스를 쓸지 가리키는 1 이상의 번호입니다.");
 		ImGui::BulletText(u8"글자 오브젝트(Text Blitter): 이미지 글꼴로 글을 그리는 확장 오브젝트(txtblt.mfx)입니다. 게임의 메뉴, 대사 상자 등에 쓰입니다.");
 		ImGui::BulletText(u8"줄 폭 계산: 자동 줄바꿈과 정렬을 위해 한 줄의 폭을 재는 방식입니다. 한글에는 '글자 폭 합산'이 맞습니다.");
 		ImGui::BulletText(u8"텍스트 흐름: 각 글자 오브젝트가 받는 문구의 목록입니다. 번역이 빠진 문구를 찾거나 미리보기에 씁니다.");
@@ -1205,7 +1205,7 @@ void Dx9Application::renderHangulToolWindow()
 		ImGuiTabItemFlags flag1 = (h.requestTab == 1) ? ImGuiTabItemFlags_SetSelected : 0;
 		ImGuiTabItemFlags flag2 = (h.requestTab == 2) ? ImGuiTabItemFlags_SetSelected : 0;
 		h.requestTab = -1;
-		if (ImGui::BeginTabItem(u8"가. 글자 세트 만들기", NULL, flag0)) {
+		if (ImGui::BeginTabItem(u8"가. 폰트 아틀라스 만들기", NULL, flag0)) {
 			ImGui::BeginChild("##tab0", ImVec2(0.0f, 0.0f));
 			renderHangulAtlasTab();
 			ImGui::EndChild();

@@ -5,7 +5,7 @@
 #include "../Glyph/FontAtlas.h"
 #include "../ImGUI/Headers.h"
 
-// 한글화 도구 창(글자 세트 만들기 / 오브젝트에 적용 / 게임에 넣기 세 탭)의 화면 상태
+// 한글화 도구 창(폰트 아틀라스 만들기 / 오브젝트에 적용 / 게임에 넣기 세 탭)의 화면 상태
 //
 // 작업 흐름: 추출 -> 수정 -> 교체. 이 창들은 "수정" 단계에서 쓴다.
 //   - 글자 아틀라스 창: 폰트에서 아틀라스(PNG + 글자표)를 만들고, 번호를 붙여 txtblt.mfx 에 심은 모듈을 만든다
@@ -53,7 +53,7 @@ namespace CTT {
 		struct HangulUiState
 		{
 			bool showWindow;
-			int requestTab;					// 창을 열 때 먼저 보여 줄 탭 (0 글자 세트, 1 오브젝트 적용, 2 게임에 넣기, -1 요청 없음)
+			int requestTab;					// 창을 열 때 먼저 보여 줄 탭 (0 폰트 아틀라스, 1 오브젝트 적용, 2 게임에 넣기, -1 요청 없음)
 
 			// ---- 아틀라스 만들기 폼
 			char atlasName[64];

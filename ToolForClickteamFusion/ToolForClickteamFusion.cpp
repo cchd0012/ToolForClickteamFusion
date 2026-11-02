@@ -8,8 +8,8 @@ using namespace CTT::App;
 
 // Application/HeadlessApplication.cpp
 namespace CTT { namespace App { int runHeadlessCommand(int argc, WCHAR** argv); } }
-// Glyph/GlyphGenerator.cpp
-namespace CTT { namespace Glyph { int runGlyphCommand(int argc, WCHAR** argv); int runTxtbltHangulCommand(int argc, WCHAR** argv); } }
+// Glyph/GlyphGenerator.cpp, Glyph/TxtbltHangul.cpp, Glyph/FontAtlas.cpp
+namespace CTT { namespace Glyph { int runGlyphCommand(int argc, WCHAR** argv); int runTxtbltHangulCommand(int argc, WCHAR** argv); int runFontAtlasCommand(int argc, WCHAR** argv); } }
 
 // Main code
 int wmain(int argc, WCHAR* argv[])
@@ -24,6 +24,11 @@ int wmain(int argc, WCHAR* argv[])
 	// 개발용 스위치: 추출해 둔 폴더에 글자 이미지를 만들어 넣는다 (--glyphs, Glyph/GlyphGenerator.cpp)
 	if (argc >= 2 && wcscmp(argv[1], L"--glyphs") == 0) {
 		return CTT::Glyph::runGlyphCommand(argc, argv);
+	}
+
+	// 개발용 스위치: 폰트 아틀라스 + 글자표를 만들고 검사한다 (--font-atlas, Glyph/FontAtlas.cpp)
+	if (argc >= 2 && wcscmp(argv[1], L"--font-atlas") == 0) {
+		return CTT::Glyph::runFontAtlasCommand(argc, argv);
 	}
 
 	// 개발용 스위치: txtblt(Text Blitter) 확장에 한글을 그리게 한다 (--txtblt-hangul, Glyph/TxtbltHangul.cpp)

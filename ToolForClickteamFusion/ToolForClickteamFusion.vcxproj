@@ -198,6 +198,7 @@
     <ClCompile Include="ImGUI\imgui_widgets.cpp" />
     <ClCompile Include="jsoncpp.cpp" />
     <ClCompile Include="ToolForClickteamFusion.cpp" />
+    <ClCompile Include="Glyph\FontAtlas.cpp" />
     <ClCompile Include="Glyph\FtFont.cpp" />
     <ClCompile Include="Glyph\GlyphGenerator.cpp" />
     <ClCompile Include="Glyph\TxtbltHangul.cpp" />
@@ -318,6 +319,7 @@
     <ClInclude Include="Chunk\TwoFivePlusObject\ObjectHeaderListChunk.h" />
     <ClInclude Include="Chunk\TwoFivePlusObject\ObjectElementDataChunk.h" />
     <ClInclude Include="Chunk\TwoFivePlusObject\ObjectElementContainer.h" />
+    <ClInclude Include="Glyph\FontAtlas.h" />
     <ClInclude Include="Glyph\FtFont.h" />
     <ClInclude Include="Glyph\GlyphGenerator.h" />
     <ClInclude Include="Glyph\TxtbltFoldCode.h" />

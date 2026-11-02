@@ -38,8 +38,10 @@ namespace CTT {
 			void renderArchiveChunkListWindow();
 			void renderArchiveEachChunkInfoWindow();
 			// 한글화 도구 창 (수정 단계), Dx9Application_Hangul.cpp
-			void renderHangulAtlasWindow();
-			void renderHangulBlitterWindow();
+			void renderHangulToolWindow();
+			void renderHangulAtlasTab();
+			void renderHangulBlitterTab();
+			void renderHangulModuleTab();
 			// 프로세싱 함수
 			void terminateProcess();
 			bool openArchive();

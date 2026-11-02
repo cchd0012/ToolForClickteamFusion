@@ -35,6 +35,7 @@ typedef struct _application_state {
 	char startupArchivePath[MAX_UTF8_PATH];
 	bool startupShowAtlas;
 	bool startupShowBlitter;
+	bool startupShowModule;
 
 	// 에러 관련 상태
 	bool isError;

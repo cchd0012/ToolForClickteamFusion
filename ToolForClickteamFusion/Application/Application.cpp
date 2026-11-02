@@ -58,9 +58,9 @@ void Application::initializeAppState()
 	states.isDirty = false;
 	states.isDraggable = false;
 
-	// 윈도우 상태값 초기화 (기본 840*600)
-	states.windowWidth = 840;
-	states.windowHeight = 600;
+	// 윈도우 상태값 초기화 (기본 1280*800: 한글화 도구처럼 창이 많은 화면을 한눈에 보기 위함)
+	states.windowWidth = 1280;
+	states.windowHeight = 800;
 	states.menuHeight = 40;
 	states.archiveOpenWindowHeight = 120;
 	states.chunkListWindowWidth = 400;

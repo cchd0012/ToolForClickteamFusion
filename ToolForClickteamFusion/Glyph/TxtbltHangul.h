@@ -20,8 +20,7 @@ namespace CTT {
 		// 경로는 추출 폴더 기준이다. 추출 폴더에는 image, script, text, module 이 추출되어 있어야 한다
 		bool patchTxtbltHangul(const wstring& gameDir, const wstring& configPath);
 
-		// 개발용 스위치: ToolForClickteamFusion.exe --txtblt-limited-hangul <추출 폴더> <설정 json>  (옛 이름 --txtblt-hangul 도 받는다)
-		int runTxtbltHangulCommand(int argc, WCHAR** argv);
+		// 개발용 스위치: ToolForClickteamFusion.exe --txtblt-limited-hangul <추출 폴더> <설정 json>		int runTxtbltHangulCommand(int argc, WCHAR** argv);
 
 	}
 

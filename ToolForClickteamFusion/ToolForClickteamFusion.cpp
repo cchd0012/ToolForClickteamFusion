@@ -37,8 +37,7 @@ int wmain(int argc, WCHAR* argv[])
 	}
 
 	// 개발용 스위치: txtblt(Text Blitter) 119KB판(dtge)에 LimitedHangul 방식으로 한글을 그리게 한다 (--txtblt-limited-hangul, Glyph/TxtbltHangul.cpp)
-	// 옛 이름 --txtblt-hangul 도 받는다 (이 방식은 LimitedHangul 하나뿐이던 때 붙인 이름이다)
-	if (argc >= 2 && (wcscmp(argv[1], L"--txtblt-limited-hangul") == 0 || wcscmp(argv[1], L"--txtblt-hangul") == 0)) {
+	if (argc >= 2 && wcscmp(argv[1], L"--txtblt-limited-hangul") == 0) {
 		return CTT::Glyph::runTxtbltHangulCommand(argc, argv);
 	}
 

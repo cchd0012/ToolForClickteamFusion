@@ -188,7 +188,7 @@ void Archive::setDataCount(vector<wstring>& extractingDataTypes)
 			// Object
 			case ChunkType::CHUNK_OBJECT_PROPERTIES:
 			{
-				if (contains(extractingDataTypes, L"text") || contains(extractingDataTypes, L"script")) {
+				if (contains(extractingDataTypes, L"text") || contains(extractingDataTypes, L"script") || contains(extractingDataTypes, L"flow")) {
 					ObjectDataChunk* chunk = new ObjectDataChunk();
 					chunk->readOnlyDataCount(hArchive);
 					delete chunk;
@@ -637,13 +637,17 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 			// Object
 			case ChunkType::CHUNK_OBJECT_PROPERTIES:
 			{
-				if (contains(extractingDataTypes, L"text") || contains(extractingDataTypes, L"script")) {
+				if (contains(extractingDataTypes, L"text") || contains(extractingDataTypes, L"script") || contains(extractingDataTypes, L"flow")) {
 					wcout << L"--------------------------------------" << endl;
 					wcout << infoPrefix << L"ChunkType: " << uppercase << hex << getNameUni(chunkInfo.type) << L" extracting..." << endl;
 					ObjectDataChunk* chunk = new ObjectDataChunk();
 					if (!chunk->readFromArchive(hArchive)) {
 						wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": Object 데이터를 읽지 못했습니다." << endl;
 						triggerError(__FUNCTION__, u8"Object 데이터를 읽지 못했습니다");
+						delete chunk;
+						return false;
+					}
+					if (!extractOldObjectProperties(*chunk, extractingDataTypes)) {
 						delete chunk;
 						return false;
 					}
@@ -1270,6 +1274,21 @@ bool Archive::rewriteAllChunk(HANDLE hNewArchive, vector<wstring>& replacingData
 				break;
 			}
 
+			// Object 옛 형식 속성(0x2229), 오브젝트 텍스트/스크립트 교체
+			case ChunkType::CHUNK_OBJECT_PROPERTIES: {
+				if (contains(replacingDataTypes, L"text") || contains(replacingDataTypes, L"script")) {
+					if (!rewriteObjectPropertiesChunk(hNewArchive, replacingDataTypes)) {
+						return false;
+					}
+				}
+				else {
+					if (!rewriteUnknownChunk(hNewArchive)) {
+						return false;
+					}
+				}
+				break;
+			}
+
 			// *** 확인용, 확인이 되면 지울것
 			case ChunkType::CHUNK_2_5_UNKNOWN_1:
 			case ChunkType::CHUNK_2_5_UNKNOWN_2:
@@ -1795,6 +1814,191 @@ bool Archive::readObjectHeaders(vector<ObjectHeaderEntry>& headers, vector<strin
 
 	SetFilePointer(hArchive, backupOffset, NULL, FILE_BEGIN);
 	return success;
+}
+
+
+bool Archive::extractOldObjectProperties(ObjectDataChunk& chunk, vector<wstring>& extractingDataTypes)
+{
+	const bool useText = contains(extractingDataTypes, L"text");
+	const bool useScript = contains(extractingDataTypes, L"script");
+	const bool useFlow = contains(extractingDataTypes, L"flow");
+	if (!useText && !useScript && !useFlow) {
+		return true;
+	}
+	const ObjectCommonLayout layout = (getBuildVersion() >= 0x11C) ? ObjectCommonLayout::BUILD_284 : ObjectCommonLayout::BEFORE_284;
+
+	// 이벤트에 붙일 오브젝트 이름은 이 청크에서 얻는다 (옛 형식은 0x2253 헤더가 없다)
+	const bool collectNames = useScript || useFlow;
+	if (collectNames) {
+		frameScriptContext.objectNames.clear();
+		frameScriptContextLoaded = true;
+	}
+
+	vector<BaseData*>& objects = chunk.getValue();
+	UINT32 handled = 0;
+	for (size_t i = 0; i < objects.size(); i++) {
+		Object* object = (Object*)objects[i];
+		UINT16 handle = 0, type = 0;
+		if (object == NULL || !object->getHeaderInfo(handle, type)) {
+			continue;
+		}
+		string objectName = getAnsiStr(object->getName(), CodePage::CP_UTF_8);
+		if (collectNames) {
+			if (frameScriptContext.objectNames.size() <= handle) {
+				frameScriptContext.objectNames.resize((size_t)handle + 1);
+			}
+			frameScriptContext.objectNames[handle] = objectName;
+		}
+		// 타입 0 ~ 1 (배경)은 ObjectCommon 이 없다
+		if (type < 2) {
+			continue;
+		}
+		ByteBuffer blob;
+		ObjectCommon common;
+		string errorMessage;
+		if (!object->getCommonBlob(blob) || !common.parse(blob, layout, getBuildVersion(), errorMessage)) {
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 오브젝트(핸들 " << dec << handle << L")를 해석하지 못해 건너뜁니다." << endl;
+			continue;
+		}
+		if (useText) {
+			objectTextTable.addObject((INT32)handle, objectName, common);
+		}
+		if (useFlow) {
+			Json::Value flowScriptValue;
+			decompileObjectScript((INT32)handle, objectName, type, common, flowScriptValue);
+			frameEventTextFlow.addObjectScript(flowScriptValue);
+		}
+		if (useScript) {
+			Json::Value scriptValue;
+			decompileObjectScript((INT32)handle, objectName, type, common, scriptValue);
+			wostringstream indexStream;
+			indexStream << setw(6) << setfill(L'0') << handle;
+			wstring exportJsonPath = getExtentionRemovedPath(archivePath) + L"/script/object/" + indexStream.str() + L".json";
+			if (!writeIntoJson(scriptValue, exportJsonPath)) {
+				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 오브젝트 스크립트를 json 으로 저장하지 못했습니다." << endl;
+				triggerError(__FUNCTION__, u8"오브젝트 스크립트를 json 으로 저장하지 못했습니다");
+				return false;
+			}
+		}
+		handled++;
+	}
+	wcout << infoPrefix << L"옛 형식 오브젝트 속성(0x2229): 오브젝트 " << dec << objects.size() << L"개 중 " << handled << L"개를 해석했습니다." << endl;
+	return true;
+}
+
+
+bool Archive::rewriteObjectPropertiesChunk(HANDLE hNewArchive, vector<wstring>& replacingDataTypes)
+{
+	bool useText = contains(replacingDataTypes, L"text");
+	bool useScript = contains(replacingDataTypes, L"script");
+
+	wstring scriptDirPath = getExtentionRemovedPath(archivePath) + L"/script/object";
+	bool scriptDirExists = useScript && (isFileOrDir(scriptDirPath) == FSOType::FSO_DIRECTORY);
+
+	if (useText && !objectTextTable.isLoaded()) {
+		wstring importJsonPath = getExtentionRemovedPath(archivePath) + L"/text/objectText.json";
+		if (isFileOrDir(importJsonPath) != FSOType::FSO_FILE) {
+			wcout << infoPrefix << L"오브젝트 텍스트 json 이 없어 오브젝트 텍스트 교체를 건너뜁니다: " << importJsonPath << endl;
+			objectTextTable.markLoaded();
+		}
+		else {
+			Json::Value textValue;
+			if (!readFromJson(textValue, importJsonPath) || !objectTextTable.importJson(textValue)) {
+				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 오브젝트 텍스트 json 을 읽어들이지 못했습니다." << endl;
+				triggerError(__FUNCTION__, u8"오브젝트 텍스트 json 을 읽어들이지 못했습니다", true);
+				return false;
+			}
+			wcout << infoPrefix << L"오브젝트 텍스트 " << dec << objectTextTable.getEntryCount() << L"개 오브젝트를 읽어들였습니다." << endl;
+		}
+	}
+	bool hasTextTable = useText && (objectTextTable.getEntryCount() > 0);
+
+	if (!hasTextTable && !scriptDirExists) {
+		if (useScript) {
+			wcout << infoPrefix << L"오브젝트 스크립트 폴더가 없어 오브젝트 스크립트 교체를 건너뜁니다: " << scriptDirPath << endl;
+		}
+		return rewriteUnknownChunk(hNewArchive);
+	}
+
+	ObjectDataChunk chunk;
+	wcout << L"--------------------------------------" << endl;
+	wcout << infoPrefix << L"Object Properties Chunk (0x2229) rewriting processing..." << endl;
+	if (!chunk.readFromArchive(hArchive)) {
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 오브젝트 속성 chunk를 읽어들이지 못해 변환을 실패했습니다." << endl;
+		return false;
+	}
+
+	const ObjectCommonLayout layout = (getBuildVersion() >= 0x11C) ? ObjectCommonLayout::BUILD_284 : ObjectCommonLayout::BEFORE_284;
+	vector<BaseData*>& objects = chunk.getValue();
+	UINT32 replacedTotal = 0;
+	UINT32 skippedTotal = 0;
+	UINT32 scriptedTotal = 0;
+	for (size_t i = 0; i < objects.size(); i++) {
+		Object* object = (Object*)objects[i];
+		UINT16 handle = 0, type = 0;
+		if (object == NULL || !object->getHeaderInfo(handle, type) || (type < 2)) {
+			continue;
+		}
+		const ObjectTextEntry* entry = hasTextTable ? objectTextTable.findEntry((INT32)handle) : NULL;
+		wostringstream indexStream;
+		indexStream << setw(6) << setfill(L'0') << handle;
+		wstring scriptPath = scriptDirPath + L"/" + indexStream.str() + L".json";
+		bool hasScript = scriptDirExists && (isFileOrDir(scriptPath) == FSOType::FSO_FILE);
+		if ((entry == NULL) && !hasScript) {
+			continue;
+		}
+
+		ByteBuffer blob;
+		ObjectCommon common;
+		string errorMessage;
+		if (!object->getCommonBlob(blob) || !common.parse(blob, layout, getBuildVersion(), errorMessage)) {
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 오브젝트(핸들 " << dec << handle << L")를 해석하지 못해 건너뜁니다." << endl;
+			continue;
+		}
+
+		bool changedByScript = false;
+		if (hasScript) {
+			Json::Value scriptValue;
+			if (!readFromJson(scriptValue, scriptPath)) {
+				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << scriptPath << L": 오브젝트 스크립트 json 을 읽어들이지 못했습니다." << endl;
+				triggerError(__FUNCTION__, u8"오브젝트 스크립트 json 을 읽어들이지 못했습니다", true);
+				return false;
+			}
+			if (!recompileObjectScript(common, scriptValue, changedByScript, errorMessage)) {
+				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": " << scriptPath << L": " << wstring(errorMessage.begin(), errorMessage.end()) << endl;
+				triggerError(__FUNCTION__, u8"오브젝트 스크립트를 적용하지 못했습니다", true);
+				return false;
+			}
+		}
+		UINT32 replacedCount = 0;
+		UINT32 skippedCount = 0;
+		if (entry != NULL) {
+			replaceObjectText(common, *entry, replacedCount, skippedCount);
+		}
+		skippedTotal += skippedCount;
+		if (!changedByScript && (replacedCount == 0)) {
+			continue;
+		}
+
+		ByteBuffer newBlob;
+		if (!common.serialize(newBlob, errorMessage) || !object->setCommonBlob(newBlob)) {
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 오브젝트(핸들 " << dec << handle << L")를 다시 만들지 못했습니다: " << wstring(errorMessage.begin(), errorMessage.end()) << endl;
+			return false;
+		}
+		replacedTotal += replacedCount;
+		if (changedByScript) {
+			scriptedTotal++;
+		}
+	}
+
+	if (!chunk.writeIntoArchive(hNewArchive)) {
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 오브젝트 속성 chunk를 기록하지 못해 변환을 실패했습니다." << endl;
+		return false;
+	}
+	wcout << infoPrefix << L"오브젝트 스크립트 " << dec << scriptedTotal << L"개를 반영하고, 오브젝트 텍스트 " << replacedTotal << L"개를 교체했습니다. (원문이 달라 건너뜀: " << skippedTotal << L"개)" << endl;
+	wcout << infoPrefix << L"Object Properties Chunk (0x2229) rewriting complete!" << endl;
+	wcout << L"--------------------------------------" << endl << endl;
+	return true;
 }
 
 

@@ -12,6 +12,8 @@
 #include "../Chunk/TwoFivePlusObject/ObjectHeaderListChunk.h"
 #include "../Common.h"
 
+namespace CTT { namespace Chunk { class ObjectDataChunk; } }
+
 namespace CTT {
 
 	namespace Archive {
@@ -147,6 +149,9 @@ namespace CTT {
 
 			// 2.5+ 오브젝트 속성 데이터(0x2256)와 이어지는 오프셋(0x2257)을 오브젝트 텍스트 번역을 적용하여 다시 쓴다
 			bool rewriteObjectElementChunks(HANDLE hNewArchive, vector<wstring>& replacingDataTypes);
+			// 옛 형식(0x2229) 오브젝트 속성: 오브젝트 텍스트/스크립트 추출과 교체 (핸들을 오브젝트 번호로 쓴다)
+			bool extractOldObjectProperties(ObjectDataChunk& chunk, vector<wstring>& extractingDataTypes);
+			bool rewriteObjectPropertiesChunk(HANDLE hNewArchive, vector<wstring>& replacingDataTypes);
 			// 2.5+ 오브젝트 헤더(0x2253)와 이름(0x2254)을 읽는다 (아카이브 핸들 위치는 그대로 유지된다)
 			bool readObjectHeaders(vector<ObjectHeaderEntry>& headers, vector<string>& names);
 

@@ -4,6 +4,7 @@
 #include "../BaseData.h"
 #include "../../Util/JsonUtil.h"
 #include "../Literal/StringChunk.h"
+#include "../../Util/ByteBufferUtil.h"
 
 namespace CTT {
 
@@ -40,6 +41,11 @@ namespace CTT {
 
 			bool loadFromBuffer(BYTE*& bufferPnt);
 			bool saveIntoBuffer(BYTE*& bufferPnt);
+
+			// 옛 형식(0x2229) 오브젝트의 헤더 정보와 common 블록 (오브젝트 텍스트/스크립트 추출, 교체용)
+			bool getHeaderInfo(UINT16& handle, UINT16& type);
+			bool getCommonBlob(CTT::ByteBufferUtil::ByteBuffer& blob);
+			bool setCommonBlob(const CTT::ByteBufferUtil::ByteBuffer& blob);
 
 			// 데이터 렌더링용 함수
 			void renderData(UINT32 index);

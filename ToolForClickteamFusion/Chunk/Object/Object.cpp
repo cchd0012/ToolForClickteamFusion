@@ -230,3 +230,54 @@ void Object::renderData(UINT32 index)
 	// *** 출력 *** //
 	ImGui::Text("  }");
 }
+
+
+bool Object::getHeaderInfo(UINT16& handle, UINT16& type)
+{
+	for (size_t i = 0; i < chunkList.size(); i++) {
+		if (chunkList[i]->getType() == ChunkType::CHUNK_OBJECT_HEADER) {
+			ObjectHeader& header = ((ObjectHeaderChunk*)chunkList[i])->getValue();
+			handle = header.handle;
+			type = header.type;
+			return true;
+		}
+	}
+	return false;
+}
+
+
+bool Object::getCommonBlob(CTT::ByteBufferUtil::ByteBuffer& blob)
+{
+	for (size_t i = 0; i < chunkList.size(); i++) {
+		if (chunkList[i]->getType() == ChunkType::CHUNK_OBJECT_COMMON) {
+			UnknownChunk* common = (UnknownChunk*)chunkList[i];
+			blob.assign(common->getValue(), common->getValue() + common->getValueSize());
+			return true;
+		}
+	}
+	return false;
+}
+
+
+bool Object::setCommonBlob(const CTT::ByteBufferUtil::ByteBuffer& blob)
+{
+	for (size_t i = 0; i < chunkList.size(); i++) {
+		if (chunkList[i]->getType() == ChunkType::CHUNK_OBJECT_COMMON) {
+			UnknownChunk* common = (UnknownChunk*)chunkList[i];
+			BYTE* newValue = (BYTE*)malloc(blob.empty() ? 1 : blob.size());
+			if (newValue == NULL) {
+				return false;
+			}
+			if (!blob.empty()) {
+				memcpy(newValue, &blob[0], blob.size());
+			}
+			if (common->getValue() != NULL) {
+				free(common->getValue());
+			}
+			common->getValue() = newValue;
+			common->getValueSize() = (UINT32)blob.size();
+			return true;
+		}
+	}
+	return false;
+}

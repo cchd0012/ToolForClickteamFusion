@@ -11,6 +11,10 @@ static const UINT32 frameEventTextFlowJsonVersion = 1;
 
 // txtblt.mfx 의 "텍스트 설정" 동작 번호. 같은 모듈은 어느 게임에서나 같은 번호를 쓴다
 static const INT32 kTextBlitterSetTextAction = 80;
+// 폰트 이미지를 실행 중에 바꾸는 동작: 파일에서 불러오기 / 이미지 폭 / 이미지 높이
+static const INT32 kTextBlitterLoadImageAction = 93;
+static const INT32 kTextBlitterImageWidthAction = 95;
+static const INT32 kTextBlitterImageHeightAction = 96;
 // 오브젝트의 알터러블 문자열을 설정하는 동작 (오브젝트 공통 동작). 파라미터: 문자열 번호, 식
 static const INT32 kSetAlterableStringAction = 49;
 // 식: 오브젝트의 알터러블 문자열 / 알터러블 값
@@ -72,6 +76,7 @@ void FrameEventTextFlow::clear()
 {
 	assignments.clear();
 	setters.clear();
+	fontLoads.clear();
 	blitters.clear();
 }
 
@@ -110,6 +115,17 @@ void FrameEventTextFlow::addFrameScript(UINT32 frameIndex, const Json::Value& fr
 					assignment.target = objectName;
 					describeExpression(params[0], assignment.expression);
 					assignments.push_back(assignment);
+				}
+				else if (((num == kTextBlitterLoadImageAction) || (num == kTextBlitterImageWidthAction) || (num == kTextBlitterImageHeightAction))
+					&& (objectType >= kFirstExtensionObjectType) && (params.size() >= 1) && (params[0].get("kind", "").asString() == "expression")) {
+					FrameEventFlowFontLoad load;
+					load.frame = frameIndex;
+					load.frameName = frameName;
+					load.group = groups[g].get("uid", 0).asInt();
+					load.target = objectName;
+					load.num = num;
+					describeExpression(params[0], load.expression);
+					fontLoads.push_back(load);
 				}
 			}
 		}
@@ -207,6 +223,15 @@ static Json::Value assignmentToJson(const FrameEventFlowAssignment& assignment, 
 }
 
 
+static const char* fontLoadActionName(INT32 num)
+{
+	if (num == kTextBlitterLoadImageAction) {
+		return "loadImage";
+	}
+	return (num == kTextBlitterImageWidthAction) ? "imageWidth" : "imageHeight";
+}
+
+
 bool FrameEventTextFlow::exportJson(Json::Value& value) const
 {
 	value = Json::Value(Json::objectValue);
@@ -263,6 +288,15 @@ bool FrameEventTextFlow::exportJson(Json::Value& value) const
 			blitter["string0Values"] = toJsonArray(fontValues);
 		}
 		blitter["assignments"] = assignmentArray;
+		UINT32 reloads = 0;
+		for (size_t f = 0; f < fontLoads.size(); f++) {
+			if ((fontLoads[f].target == name) && (fontLoads[f].num == kTextBlitterLoadImageAction)) {
+				reloads++;
+			}
+		}
+		if (reloads > 0) {
+			blitter["fontReloads"] = reloads;
+		}
 		blitter["texts"] = toJsonArray(reachable);
 		blitterArray.append(blitter);
 	}
@@ -288,6 +322,56 @@ bool FrameEventTextFlow::exportJson(Json::Value& value) const
 		summary[kinds[k]] = counts[kinds[k]];
 	}
 	value["summary"] = summary;
+
+	// 폰트 이미지를 실행 중에 바꾸는 동작: 블리터(또는 한정자)로 가는 것만 센다. 다른 확장의 같은 번호 동작은 제외한다
+	set<string> blitterNames;
+	for (size_t i = 0; i < blitters.size(); i++) {
+		blitterNames.insert(blitters[i].name);
+	}
+	Json::Value loadArray(Json::arrayValue);
+	UINT32 loadCount = 0, widthCount = 0, heightCount = 0;
+	for (size_t f = 0; f < fontLoads.size(); f++) {
+		const FrameEventFlowFontLoad& load = fontLoads[f];
+		bool qualifier = (load.target.compare(0, strlen(kQualifierPrefix), kQualifierPrefix) == 0);
+		if (!qualifier && (blitterNames.count(load.target) == 0)) {
+			continue;
+		}
+		if (load.num == kTextBlitterLoadImageAction) {
+			loadCount++;
+		}
+		else if (load.num == kTextBlitterImageWidthAction) {
+			widthCount++;
+		}
+		else {
+			heightCount++;
+		}
+		Json::Value item(Json::objectValue);
+		item["frame"] = load.frame;
+		item["frameName"] = load.frameName;
+		item["group"] = load.group;
+		item["target"] = load.target;
+		item["action"] = fontLoadActionName(load.num);
+		item["kind"] = classifyExpression(load.expression);
+		item["literals"] = toJsonArray(load.expression.literals);
+		if (!load.expression.references.empty()) {
+			Json::Value references(Json::arrayValue);
+			for (size_t r = 0; r < load.expression.references.size(); r++) {
+				Json::Value entry(Json::objectValue);
+				entry["object"] = load.expression.references[r].first;
+				entry["string"] = load.expression.references[r].second;
+				references.append(entry);
+			}
+			item["references"] = references;
+		}
+		loadArray.append(item);
+	}
+	Json::Value fontReload(Json::objectValue);
+	fontReload["detected"] = (loadCount > 0);
+	fontReload["loadImage"] = loadCount;
+	fontReload["imageWidth"] = widthCount;
+	fontReload["imageHeight"] = heightCount;
+	fontReload["loads"] = loadArray;
+	value["fontReload"] = fontReload;
 	value["blitters"] = blitterArray;
 	if (qualifierArray.size() > 0) {
 		value["qualifierAssignments"] = qualifierArray;

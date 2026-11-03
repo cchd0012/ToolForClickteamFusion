@@ -22,7 +22,14 @@
 //                     "assignments": [ { "frame": 3, "frameName": "...", "group": 12, "kind": "literal",
 //                                        "literals": ["..."], "references": [ { "object": "...", "string": 1, "literals": ["..."] } ] } ],
 //                     "texts": ["처음 문자열과 나올 수 있는 모든 문자열"] } ],
-//     "qualifierAssignments": [ { "target": "qualifier#33", ... } ] }
+//     "qualifierAssignments": [ { "target": "qualifier#33", ... } ],
+//     "fontReload": { "detected": true, "loadImage": 160, "imageWidth": 160, "imageHeight": 160,
+//                     "loads": [ { "frame": 3, "frameName": "...", "group": 12, "target": "...", "action": "loadImage",
+//                                  "kind": "literal", "literals": ["/Data/Fonts/small1.png"] } ] } }
+//
+// fontReload: 게임이 실행 중에 블리터의 폰트 이미지를 바꾸는지 알려 준다 (동작 93 파일에서 불러오기, 95/96 이미지 폭/높이).
+// 그러면 오브젝트에 심은 아틀라스가 덮여 글자가 깨지므로, 한글화할 때 아틀라스를 그 파일로 바꾸거나 이미지 뱅크에 넣고
+// 모듈이 이 동작을 무시하게 해야 한다. 동작 번호는 37376바이트판 txtblt.mfx 기준이다 (다른 판은 번호가 다를 수 있다)
 
 namespace CTT {
 
@@ -57,6 +64,17 @@ namespace CTT {
 			_frame_event_flow_setter() : frame(0), index(0) {}
 		} FrameEventFlowSetter;
 
+		// 블리터의 폰트 이미지를 실행 중에 바꾸는 동작 (파일에서 불러오기 / 이미지 폭 / 이미지 높이)
+		typedef struct _frame_event_flow_font_load {
+			UINT32 frame;
+			string frameName;
+			INT32 group;
+			string target;							// 동작의 대상 오브젝트 이름 (한정자면 qualifier#N)
+			INT32 num;								// 동작 번호 (93 불러오기, 95 이미지 폭, 96 이미지 높이)
+			FrameEventFlowExpression expression;	// 첫 인자 (불러오기는 파일 이름)
+			_frame_event_flow_font_load() : frame(0), group(0), num(0) {}
+		} FrameEventFlowFontLoad;
+
 		typedef struct _frame_event_flow_blitter {
 			INT32 index;
 			string name;
@@ -86,6 +104,7 @@ namespace CTT {
 		private:
 			vector<FrameEventFlowAssignment> assignments;
 			vector<FrameEventFlowSetter> setters;
+			vector<FrameEventFlowFontLoad> fontLoads;
 			vector<FrameEventFlowBlitter> blitters;
 		};
 

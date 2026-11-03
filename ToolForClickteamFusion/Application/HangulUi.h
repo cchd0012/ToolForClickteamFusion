@@ -84,6 +84,12 @@ namespace CTT {
 			// ---- 블리터
 			vector<HangulBlitterItem> blitters;
 			map<string, vector<string> > textsByName;		// 블리터 이름 -> 나올 수 있는 문자열 (textFlow.json)
+			// 게임이 실행 중에 글꼴 이미지를 다시 불러오는지 (textFlow.json 의 fontReload). 흐름 분석이 없으면 알 수 없다
+			bool fontReloadKnown;
+			bool fontReloadDetected;
+			UINT32 fontReloadCount;			// 불러오기 동작 수
+			UINT32 fontReloadFrames;		// 그 동작이 있는 프레임 수
+			string fontReloadExample;		// 불러오는 파일 이름의 예 (상수 부분)
 			map<string, INT32> tableByFont;					// 글꼴 이름 -> 글자표 번호 (규칙으로 배정)
 			bool blittersLoaded;
 			int currentBlitter;				// 선택해서 보고 있는 항목 (blitters 의 위치, -1 이면 없음)

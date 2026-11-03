@@ -41,6 +41,10 @@ HangulUiState::HangulUiState()
 	memset(moduleOutput, 0, sizeof(moduleOutput));
 
 	blittersLoaded = false;
+	fontReloadKnown = false;
+	fontReloadDetected = false;
+	fontReloadCount = 0;
+	fontReloadFrames = 0;
 	currentBlitter = -1;
 	memset(filter, 0, sizeof(filter));
 	applyTable = 0;
@@ -396,6 +400,11 @@ namespace {
 	{
 		hangul.blitters.clear();
 		hangul.textsByName.clear();
+		hangul.fontReloadKnown = false;
+		hangul.fontReloadDetected = false;
+		hangul.fontReloadCount = 0;
+		hangul.fontReloadFrames = 0;
+		hangul.fontReloadExample.clear();
 		hangul.currentBlitter = -1;
 
 		wstring base = archiveBase(archive);
@@ -437,6 +446,25 @@ namespace {
 					for (Json::ArrayIndex k = 0; k < t.size(); k++) {
 						texts.push_back(t[k].asString());
 					}
+				}
+				const Json::Value& reload = flow["fontReload"];
+				if (reload.isObject()) {
+					hangul.fontReloadKnown = true;
+					hangul.fontReloadDetected = reload.get("detected", false).asBool();
+					hangul.fontReloadCount = reload.get("loadImage", 0).asUInt();
+					set<UINT32> frames;
+					const Json::Value& loads = reload["loads"];
+					for (Json::ArrayIndex i = 0; i < loads.size(); i++) {
+						if (loads[i].get("action", "").asString() != "loadImage") {
+							continue;
+						}
+						frames.insert(loads[i].get("frame", 0).asUInt());
+						const Json::Value& literals = loads[i]["literals"];
+						if (hangul.fontReloadExample.empty() && literals.isArray() && (literals.size() > 0)) {
+							hangul.fontReloadExample = literals[0].asString();
+						}
+					}
+					hangul.fontReloadFrames = (UINT32)frames.size();
 				}
 			}
 		}
@@ -841,6 +869,15 @@ void Dx9Application::renderHangulBlitterTab()
 	helpMarker(u8"'텍스트 흐름'은 각 글자 오브젝트가 받는 문구의 목록입니다. 아래 미리보기에서 그 문구를 실제 폰트 아틀라스로 그려 볼 수 있습니다.");
 	ImGui::SameLine();
 	ImGui::TextDisabled(u8"오브젝트 파일 %s / 텍스트 흐름 %s", hasObjects ? u8"있음" : u8"없음", hasFlow ? u8"있음" : u8"없음");
+	if (h.fontReloadKnown) {
+		if (h.fontReloadDetected) {
+			ImGui::TextColored(ImVec4(1.0f, 0.75f, 0.3f, 1.0f), u8"이 게임은 실행 중에 글꼴 이미지를 다시 불러옵니다 (%u곳, %u개 화면%s%s)", h.fontReloadCount, h.fontReloadFrames, h.fontReloadExample.empty() ? "" : u8", 예: ", h.fontReloadExample.c_str());
+			ImGui::TextWrapped(u8"그대로 두면 지정한 폰트 아틀라스가 원본 글꼴 그림으로 덮여 글자가 깨집니다. 아틀라스를 이미지 뱅크에 넣거나(appendImages.json + 오브젝트의 imageHandle), 게임이 불러오는 PNG 를 아틀라스로 바꾸세요. 이 도구가 만든 모듈은 글자표가 있는 오브젝트의 불러오기를 무시합니다.");
+		}
+		else {
+			ImGui::TextDisabled(u8"실행 중 글꼴 이미지 다시 불러오기: 없음 (이미지 뱅크의 아틀라스가 그대로 쓰입니다)");
+		}
+	}
 
 	if (!h.blittersLoaded) {
 		ImGui::Spacing();

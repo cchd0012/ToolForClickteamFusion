@@ -54,6 +54,12 @@ namespace {
 	const UINT32 kLayoutDeleteVa = 0x10004706;		// operator delete 썽크 (cdecl)
 	const UINT32 kLayoutEmptyVa = 0x10006c84;		// 머리 노드가 가리키는 빈 문자열
 
+	//  5) 동작 93 "파일에서 폰트 이미지 불러오기" 핸들러(stdcall, 인자 3개)의 시작: 글자표가 있는 오브젝트는 이미지를 바꾸지 않는다
+	//     (게임이 실행 중에 원래 폰트 PNG 를 다시 불러와도 글자표가 가리키는 글자판이 그대로 남는다)
+	const UINT32 kLoadImageVa = 0x100015b5;
+	const unsigned char kLoadImageOrg[7] = { 0x55, 0x8b, 0xec, 0x56, 0x8b, 0x75, 0x08 };		// push ebp / mov ebp,esp / push esi / mov esi,[ebp+8]
+	const UINT32 kLoadImageRet = 0x100015bc;
+
 	struct PeSection { string name; UINT32 vs, va, rs, ro; };
 
 
@@ -211,6 +217,22 @@ namespace {
 		return a.bytes;
 	}
 
+	// 폰트 이미지 불러오기 후크: 글자표가 있으면(rd+0x418) 아무것도 하지 않고 돌아가고, 없으면 원래 함수를 그대로 실행한다
+	Bytes buildLoadImageTrampoline(UINT32 startVa)
+	{
+		Asm a(startVa);
+		a.op({ 0x8b, 0x44, 0x24, 0x04 });												// mov eax,[esp+4]            개체
+		a.op({ 0x83, 0xb8, 0x18, 0x04, 0x00, 0x00, 0x00 });								// cmp dword [eax+0x418],0
+		a.branch({ 0x0f, 0x84 }, "orig");												// je 원래 함수
+		a.op({ 0x66, 0x33, 0xc0 });														// xor ax,ax                  (원래 함수의 반환값과 같다)
+		a.op({ 0xc2, 0x0c, 0x00 });														// ret 0xc
+		a.label("orig");
+		a.raw(kLoadImageOrg, sizeof(kLoadImageOrg));									// 밀려난 명령 7바이트
+		a.jumpVa(0xe9, kLoadImageRet);
+		a.resolve();
+		return a.bytes;
+	}
+
 }
 
 
@@ -266,8 +288,9 @@ bool CTT::Glyph::patchTxtbltFont(vector<unsigned char>& data, const vector<Txtbl
 		}
 	};
 	struct Site { UINT32 va; const unsigned char* org; size_t len; size_t off; };
-	Site sites[4] = { { kSizeVa, kSizeOrg, sizeof(kSizeOrg), 0 }, { kBindVa, kBindOrg, sizeof(kBindOrg), 0 }, { kDrawVa, kDrawOrg, sizeof(kDrawOrg), 0 }, { kLayoutVa, kLayoutOrg, sizeof(kLayoutOrg), 0 } };
-	for (int i = 0; i < 4; i++) {
+	Site sites[5] = { { kSizeVa, kSizeOrg, sizeof(kSizeOrg), 0 }, { kBindVa, kBindOrg, sizeof(kBindOrg), 0 }, { kDrawVa, kDrawOrg, sizeof(kDrawOrg), 0 }, { kLayoutVa, kLayoutOrg, sizeof(kLayoutOrg), 0 },
+		{ kLoadImageVa, kLoadImageOrg, sizeof(kLoadImageOrg), 0 } };
+	for (int i = 0; i < 5; i++) {
 		if (!Local::va2off(secs, sites[i].va, sites[i].off) || sites[i].off + sites[i].len > data.size() || memcmp(&data[sites[i].off], sites[i].org, sites[i].len) != 0) {
 			error = L"원본 txtblt.mfx(37376바이트 판)의 패치 지점이 맞지 않습니다.";
 			return false;
@@ -319,10 +342,12 @@ bool CTT::Glyph::patchTxtbltFont(vector<unsigned char>& data, const vector<Txtbl
 	UINT32 bindTrampolineLen = (UINT32)buildBindTrampoline(0, 0, 0).size();
 	UINT32 drawTrampolineLen = (UINT32)buildDrawTrampoline(0, 0).size();
 	UINT32 layoutTrampolineLen = (UINT32)buildLayoutTrampoline(0, 0).size();
+	UINT32 loadImageTrampolineLen = (UINT32)buildLoadImageTrampoline(0).size();
 	UINT32 bindRel = 0;
 	UINT32 drawRel = align4(bindRel + bindTrampolineLen);
 	UINT32 layoutRel = align4(drawRel + drawTrampolineLen);
-	UINT32 codeRel = align4(layoutRel + layoutTrampolineLen);
+	UINT32 loadImageRel = align4(layoutRel + layoutTrampolineLen);
+	UINT32 codeRel = align4(loadImageRel + loadImageTrampolineLen);
 	UINT32 registryRel = align4(codeRel + codeLen);
 	UINT32 registryLen = 8 + (UINT32)entries.size() * 8;
 	UINT32 tablesRel = align4(registryRel + registryLen);
@@ -338,7 +363,8 @@ bool CTT::Glyph::patchTxtbltFont(vector<unsigned char>& data, const vector<Txtbl
 	Bytes bindCode = buildBindTrampoline(baseVa + bindRel, baseVa + codeRel + kTxtbltFontBindOffset, baseVa + registryRel);
 	Bytes drawCode = buildDrawTrampoline(baseVa + drawRel, baseVa + codeRel + kTxtbltFontGetOffset);
 	Bytes layoutCode = buildLayoutTrampoline(baseVa + layoutRel, baseVa + codeRel + kTxtbltFontLayoutOffset);
-	if (bindCode.size() != bindTrampolineLen || drawCode.size() != drawTrampolineLen || layoutCode.size() != layoutTrampolineLen) {
+	Bytes loadImageCode = buildLoadImageTrampoline(baseVa + loadImageRel);
+	if (bindCode.size() != bindTrampolineLen || drawCode.size() != drawTrampolineLen || layoutCode.size() != layoutTrampolineLen || loadImageCode.size() != loadImageTrampolineLen) {
 		error = L"후크 코드 크기가 예상과 다릅니다.";
 		return false;
 	}
@@ -347,6 +373,7 @@ bool CTT::Glyph::patchTxtbltFont(vector<unsigned char>& data, const vector<Txtbl
 	memcpy(&section[bindRel], &bindCode[0], bindCode.size());
 	memcpy(&section[drawRel], &drawCode[0], drawCode.size());
 	memcpy(&section[layoutRel], &layoutCode[0], layoutCode.size());
+	memcpy(&section[loadImageRel], &loadImageCode[0], loadImageCode.size());
 	memcpy(&section[codeRel], kTxtbltFontCode, codeLen);
 	memset(&section[registryRel], 0, need - registryRel);
 	put32(section, registryRel, 0x3152464B);						// 'KFR1'
@@ -383,6 +410,9 @@ bool CTT::Glyph::patchTxtbltFont(vector<unsigned char>& data, const vector<Txtbl
 	data[sites[3].off] = 0xe9;										// 레이아웃 함수: 9바이트 -> jmp + nop
 	put32(data, sites[3].off + 1, (baseVa + layoutRel) - (sites[3].va + 5));
 	memset(&data[sites[3].off + 5], 0x90, sizeof(kLayoutOrg) - 5);
+	data[sites[4].off] = 0xe9;										// 폰트 이미지 불러오기: 7바이트 -> jmp + nop
+	put32(data, sites[4].off + 1, (baseVa + loadImageRel) - (sites[4].va + 5));
+	memset(&data[sites[4].off + 5], 0x90, sizeof(kLoadImageOrg) - 5);
 	return true;
 }
 

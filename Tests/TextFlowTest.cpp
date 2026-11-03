@@ -129,6 +129,16 @@ int main()
 	groups.append(group(12, action(43, 93, "Other", expressionParam(stringToken("other.png")))));
 	groups.append(group(13, action(2, 93, "Box", expressionParam(stringToken("not-extension.png")))));
 
+	// 조건: Box 의 확장 조건(번호 0 이상)은 세고, 시스템 조건(음수)과 확장이 아닌 오브젝트의 조건은 세지 않는다
+	Json::Value conditions(Json::arrayValue);
+	for (int i = 0; i < 3; i++) {
+		Json::Value c(Json::objectValue);
+		c["objectType"] = (i == 2) ? 2 : 43;
+		c["num"] = (i == 1) ? -42 : 3;
+		c["objectName"] = "Box";
+		conditions.append(c);
+	}
+	groups[0]["conditions"] = conditions;
 	Json::Value block(Json::objectValue);
 	block["groups"] = groups;
 	Json::Value blocks(Json::arrayValue);
@@ -140,7 +150,12 @@ int main()
 	frame["events"] = events;
 	flow.addFrameScript(3, frame);
 
-	flow.addObjectScript(objectScript(4, "Box", "TLBT", "Init"));
+	Json::Value boxScript = objectScript(4, "Box", "TLBT", "Init");
+	boxScript["textBlitter"]["flagNames"].append("ESCAPE");
+	boxScript["textBlitter"]["flagNames"].append("CHAR_EVENT");
+	boxScript["textBlitter"]["flagNames"].append("0x4000");
+	flow.addObjectScript(boxScript);
+	// 처음 만든 오브젝트에 옵션 플래그 이름을 붙인다 (오브젝트 스크립트 JSON 의 textBlitter.flagNames 와 같은 모양)
 	flow.addObjectScript(objectScript(9, "Box", "TLBT", "Init2"));
 	flow.addObjectScript(objectScript(5, "Other", "SPRI", "NotABlitter"));
 
@@ -185,6 +200,11 @@ int main()
 	check(reload["loads"][2]["target"].asString() == "qualifier#33" && reload["loads"][2]["kind"].asString() == "reference", "qualifier load is a reference");
 	check(box["fontReloads"].asUInt() == 1, "Box has 1 reload");
 	check(summary["assignments"].asUInt() == 5, "font actions are not text assignments");
+
+	check(box["flags"].size() == 3 && box["flags"][1].asString() == "CHAR_EVENT" && box["flags"][2].asString() == "0x4000", "flag names are listed per blitter");
+	const Json::Value& charEvents = result["charEvents"];
+	check(charEvents["blitters"].asUInt() == 1 && charEvents["objects"][0]["name"].asString() == "Box", "one blitter uses CHAR_EVENT");
+	check(charEvents["objects"][0]["handlers"].asUInt() == 1 && charEvents["withHandlers"].asUInt() == 1, "only the extension condition counts as a handler");
 
 	if (failureCount == 0) {
 		printf("TextFlowTest: all checks passed\n");

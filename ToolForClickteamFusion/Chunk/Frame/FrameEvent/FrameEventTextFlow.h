@@ -23,6 +23,7 @@
 //                                        "literals": ["..."], "references": [ { "object": "...", "string": 1, "literals": ["..."] } ] } ],
 //                     "texts": ["처음 문자열과 나올 수 있는 모든 문자열"] } ],
 //     "qualifierAssignments": [ { "target": "qualifier#33", ... } ],
+//     "charEvents": { "blitters": 1, "withHandlers": 0, "objects": [ { "name": "...", "handlers": 0 } ] },
 //     "fontReload": { "detected": true, "loadImage": 160, "imageWidth": 160, "imageHeight": 160,
 //                     "loads": [ { "frame": 3, "frameName": "...", "group": 12, "target": "...", "action": "loadImage",
 //                                  "kind": "literal", "literals": ["/Data/Fonts/small1.png"] } ] } }
@@ -80,6 +81,7 @@ namespace CTT {
 			string name;
 			string font;
 			string text;
+			vector<string> flagNames;				// 옵션 플래그 이름 (오브젝트 JSON 의 textBlitter.flagNames)
 			_frame_event_flow_blitter() : index(0) {}
 		} FrameEventFlowBlitter;
 
@@ -105,6 +107,7 @@ namespace CTT {
 			vector<FrameEventFlowAssignment> assignments;
 			vector<FrameEventFlowSetter> setters;
 			vector<FrameEventFlowFontLoad> fontLoads;
+			vector<pair<string, UINT32> > eventConditions;	// 블리터(확장 오브젝트)에 걸린 확장 조건: (오브젝트 이름, 프레임)
 			vector<FrameEventFlowBlitter> blitters;
 		};
 

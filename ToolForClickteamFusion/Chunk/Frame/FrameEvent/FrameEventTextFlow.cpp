@@ -77,6 +77,7 @@ void FrameEventTextFlow::clear()
 	assignments.clear();
 	setters.clear();
 	fontLoads.clear();
+	eventConditions.clear();
 	blitters.clear();
 }
 
@@ -88,6 +89,13 @@ void FrameEventTextFlow::addFrameScript(UINT32 frameIndex, const Json::Value& fr
 	for (Json::ArrayIndex b = 0; b < blocks.size(); b++) {
 		const Json::Value& groups = blocks[b]["groups"];
 		for (Json::ArrayIndex g = 0; g < groups.size(); g++) {
+			const Json::Value& conditions = groups[g]["conditions"];
+			for (Json::ArrayIndex c = 0; c < conditions.size(); c++) {
+				// 확장 오브젝트의 확장 전용 조건(번호 0 이상)은 그 확장이 보내는 이벤트(글자별 이벤트 등)를 받는 곳이다
+				if ((conditions[c].get("objectType", 0).asInt() >= kFirstExtensionObjectType) && (conditions[c].get("num", -1).asInt() >= 0)) {
+					eventConditions.push_back(make_pair(conditions[c].get("objectName", "").asString(), frameIndex));
+				}
+			}
 			const Json::Value& actions = groups[g]["actions"];
 			for (Json::ArrayIndex a = 0; a < actions.size(); a++) {
 				const Json::Value& action = actions[a];
@@ -146,6 +154,10 @@ void FrameEventTextFlow::addObjectScript(const Json::Value& objectScript)
 		blitter.font = strings[0].asString();
 	}
 	blitter.text = objectScript["textBlitter"].get("text", "").asString();
+	const Json::Value& flagNames = objectScript["textBlitter"]["flagNames"];
+	for (Json::ArrayIndex i = 0; i < flagNames.size(); i++) {
+		blitter.flagNames.push_back(flagNames[i].asString());
+	}
 	blitters.push_back(blitter);
 }
 
@@ -240,6 +252,8 @@ bool FrameEventTextFlow::exportJson(Json::Value& value) const
 
 	map<string, UINT32> counts;
 	UINT32 total = 0;
+	Json::Value charEventArray(Json::arrayValue);
+	UINT32 charEventHandled = 0;
 	Json::Value blitterArray(Json::arrayValue);
 	set<string> handled;
 	for (size_t i = 0; i < blitters.size(); i++) {
@@ -252,11 +266,15 @@ bool FrameEventTextFlow::exportJson(Json::Value& value) const
 		Json::Value indices(Json::arrayValue);
 		vector<string> initialTexts;
 		vector<string> strings0;
+		vector<string> flagUnion;
 		for (size_t k = i; k < blitters.size(); k++) {
 			if (blitters[k].name == name) {
 				indices.append(blitters[k].index);
 				appendUnique(initialTexts, blitters[k].text);
 				appendUnique(strings0, blitters[k].font);
+				for (size_t f = 0; f < blitters[k].flagNames.size(); f++) {
+					appendUnique(flagUnion, blitters[k].flagNames[f]);
+				}
 			}
 		}
 		vector<string> reachable = initialTexts;
@@ -284,6 +302,26 @@ bool FrameEventTextFlow::exportJson(Json::Value& value) const
 		blitter["indices"] = indices;
 		blitter["initialTexts"] = toJsonArray(initialTexts);
 		blitter["string0"] = toJsonArray(strings0);
+		if (!flagUnion.empty()) {
+			blitter["flags"] = toJsonArray(flagUnion);
+		}
+		for (size_t f = 0; f < flagUnion.size(); f++) {
+			if (flagUnion[f] == "CHAR_EVENT") {
+				UINT32 handlers = 0;
+				for (size_t c = 0; c < eventConditions.size(); c++) {
+					if (eventConditions[c].first == name) {
+						handlers++;
+					}
+				}
+				Json::Value entry(Json::objectValue);
+				entry["name"] = name;
+				entry["handlers"] = handlers;
+				charEventArray.append(entry);
+				if (handlers > 0) {
+					charEventHandled++;
+				}
+			}
+		}
 		if (!fontValues.empty()) {
 			blitter["string0Values"] = toJsonArray(fontValues);
 		}
@@ -373,6 +411,13 @@ bool FrameEventTextFlow::exportJson(Json::Value& value) const
 	fontReload["loads"] = loadArray;
 	value["fontReload"] = fontReload;
 	value["blitters"] = blitterArray;
+	// 글자별 이벤트(CHAR_EVENT)를 쓰는 블리터. handlers 는 그 블리터에 걸린 확장 조건 수다 (한정자로 건 조건은 세지 않는다).
+	// 0 이면 켜져 있어도 받는 이벤트가 없다는 뜻이다. 한글화 모듈은 글자표가 있는 블리터의 글자별 이벤트를 끈다
+	Json::Value charEvents(Json::objectValue);
+	charEvents["blitters"] = (UINT32)charEventArray.size();
+	charEvents["withHandlers"] = charEventHandled;
+	charEvents["objects"] = charEventArray;
+	value["charEvents"] = charEvents;
 	if (qualifierArray.size() > 0) {
 		value["qualifierAssignments"] = qualifierArray;
 	}

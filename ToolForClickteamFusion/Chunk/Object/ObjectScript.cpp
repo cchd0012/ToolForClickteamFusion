@@ -60,6 +60,16 @@ static const size_t kTextBlitterCellHeight = 0x5a8;
 static const size_t kTextBlitterImageWidth = 0x5b8;
 static const size_t kTextBlitterImageHeight = 0x5bc;
 static const size_t kTextBlitterImageHandle = 0x5d0;			// u16. 실행 중에는 런타임이 다른 값으로 바꿔서 쓴다
+static const size_t kTextBlitterFlags = 0x5c8;					// u32 옵션 플래그. 알려진 비트는 아래 kTextBlitterFlagNames 에 있다
+// 옵션 플래그 이름 (txtblt.mfx 의 그리기/줄나누기 코드에서 확인한 비트만. 나머지는 "0x4000" 같은 16진수로 표시한다)
+struct TextBlitterFlagName { UINT32 bit; const char* name; };
+static const TextBlitterFlagName kTextBlitterFlagNames[] = {
+	{ 0x00000002, "ESCAPE" },		// 백슬래시 이스케이프 처리 (탭 칸이 0보다 크면 탭 문자도 처리)
+	{ 0x00000020, "WRAP" },			// 자동 줄바꿈
+	{ 0x00000040, "CRLF" },			// CR/LF 를 줄바꿈으로 처리 (글자로 그리지 않는다)
+	{ 0x00000800, "CHAR_EVENT" },	// 글자 하나를 그릴 때마다 이벤트를 보낸다 (글자별 위치/모양을 이벤트가 바꿀 수 있다)
+	{ 0x00020000, "BOX" }			// 상자 안에 맞춰 그린다
+};
 // 글자표 번호: 빈 꼬리 영역에 둔다 (원본 오브젝트는 이 영역이 전부 0이고 런타임도 건드리지 않는다)
 static const size_t kTextBlitterFontTableMagic = 0x2030;		// u32 'KFNT' (4B 46 4E 54)
 static const size_t kTextBlitterFontTable = 0x2034;				// u32 글자표 번호 (1 이상)
@@ -254,6 +264,26 @@ bool CTT::Chunk::decompileObjectScript(INT32 index, const string& name, INT16 ob
 			blitter["fontTable"] = hasFontTable ? readBlockI32(block, kTextBlitterFontTable) : 0;
 			bool pixelLayout = hasFontTable && (block.size() >= kTextBlitterFlagsBlock) && ((readBlockI32(block, kTextBlitterLayoutFlags) & 1) != 0);
 			blitter["layout"] = pixelLayout ? "pixel" : "byte";
+			if (block.size() >= kTextBlitterFlags + 4) {
+				const UINT32 flagsValue = (UINT32)readBlockI32(block, kTextBlitterFlags);
+				blitter["flags"] = (Json::UInt)flagsValue;
+				Json::Value names(Json::arrayValue);
+				UINT32 rest = flagsValue;
+				for (size_t f = 0; f < sizeof(kTextBlitterFlagNames) / sizeof(kTextBlitterFlagNames[0]); f++) {
+					if ((flagsValue & kTextBlitterFlagNames[f].bit) != 0) {
+						names.append(kTextBlitterFlagNames[f].name);
+						rest &= ~kTextBlitterFlagNames[f].bit;
+					}
+				}
+				for (int bit = 0; bit < 32; bit++) {
+					if ((rest & (1u << bit)) != 0) {
+						char hex[16];
+						sprintf_s(hex, "0x%X", 1u << bit);
+						names.append(hex);
+					}
+				}
+				blitter["flagNames"] = names;		// 읽기 전용 설명. 고칠 때는 flags(숫자)를 고친다
+			}
 			if (block.size() >= kTextBlitterTextEnd) {
 				blitter["text"] = readBlitterText(block);
 			}
@@ -472,6 +502,14 @@ bool CTT::Chunk::recompileObjectScript(ObjectCommon& common, const Json::Value& 
 			}
 			writeBlockI32(updated, kTextBlitterFontTableMagic, (v > 0) ? (INT32)kTextBlitterFontTableMagicValue : 0);
 			writeBlockI32(updated, kTextBlitterFontTable, (INT32)v);
+		}
+		if (blitter.isMember("flags")) {
+			INT64 v;
+			if (!readInt(blitter["flags"], 0, 0xFFFFFFFFLL, v) || (block.size() < kTextBlitterFlags + 4)) {
+				errorMessage = "bad textBlitter.flags";
+				return false;
+			}
+			writeBlockI32(updated, kTextBlitterFlags, (INT32)(UINT32)v);
 		}
 		if (blitter.isMember("layout")) {
 			const string layout = blitter["layout"].isString() ? blitter["layout"].asString() : string();

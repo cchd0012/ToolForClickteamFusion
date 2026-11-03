@@ -26,7 +26,8 @@ C++ 도구 사용법 (이식 완료)
     "txtbltHangul": { "module": "modules/0004_8424C67E_txtblt.mfx", "fontImage": "image/000953.png",
                       "objectName": "Text Blitter (particle)", "frames": [14],
                       "font": "binaries/DTM-Mono-RU.ttf", "size": 32, "cellWidth": 16, "cellHeight": 32 }
-- 적용: ToolForClickteamFusion.exe --txtblt-limited-hangul <추출 폴더> <설정 json>  이벤트 JSON(script/frame)에서 objectName 의 액션이 받는 문자열을 찾아 text/frameEventText.json 의 번역에서 한글 음절을 모으고,
+- 적용: ToolForClickteamFusion.exe --txtblt-limited-hangul <추출 폴더> <설정 json>
+  이벤트 JSON(script/frame)에서 objectName 의 액션이 받는 문자열을 찾아 text/frameEventText.json 의 번역에서 한글 음절을 모으고,
   폰트 이미지 PNG 를 아틀라스로 덮어쓰며 모듈에 코드를 심는다 (이미 패치된 모듈이면 건너뛴다)
 - 교체: ToolForClickteamFusion.exe --replace <exe> font blobs image script text module codepage=949 locale=1042
 - 헬퍼(txtblt_fold.c)를 고치면: build_txtblt_fold.bat 로 컴파일 -> make_code_header.py 로 Glyph/TxtbltFoldCode.h 를 다시 만든다

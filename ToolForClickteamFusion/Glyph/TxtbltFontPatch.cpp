@@ -60,6 +60,17 @@ namespace {
 	const unsigned char kLoadImageOrg[7] = { 0x55, 0x8b, 0xec, 0x56, 0x8b, 0x75, 0x08 };		// push ebp / mov ebp,esp / push esi / mov esi,[ebp+8]
 	const UINT32 kLoadImageRet = 0x100015bc;
 
+	//  6) DisplayRunObject 시작 부분의 "글자별 이벤트" 플래그(0x800) 계산: 글자표가 있는 오브젝트는 이 플래그를 0 으로 본다
+	//     (글자별 이벤트 경로는 글자를 칸 표로 그려서 한글을 그릴 수 없다. 대신 일반 글자 경로로 그리며 글자별 이벤트는 오지 않는다)
+	const UINT32 kCallbackVa = 0x1000364a;
+	const unsigned char kCallbackOrg[6] = { 0x81, 0xe1, 0x00, 0x08, 0x00, 0x00 };			// and ecx,0x800
+	const UINT32 kCallbackRet = 0x10003650;
+	//  7) 일반 글자 경로의 탭 처리 시작: 글자표가 있는 오브젝트는 칸 표의 공백 대신 공백 칸 수만큼 가로 위치만 옮긴다
+	const UINT32 kTabVa = 0x100043b2;
+	const unsigned char kTabOrg[9] = { 0x8b, 0x45, 0xf0, 0x8b, 0x8e, 0xbc, 0x02, 0x00, 0x00 };	// mov eax,[ebp-0x10] / mov ecx,[esi+0x2bc]
+	const UINT32 kTabRet = 0x100043bb;
+	const UINT32 kTabDone = 0x10004463;															// 글자 하나를 처리한 뒤의 공통 꼬리
+
 	struct PeSection { string name; UINT32 vs, va, rs, ro; };
 
 
@@ -233,6 +244,48 @@ namespace {
 		return a.bytes;
 	}
 
+
+	// 글자별 이벤트 플래그 후크: 원래 계산(and ecx,0x800)을 하고, 글자표가 있으면 결과를 0 으로 만든다 (esi = 개체)
+	Bytes buildCallbackTrampoline(UINT32 startVa)
+	{
+		Asm a(startVa);
+		a.raw(kCallbackOrg, sizeof(kCallbackOrg));										// and ecx,0x800
+		a.op({ 0x83, 0xbe, 0x18, 0x04, 0x00, 0x00, 0x00 });							// cmp dword [esi+0x418],0
+		a.branch({ 0x0f, 0x84 }, "done");												// je 그대로
+		a.op({ 0x33, 0xc9 });															// xor ecx,ecx
+		a.label("done");
+		a.jumpVa(0xe9, kCallbackRet);
+		a.resolve();
+		return a.bytes;
+	}
+
+
+	// 탭 후크: 글자표가 있으면 원본처럼 공백 칸 수(탭 칸 - 글자 번호 % 탭 칸)를 구해 가로 위치와 글자 번호만 옮긴다 (공백은 비어 있다)
+	Bytes buildTabTrampoline(UINT32 startVa)
+	{
+		Asm a(startVa);
+		a.op({ 0x83, 0xbe, 0x18, 0x04, 0x00, 0x00, 0x00 });							// cmp dword [esi+0x418],0
+		a.branch({ 0x0f, 0x84 }, "orig");												// je 원래 코드
+		a.op({ 0x8b, 0x45, 0xf0 });														// mov eax,[ebp-0x10]         글자 번호
+		a.op({ 0x8b, 0x8e, 0xbc, 0x02, 0x00, 0x00 });									// mov ecx,[esi+0x2bc]        탭 칸
+		a.op({ 0x99 });																	// cdq
+		a.op({ 0xf7, 0xf9 });															// idiv ecx
+		a.op({ 0x2b, 0xca });															// sub ecx,edx                공백 칸 수
+		a.op({ 0x85, 0xc9 });															// test ecx,ecx
+		a.branch({ 0x0f, 0x8e }, "tail");												// jle 옮길 것 없음
+		a.op({ 0x8b, 0x45, 0xb8 });														// mov eax,[ebp-0x48]         칸 하나의 가로 이동
+		a.op({ 0x0f, 0xaf, 0xc1 });														// imul eax,ecx
+		a.op({ 0x01, 0x45, 0xec });														// add [ebp-0x14],eax         그릴 x
+		a.op({ 0x01, 0x4d, 0xf0 });														// add [ebp-0x10],ecx         글자 번호
+		a.label("tail");
+		a.jumpVa(0xe9, kTabDone);
+		a.label("orig");
+		a.raw(kTabOrg, sizeof(kTabOrg));													// 밀려난 명령 9바이트
+		a.jumpVa(0xe9, kTabRet);
+		a.resolve();
+		return a.bytes;
+	}
+
 }
 
 
@@ -288,9 +341,9 @@ bool CTT::Glyph::patchTxtbltFont(vector<unsigned char>& data, const vector<Txtbl
 		}
 	};
 	struct Site { UINT32 va; const unsigned char* org; size_t len; size_t off; };
-	Site sites[5] = { { kSizeVa, kSizeOrg, sizeof(kSizeOrg), 0 }, { kBindVa, kBindOrg, sizeof(kBindOrg), 0 }, { kDrawVa, kDrawOrg, sizeof(kDrawOrg), 0 }, { kLayoutVa, kLayoutOrg, sizeof(kLayoutOrg), 0 },
-		{ kLoadImageVa, kLoadImageOrg, sizeof(kLoadImageOrg), 0 } };
-	for (int i = 0; i < 5; i++) {
+	Site sites[7] = { { kSizeVa, kSizeOrg, sizeof(kSizeOrg), 0 }, { kBindVa, kBindOrg, sizeof(kBindOrg), 0 }, { kDrawVa, kDrawOrg, sizeof(kDrawOrg), 0 }, { kLayoutVa, kLayoutOrg, sizeof(kLayoutOrg), 0 },
+		{ kLoadImageVa, kLoadImageOrg, sizeof(kLoadImageOrg), 0 }, { kCallbackVa, kCallbackOrg, sizeof(kCallbackOrg), 0 }, { kTabVa, kTabOrg, sizeof(kTabOrg), 0 } };
+	for (int i = 0; i < 7; i++) {
 		if (!Local::va2off(secs, sites[i].va, sites[i].off) || sites[i].off + sites[i].len > data.size() || memcmp(&data[sites[i].off], sites[i].org, sites[i].len) != 0) {
 			error = L"원본 txtblt.mfx(37376바이트 판)의 패치 지점이 맞지 않습니다.";
 			return false;
@@ -343,11 +396,15 @@ bool CTT::Glyph::patchTxtbltFont(vector<unsigned char>& data, const vector<Txtbl
 	UINT32 drawTrampolineLen = (UINT32)buildDrawTrampoline(0, 0).size();
 	UINT32 layoutTrampolineLen = (UINT32)buildLayoutTrampoline(0, 0).size();
 	UINT32 loadImageTrampolineLen = (UINT32)buildLoadImageTrampoline(0).size();
+	UINT32 callbackTrampolineLen = (UINT32)buildCallbackTrampoline(0).size();
+	UINT32 tabTrampolineLen = (UINT32)buildTabTrampoline(0).size();
 	UINT32 bindRel = 0;
 	UINT32 drawRel = align4(bindRel + bindTrampolineLen);
 	UINT32 layoutRel = align4(drawRel + drawTrampolineLen);
 	UINT32 loadImageRel = align4(layoutRel + layoutTrampolineLen);
-	UINT32 codeRel = align4(loadImageRel + loadImageTrampolineLen);
+	UINT32 callbackRel = align4(loadImageRel + loadImageTrampolineLen);
+	UINT32 tabRel = align4(callbackRel + callbackTrampolineLen);
+	UINT32 codeRel = align4(tabRel + tabTrampolineLen);
 	UINT32 registryRel = align4(codeRel + codeLen);
 	UINT32 registryLen = 8 + (UINT32)entries.size() * 8;
 	UINT32 tablesRel = align4(registryRel + registryLen);
@@ -364,7 +421,10 @@ bool CTT::Glyph::patchTxtbltFont(vector<unsigned char>& data, const vector<Txtbl
 	Bytes drawCode = buildDrawTrampoline(baseVa + drawRel, baseVa + codeRel + kTxtbltFontGetOffset);
 	Bytes layoutCode = buildLayoutTrampoline(baseVa + layoutRel, baseVa + codeRel + kTxtbltFontLayoutOffset);
 	Bytes loadImageCode = buildLoadImageTrampoline(baseVa + loadImageRel);
-	if (bindCode.size() != bindTrampolineLen || drawCode.size() != drawTrampolineLen || layoutCode.size() != layoutTrampolineLen || loadImageCode.size() != loadImageTrampolineLen) {
+	Bytes callbackCode = buildCallbackTrampoline(baseVa + callbackRel);
+	Bytes tabCode = buildTabTrampoline(baseVa + tabRel);
+	if (bindCode.size() != bindTrampolineLen || drawCode.size() != drawTrampolineLen || layoutCode.size() != layoutTrampolineLen || loadImageCode.size() != loadImageTrampolineLen
+		|| callbackCode.size() != callbackTrampolineLen || tabCode.size() != tabTrampolineLen) {
 		error = L"후크 코드 크기가 예상과 다릅니다.";
 		return false;
 	}
@@ -374,6 +434,8 @@ bool CTT::Glyph::patchTxtbltFont(vector<unsigned char>& data, const vector<Txtbl
 	memcpy(&section[drawRel], &drawCode[0], drawCode.size());
 	memcpy(&section[layoutRel], &layoutCode[0], layoutCode.size());
 	memcpy(&section[loadImageRel], &loadImageCode[0], loadImageCode.size());
+	memcpy(&section[callbackRel], &callbackCode[0], callbackCode.size());
+	memcpy(&section[tabRel], &tabCode[0], tabCode.size());
 	memcpy(&section[codeRel], kTxtbltFontCode, codeLen);
 	memset(&section[registryRel], 0, need - registryRel);
 	put32(section, registryRel, 0x3152464B);						// 'KFR1'
@@ -413,6 +475,12 @@ bool CTT::Glyph::patchTxtbltFont(vector<unsigned char>& data, const vector<Txtbl
 	data[sites[4].off] = 0xe9;										// 폰트 이미지 불러오기: 7바이트 -> jmp + nop
 	put32(data, sites[4].off + 1, (baseVa + loadImageRel) - (sites[4].va + 5));
 	memset(&data[sites[4].off + 5], 0x90, sizeof(kLoadImageOrg) - 5);
+	data[sites[5].off] = 0xe9;										// 글자별 이벤트 플래그: 6바이트 -> jmp + nop
+	put32(data, sites[5].off + 1, (baseVa + callbackRel) - (sites[5].va + 5));
+	memset(&data[sites[5].off + 5], 0x90, sizeof(kCallbackOrg) - 5);
+	data[sites[6].off] = 0xe9;										// 탭 처리: 9바이트 -> jmp + nop
+	put32(data, sites[6].off + 1, (baseVa + tabRel) - (sites[6].va + 5));
+	memset(&data[sites[6].off + 5], 0x90, sizeof(kTabOrg) - 5);
 	return true;
 }
 

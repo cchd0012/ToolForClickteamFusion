@@ -50,7 +50,7 @@ cp "$HERE/dtge_glyph_config.json" glyphConfig.json
 python -c "import json; a=json.load(open('dtge/image/appendImages.json',encoding='utf-8')); print('추가한 글자 이미지', len(a['images']))"
 
 echo "== 5. 파티클 문구 한글 (txtblt.mfx 패치)"
-"$TOOL" --txtblt-hangul "$PWD/dtge" "$PWD/glyphConfig.json" > step.log 2>&1 || true
+"$TOOL" --txtblt-limited-hangul "$PWD/dtge" "$PWD/glyphConfig.json" > step.log 2>&1 || true
 iconv -f UTF-16LE -t UTF-8 step.log 2>/dev/null | tail -3
 
 echo "== 6. 유니코드 파서 모듈 넣기"

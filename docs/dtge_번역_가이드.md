@@ -14,7 +14,7 @@ dtge는 글자를 한 가지 방식으로 그리지 않는다. 방식마다 필�
 |---|---|---|---|---|
 | 1. 대사 | 컷신, 전투, 엔딩 대사 | `text/frameEventText.json` | 글자 이미지 (`letter` 오브젝트가 글자 1개 = 이미지 1장으로 그린다) | 한글 글자 이미지를 만들어 넣기 (`--glyphs`) |
 | 2. 네이티브 텍스트 | 경고 화면, 옵션, 엑스트라, 크레딧, 게임오버 안내 | `text/objectText.json`의 `paragraphs` (114개) | Windows 글꼴 (LogFont/TTF) | 한글 TTF로 교체, charset 129 |
-| 3. 파티클 문구 | 전투 중 "KILLER" 등 비난 문구 17개 | `text/frameEventText.json` | `txtblt.mfx` (Text Blitter) | `--txtblt-hangul`, 코드페이지 949 |
+| 3. 파티클 문구 | 전투 중 "KILLER" 등 비난 문구 17개 | `text/frameEventText.json` | `txtblt.mfx` (Text Blitter) | `--txtblt-limited-hangul`, 코드페이지 949 |
 | 4. 이미지 글자 | 메인 메뉴 START/CREDITS/EXTRAS/OPTIONS, 제목, 부제 | (없음) | 그림 | 이미지를 직접 고친다 (글꼴이 아니다) |
 
 그 밖에 두 가지가 더 필요하다.
@@ -84,7 +84,7 @@ TOOL="<도구 exe>" EX_FONT="<ex_font 폴더>" PARSER="<parser.mfx>" TRANS="<번
 | 2. 폰트 교체 | 내장 TTF와 `binaries/`의 TTF를 한글 폰트로, charset을 129로 | `apply_ko_fonts.py` |
 | 3. 번역 넣기 | 번역 JSON 두 개를 추출 폴더에 복사 | |
 | 4. 글자 이미지 | 번역문에 쓰인 글자를 대사 글꼴별로 그려 `image/appendImages.json`과 PNG를 만들고, `letter` 오브젝트의 문자표와 글자 애니메이션 프레임을 늘린다 | `--glyphs <추출 폴더> <설정 json>` |
-| 5. 파티클 문구 | `txtblt.mfx`를 패치하고 번역에 쓰인 음절만 담은 글꼴 이미지를 만든다 | `--txtblt-hangul <추출 폴더> <설정 json>` |
+| 5. 파티클 문구 | `txtblt.mfx`를 패치하고 번역에 쓰인 음절만 담은 글꼴 이미지를 만든다 | `--txtblt-limited-hangul <추출 폴더> <설정 json>` |
 | 6. 파서 모듈 | `modules/0020_*_parser.mfx`를 유니코드 모듈로 바꾼다 | 파일 교체 (체크섬은 도구가 다시 계산한다) |
 | 7. 교체 | 새 아카이브로 저장하고 코드페이지/로케일을 바꾼다 | `--replace dtge.exe font blobs image script text module codepage=949 locale=1042` |
 
@@ -137,10 +137,11 @@ TOOL="<도구 exe>" EX_FONT="<ex_font 폴더>" PARSER="<parser.mfx>" TRANS="<번
 
 원문: `KILLER`, `MURDERER`, `TRAITOR`, `Pathetic`, `Despicable`, `Disgusting`, `Miserable`, `"It hurts"`, `"I was young"`, `"For what?"`, `"Are you proud?"`, `"Was it worth it?"`, `"Why did this happen?"`, `"I didn't want to die"`, `"We didn't deserve it"`, `"Why?"`, `"youre GENOCIDE'S"`.
 
+- 이 문구들은 `flow` 추출(`text/textFlow.json`)로도 확인된다. dtge에서 텍스트 블리터는 `Text Blitter (particle)` 하나뿐이고, 여기에 들어가는 것은 위 상수 문구 17개뿐이다 (참조, 계산식, INI 없음).
 - 서로 다른 문자열당 음절 약 51개까지만 나온다 (초과분은 `?`, 마지막 음절은 반쪽만 나올 수 있다). KS X 1001 2350자만 쓴다.
 - 코드페이지 949 / 로케일 1042로 바꿔야 한글이 두 바이트로 확장에 전달된다.
 - 이 문구는 전투 프레임(14)의 공격 10번에서 나오고, 턴이 길어서 문구는 한참 뒤에 나온다.
-- dtge의 `txtblt.mfx`는 119KB판이다. 일반 한글화 도구의 `다. 게임에 넣기`가 지원하는 37376바이트판과 다르므로, dtge는 `--txtblt-hangul`을 쓴다.
+- dtge의 `txtblt.mfx`는 119KB판이다. 일반 한글화 도구의 `다. 게임에 넣기`가 지원하는 37376바이트판과 다르므로, dtge는 `--txtblt-limited-hangul`을 쓴다.
 
 ---
 
@@ -174,7 +175,7 @@ TOOL="<도구 exe>" EX_FONT="<ex_font 폴더>" PARSER="<parser.mfx>" TRANS="<번
 |---|---|
 | 대사 줄이 오른쪽으로 쏠리거나 출력이 멈춘다 | 원본 `parser.mfx`가 ANSI라서 생긴다. 유니코드 파서 모듈로 바꿨는지 확인 (`modules/0020_*_parser.mfx`) |
 | 파티클 문구가 `?`로 나온다 | 코드페이지/로케일이 1252/1033 그대로이다. 7단계 `codepage=949 locale=1042` 또는 GUI의 변경 버튼 |
-| 파티클 문구가 라틴 기호로 나온다 | `--txtblt-hangul`을 하지 않아 모듈이 한글을 바이트마다 따로 조회한 것이다 |
+| 파티클 문구가 라틴 기호로 나온다 | `--txtblt-limited-hangul`을 하지 않아 모듈이 한글을 바이트마다 따로 조회한 것이다 |
 | 대사의 글자가 `?`나 빈칸 | 글자 이미지 생성 때 폰트에 없던 글자이다. 설정의 `fallbackChar`, 또는 폰트를 11172자 폰트로 |
 | 네이티브 텍스트에서 일부 음절이 비어 보인다 | 2350자 폰트(DeterminationMonoK2, Pixel-winding-edit)에 없는 음절 |
 | `--glyphs`가 appendImages.json 이 있다며 거부 | 새로 추출해서 다시 한다 (`build_dtge.sh`는 매번 새로 추출) |

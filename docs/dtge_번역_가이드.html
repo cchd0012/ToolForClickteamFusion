@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dtge (DustTale: The Genocide&#x27;s End) 번역 가이드</title>
+<style>
+:root {
+  --bg: #f7f7f4; --panel: #ffffff; --ink: #1f2328; --muted: #5d6670; --line: #d9dde1;
+  --accent: #1f6feb; --accent-soft: #e3eefc; --code-bg: #f0f2f4; --pre-bg: #14181d; --pre-ink: #e6e9ed;
+  --head: #111418; --ok: #1a7f37; --warn-bg: #fff4d6; --warn-line: #e2b93d;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14171a; --panel: #1b1f23; --ink: #dde1e5; --muted: #98a2ad; --line: #2e353c;
+    --accent: #6ea8ff; --accent-soft: #1d2b40; --code-bg: #262c32; --pre-bg: #0d1013; --pre-ink: #dde3e9;
+    --head: #f2f4f6; --ok: #56d364; --warn-bg: #3a3118; --warn-line: #a8862a;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14171a; --panel: #1b1f23; --ink: #dde1e5; --muted: #98a2ad; --line: #2e353c;
+  --accent: #6ea8ff; --accent-soft: #1d2b40; --code-bg: #262c32; --pre-bg: #0d1013; --pre-ink: #dde3e9;
+  --head: #f2f4f6; --ok: #56d364; --warn-bg: #3a3118; --warn-line: #a8862a;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 16px/1.75 "Pretendard", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.topbar {
+  position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--panel) 92%, transparent);
+  backdrop-filter: blur(8px); border-bottom: 1px solid var(--line);
+}
+.topbar-inner { max-width: 1180px; margin: 0 auto; padding: 0 20px; height: 52px; display: flex; align-items: center; gap: 18px; }
+.brand { font-weight: 700; color: var(--head); white-space: nowrap; }
+.topnav { display: flex; gap: 4px; flex: 1; overflow-x: auto; }
+.topnav a {
+  padding: 6px 12px; border-radius: 8px; color: var(--muted); text-decoration: none; white-space: nowrap; font-size: 14px;
+}
+.topnav a:hover { background: var(--accent-soft); color: var(--accent); }
+.topnav a.current { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.theme { border: 1px solid var(--line); background: var(--panel); color: var(--muted); border-radius: 8px; padding: 5px 10px; cursor: pointer; font: inherit; font-size: 13px; }
+.theme:hover { color: var(--accent); border-color: var(--accent); }
+.layout { max-width: 1180px; margin: 0 auto; padding: 28px 20px 80px; display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 36px; }
+.toc { position: sticky; top: 76px; align-self: start; max-height: calc(100vh - 100px); overflow-y: auto; font-size: 14px; padding-right: 6px; }
+.toc-title { font-size: 12px; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px; font-weight: 700; }
+.toc ul { list-style: none; margin: 0; padding: 0; }
+.toc li a { display: block; padding: 5px 10px; border-left: 2px solid var(--line); color: var(--muted); text-decoration: none; line-height: 1.45; }
+.toc li.sub a { padding-left: 24px; font-size: 13px; }
+.toc li a:hover { color: var(--accent); }
+.toc li a.active { color: var(--accent); border-left-color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+.toc-mobile { display: none; }
+article {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 36px 44px 44px; min-width: 0;
+}
+article h1 { font-size: 30px; line-height: 1.3; margin: 0 0 18px; color: var(--head); letter-spacing: -0.01em; }
+article h2 { font-size: 23px; margin: 48px 0 14px; padding-top: 22px; border-top: 1px solid var(--line); color: var(--head); letter-spacing: -0.01em; }
+article h2:first-of-type { margin-top: 30px; }
+article h3 { font-size: 18px; margin: 32px 0 10px; color: var(--head); }
+article h4 { font-size: 16px; margin: 22px 0 8px; color: var(--head); }
+article p { margin: 12px 0; }
+article ul, article ol { margin: 12px 0; padding-left: 24px; }
+article li { margin: 6px 0; }
+article li::marker { color: var(--accent); }
+article a { color: var(--accent); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); }
+article a:hover { border-bottom-color: var(--accent); }
+article hr { border: 0; border-top: 1px solid var(--line); margin: 30px 0; }
+code { font: 0.88em/1.4 "Cascadia Mono", "D2Coding", Consolas, "Courier New", monospace; background: var(--code-bg); padding: 2px 6px; border-radius: 5px; word-break: break-word; }
+.code { margin: 16px 0; border-radius: 10px; overflow: hidden; background: var(--pre-bg); }
+.code-bar { display: flex; justify-content: space-between; align-items: center; padding: 6px 12px; font-size: 12px; color: #9aa4af; background: rgba(255,255,255,.05); }
+.copy { border: 1px solid rgba(255,255,255,.2); background: transparent; color: #c9d1d9; border-radius: 6px; padding: 2px 10px; cursor: pointer; font: inherit; font-size: 12px; }
+.copy:hover { background: rgba(255,255,255,.1); }
+pre { margin: 0; padding: 14px 16px; overflow-x: auto; color: var(--pre-ink); }
+pre code { background: none; padding: 0; font-size: 13.5px; line-height: 1.65; word-break: normal; white-space: pre; }
+.table-wrap { overflow-x: auto; margin: 16px 0; border: 1px solid var(--line); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; line-height: 1.55; }
+th, td { padding: 9px 14px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+th { background: var(--accent-soft); color: var(--head); font-weight: 600; white-space: nowrap; }
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--code-bg) 55%, transparent); }
+td code, th code { white-space: nowrap; }
+blockquote { margin: 16px 0; padding: 4px 18px; border-left: 4px solid var(--accent); background: var(--accent-soft); border-radius: 0 10px 10px 0; }
+footer { max-width: 1180px; margin: 0 auto; padding: 0 20px 40px; color: var(--muted); font-size: 13px; }
+@media (max-width: 960px) {
+  .layout { grid-template-columns: minmax(0, 1fr); padding-top: 16px; }
+  .toc { display: none; }
+  .toc-mobile { display: block; margin-bottom: 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; font-size: 14px; }
+  .toc-mobile summary { cursor: pointer; font-weight: 600; }
+  .toc-mobile a { display: block; padding: 5px 0; color: var(--accent); text-decoration: none; }
+  article { padding: 22px 18px 30px; border-radius: 10px; }
+  article h1 { font-size: 24px; }
+  article h2 { font-size: 20px; }
+}
+@media print {
+  .topbar, .toc, .toc-mobile, .copy, .theme { display: none !important; }
+  .layout { display: block; padding: 0; }
+  article { border: 0; padding: 0; }
+  body { background: #fff; color: #000; }
+  .code { background: #f3f3f3; } pre { color: #000; } .code-bar { display: none; }
+}
+</style>
+</head>
+<body>
+<header class="topbar"><div class="topbar-inner">
+  <span class="brand">ToolForClickteamFusion 문서</span>
+  <nav class="topnav"><a href="한글화_작업흐름.html">한글화 작업 흐름</a><a href="dtge_번역_가이드.html" class="current">dtge (DustTale: The Genocide's End) 번역 가이드</a></nav>
+  <button type="button" class="theme">어둡게</button>
+</div></header>
+<div class="layout">
+  <aside class="toc"><p class="toc-title">목차</p><ul><li class=""><a href="#0-글자가-나오는-방식이-네-가지다">0. 글자가 나오는 방식이 네 가지다</a></li><li class=""><a href="#1-준비물">1. 준비물</a></li><li class="sub"><a href="#폰트-대응표-docsdtgeapply_ko_fontspy">폰트 대응표 (docs/dtge/apply_ko_fonts.py)</a></li><li class=""><a href="#2-한-번에-빌드하기">2. 한 번에 빌드하기</a></li><li class=""><a href="#3-스크립트가-하는-일-단계별">3. 스크립트가 하는 일 (단계별)</a></li><li class="sub"><a href="#글자-이미지-스타일-dtge_glyph_configjson">글자 이미지 스타일 (dtge_glyph_config.json)</a></li><li class=""><a href="#4-번역할-때-규칙">4. 번역할 때 규칙</a></li><li class="sub"><a href="#4-1-대사-frameeventtextjson">4-1. 대사 (frameEventText.json)</a></li><li class="sub"><a href="#4-2-네이티브-텍스트-objecttextjson의-paragraphs">4-2. 네이티브 텍스트 (objectText.json의 paragraphs)</a></li><li class="sub"><a href="#4-3-파티클-문구-17개">4-3. 파티클 문구 (17개)</a></li><li class=""><a href="#5-화면별-확인표">5. 화면별 확인표</a></li><li class="sub"><a href="#시험할-때-쓸-수-있는-방법">시험할 때 쓸 수 있는 방법</a></li><li class=""><a href="#6-알려진-제한과-문제-해결">6. 알려진 제한과 문제 해결</a></li><li class=""><a href="#파일">파일</a></li></ul></aside>
+  <main>
+    <details class="toc-mobile"><summary>목차</summary><a href="#0-글자가-나오는-방식이-네-가지다">0. 글자가 나오는 방식이 네 가지다</a><a href="#1-준비물">1. 준비물</a><a href="#2-한-번에-빌드하기">2. 한 번에 빌드하기</a><a href="#3-스크립트가-하는-일-단계별">3. 스크립트가 하는 일 (단계별)</a><a href="#4-번역할-때-규칙">4. 번역할 때 규칙</a><a href="#5-화면별-확인표">5. 화면별 확인표</a><a href="#6-알려진-제한과-문제-해결">6. 알려진 제한과 문제 해결</a><a href="#파일">파일</a></details>
+    <article>
+<h1 id="dtge-dusttale-the-genocides-end-번역-가이드">dtge (DustTale: The Genocide's End) 번역 가이드</h1>
+<p>대상: <code>dtge-v0.1.2.exe</code> (Fusion 2.5+, build 292). 일반적인 작업 흐름은 <a href="한글화_작업흐름.html">한글화 작업 흐름</a>를 먼저 보고, 이 문서는 dtge에 맞춘 부분만 다룬다.</p>
+<p>현재 도구로 아래 7단계를 끝까지 돌려 확인했다 (새 exe 생성, 시작 화면 실행까지). 대사 화면과 전투 화면의 한글 표시는 이전 시험에서 게임으로 확인한 것이다. 번역을 채운 뒤의 전체 플레이는 아직 확인한 적이 없다.</p>
+<hr>
+<h2 id="0-글자가-나오는-방식이-네-가지다">0. 글자가 나오는 방식이 네 가지다</h2>
+<p>dtge는 글자를 한 가지 방식으로 그리지 않는다. 방식마다 필요한 작업이 다르다.</p>
+<div class="table-wrap"><table><thead><tr><th>구분</th><th>예</th><th>번역 파일</th><th>글자를 그리는 방식</th><th>필요한 작업</th></tr></thead><tbody><tr><td>1. 대사</td><td>컷신, 전투, 엔딩 대사</td><td><code>text/frameEventText.json</code></td><td>글자 이미지 (<code>letter</code> 오브젝트가 글자 1개 = 이미지 1장으로 그린다)</td><td>한글 글자 이미지를 만들어 넣기 (<code>--glyphs</code>)</td></tr><tr><td>2. 네이티브 텍스트</td><td>경고 화면, 옵션, 엑스트라, 크레딧, 게임오버 안내</td><td><code>text/objectText.json</code>의 <code>paragraphs</code> (114개)</td><td>Windows 글꼴 (LogFont/TTF)</td><td>한글 TTF로 교체, charset 129</td></tr><tr><td>3. 파티클 문구</td><td>전투 중 "KILLER" 등 비난 문구 17개</td><td><code>text/frameEventText.json</code></td><td><code>txtblt.mfx</code> (Text Blitter)</td><td><code>--txtblt-limited-hangul</code>, 코드페이지 949</td></tr><tr><td>4. 이미지 글자</td><td>메인 메뉴 START/CREDITS/EXTRAS/OPTIONS, 제목, 부제</td><td>(없음)</td><td>그림</td><td>이미지를 직접 고친다 (글꼴이 아니다)</td></tr></tbody></table></div>
+<p>그 밖에 두 가지가 더 필요하다.</p>
+<ul><li><strong>유니코드 파서 모듈</strong>: 대사 줄 정렬에 쓰는 <code>parser.mfx</code>가 ANSI라서 한글이 들어오면 줄 번호와 기준점이 초기화되어 정렬과 줄바꿈이 깨진다. <code>Extensions/ParserUnicode</code>의 유니코드 모듈로 바꾼다.</li><li><strong>코드페이지 949 / 로케일 1042</strong>: 원본은 1252 / 영어(미국)이다. 한글을 확장(txtblt)에 넘기려면 바꿔야 한다.</li></ul>
+<hr>
+<h2 id="1-준비물">1. 준비물</h2>
+<div class="table-wrap"><table><thead><tr><th>준비물</th><th>설명</th></tr></thead><tbody><tr><td>도구 exe</td><td><code>ToolForClickteamFusion.exe</code> (Release x64)</td></tr><tr><td>원본 <code>dtge-v0.1.2.exe</code></td><td>원본은 건드리지 않는다. 매번 여기서 새로 만든다</td></tr><tr><td>한글 폰트 폴더</td><td><code>apply_ko_fonts.py</code>의 표가 가리키는 파일들이 들어 있는 폴더 (이전 시리즈의 <code>ex_font</code>)</td></tr><tr><td>유니코드 <code>parser.mfx</code></td><td><code>Extensions/ParserUnicode/build_parser_unicode.bat &lt;출력 폴더&gt;</code>로 만든다 (Visual Studio 2022, 32비트 컴파일러 필요)</td></tr><tr><td>Python 3</td><td>폰트 교체 스크립트용 (표준 라이브러리만 쓴다)</td></tr><tr><td>Git Bash</td><td><code>build_dtge.sh</code>용</td></tr></tbody></table></div>
+<h3 id="폰트-대응표-docsdtgeapply_ko_fontspy">폰트 대응표 (<code>docs/dtge/apply_ko_fonts.py</code>)</h3>
+<p>원래 글꼴 이름은 그대로 두고 TTF 내용만 바꾸며 charset을 129(한글)로 맞춘다. 폰트 이름이 달라도 charset이 맞으면 동작하는 것을 확인했다.</p>
+<div class="table-wrap"><table><thead><tr><th>dtge 안 위치</th><th>원래 글꼴</th><th>바꿀 폰트 (ex_font)</th><th>한글 범위</th></tr></thead><tbody><tr><td><code>font/ttf/000000.ttf</code></td><td>Determination Sans</td><td>000003.ttf (DeterminationMonoK2)</td><td>2350자 + 자모</td></tr><tr><td><code>font/ttf/000001.ttf</code></td><td>Mars Needs Cunnilingus</td><td>000000.ttf (PF스타더스트S Bold)</td><td>11172자</td></tr><tr><td><code>font/ttf/000002.ttf</code></td><td>Determination Mono (RUS)</td><td>000001.ttf (DeterminationMonoK2)</td><td>2350자 + 자모</td></tr><tr><td><code>font/ttf/000003.ttf</code></td><td>Undertale Battle Font</td><td>000005.ttf (Sam3KR)</td><td>11172자</td></tr><tr><td><code>font/ttf/000005.ttf</code></td><td>Undertale Sans</td><td>000007.ttf (a시월구일굴림1)</td><td>11172자</td></tr><tr><td><code>font/ttf/000004.ttf</code></td><td>Tahoma</td><td>그대로 둔다</td><td>한글 없음 (OS 글꼴로 대체)</td></tr><tr><td><code>binaries/14613.ttf</code></td><td>PixelPapyrusDaym</td><td>000009.ttf (DOSPilgi)</td><td>11172자</td></tr><tr><td><code>binaries/17838.ttf</code></td><td>Comic Sans 픽셀</td><td>000006.ttf (a10M9D_2E)</td><td>11172자</td></tr><tr><td><code>binaries/DTM-Mono-RU.ttf</code>, <code>DTM-Mono.ttf</code>, <code>DTM-Sans.ttf</code></td><td>Determination 계열</td><td>DeterminationMonoK2</td><td>2350자 + 자모</td></tr><tr><td><code>binaries/Mars_Needs_Cunnilingus.ttf</code></td><td>Mars</td><td>PF스타더스트S Bold</td><td>11172자</td></tr><tr><td><code>binaries/Undertale-Battle-Font.ttf</code></td><td>Battle Font</td><td>Sam3KR</td><td>11172자</td></tr><tr><td><code>binaries/UndertaleSans.ttf</code></td><td>Undertale Sans</td><td>a시월구일굴림1</td><td>11172자</td></tr><tr><td><code>binaries/pixelated-wingdings.ttf</code></td><td>Wingdings 픽셀</td><td>Pixel-winding-edit (그대로 사용)</td><td>2350자 (윙딩스풍 기호)</td></tr></tbody></table></div>
+<ul><li><code>binaries/</code>의 TTF는 게임이 시작할 때 <code>C:\</code>에 설치하는 것들이고, 글자 이미지 생성기도 이 파일에서 글자를 그린다.</li><li>DeterminationMonoK2에는 <code>【】「」『』〈〉《》（）－</code>과 U+00AD가 없다. 번역문에는 반각 문장부호를 쓴다 (예: <code>[Z] - 재시도</code>).</li><li>2350자 폰트에 없는 음절(예: 일부 받침 조합)은 네이티브 텍스트에서 비어 보인다. 번역문을 2350자 안에서 쓰거나 11172자 폰트를 쓴다.</li></ul>
+<hr>
+<h2 id="2-한-번에-빌드하기">2. 한 번에 빌드하기</h2>
+<p>번역 JSON만 고치고 매번 같은 결과가 나오도록 <code>docs/dtge/build_dtge.sh</code>가 원본 exe에서 새 exe까지 만든다.</p>
+<div class="code"><div class="code-bar"><span>bash</span><button type="button" class="copy">복사</button></div><pre><code>TOOL=&quot;&lt;도구 exe&gt;&quot; EX_FONT=&quot;&lt;ex_font 폴더&gt;&quot; PARSER=&quot;&lt;parser.mfx&gt;&quot; TRANS=&quot;&lt;번역 폴더&gt;&quot; \
+  docs/dtge/build_dtge.sh &quot;&lt;원본 dtge-v0.1.2.exe&gt;&quot; &quot;&lt;작업 폴더&gt;&quot;</code></pre></div>
+<ul><li>번역 폴더(<code>TRANS</code>)에는 <code>frameEventText.json</code>과 <code>objectText.json</code>을 둔다. 추출된 것과 같은 형식에 <code>translation</code> 칸만 채운 것이다.</li><li>결과는 <code>&lt;작업 폴더&gt;/dtge_new.exe</code>이다. 작업 폴더는 매번 지우고 새로 만든다 (약 30초).</li><li>번역을 처음 시작할 때는 먼저 빈 번역으로 한 번 돌려서 추출된 JSON(<code>&lt;작업 폴더&gt;/dtge/text/</code>)을 번역 폴더로 복사해 시작하면 된다.</li></ul>
+<hr>
+<h2 id="3-스크립트가-하는-일-단계별">3. 스크립트가 하는 일 (단계별)</h2>
+<div class="table-wrap"><table><thead><tr><th>단계</th><th>하는 일</th><th>명령 / 확인</th></tr></thead><tbody><tr><td>1. 추출</td><td>폰트, 이미지, 스크립트, 텍스트, 모듈, 텍스트 흐름을 꺼낸다</td><td><code>--extract dtge.exe font blobs image script text module flow</code></td></tr><tr><td>2. 폰트 교체</td><td>내장 TTF와 <code>binaries/</code>의 TTF를 한글 폰트로, charset을 129로</td><td><code>apply_ko_fonts.py</code></td></tr><tr><td>3. 번역 넣기</td><td>번역 JSON 두 개를 추출 폴더에 복사</td><td></td></tr><tr><td>4. 글자 이미지</td><td>번역문에 쓰인 글자를 대사 글꼴별로 그려 <code>image/appendImages.json</code>과 PNG를 만들고, <code>letter</code> 오브젝트의 문자표와 글자 애니메이션 프레임을 늘린다</td><td><code>--glyphs &lt;추출 폴더&gt; &lt;설정 json&gt;</code></td></tr><tr><td>5. 파티클 문구</td><td><code>txtblt.mfx</code>를 패치하고 번역에 쓰인 음절만 담은 글꼴 이미지를 만든다</td><td><code>--txtblt-limited-hangul &lt;추출 폴더&gt; &lt;설정 json&gt;</code></td></tr><tr><td>6. 파서 모듈</td><td><code>modules/0020_*_parser.mfx</code>를 유니코드 모듈로 바꾼다</td><td>파일 교체 (체크섬은 도구가 다시 계산한다)</td></tr><tr><td>7. 교체</td><td>새 아카이브로 저장하고 코드페이지/로케일을 바꾼다</td><td><code>--replace dtge.exe font blobs image script text module codepage=949 locale=1042</code></td></tr></tbody></table></div>
+<p>주의할 점:</p>
+<ul><li>4단계 전에 <code>image/</code>의 원본 PNG(<code>0*.png</code>)를 지운다. 이미지 교체는 <code>image</code> 폴더의 PNG를 모두 다시 읽기 때문이다. 5단계가 쓰는 <code>000953.png</code>(파티클 글꼴 이미지)만 남긴다. 스크립트가 이 일을 한다.</li><li><code>--glyphs</code>는 <code>image/appendImages.json</code>이 이미 있으면 거부한다. 다시 돌릴 때는 새로 추출한다 (스크립트는 매번 새로 추출한다).</li><li>설정 파일은 <code>docs/dtge/dtge_glyph_config.json</code>이다. 글꼴 스타일과 파티클 설정이 한 파일에 들어 있다.</li><li>GUI로도 같은 흐름을 할 수 있다 (<code>1.추출</code>, <code>2.수정</code>, <code>3.교체</code>, 아카이브 정보 창의 로케일/코드페이지 버튼). 4, 5단계와 폰트 교체, 파서 모듈 교체는 명령줄과 스크립트를 쓴다.</li></ul>
+<h3 id="글자-이미지-스타일-dtge_glyph_configjson">글자 이미지 스타일 (<code>dtge_glyph_config.json</code>)</h3>
+<p>글자 이미지를 그리는 방식을 글꼴별로 정해 둔 것이다. 글자 칸 크기는 슬롯마다 다르다. 영문 글자 이미지를 재현하는 규칙을 찾아 맞춘 값이다 (임계값 128, 흰색 + 알파).</p>
+<div class="table-wrap"><table><thead><tr><th>스타일</th><th>폰트</th><th>크기 / 칸 높이</th><th>적용 대상 (오브젝트 번호, 슬롯)</th><th>용도</th></tr></thead><tbody><tr><td><code>mono32</code></td><td>DTM-Mono-RU</td><td>32 / 36</td><td>38, 60, 321, 347, 518, 554, 577 의 슬롯 12</td><td>글씨체 1 (기본 대사)</td></tr><tr><td><code>comic32</code></td><td>17838 (Comic Sans 픽셀)</td><td>32 / 32</td><td>321, 347, 518, 554, 577 의 슬롯 13</td><td>글씨체 2 (Sans)</td></tr><tr><td><code>comic16</code></td><td>17838</td><td>16 / 16</td><td>520 의 슬롯 12</td><td>전투 말풍선</td></tr><tr><td><code>papyrus32</code></td><td>14613 (PixelPapyrus)</td><td>32 / 32</td><td>518 의 슬롯 14</td><td>글씨체 3 (Papyrus)</td></tr><tr><td><code>glitch38</code></td><td>pixelated-wingdings</td><td>38 / 36 (세로 -8)</td><td>38, 60 의 슬롯 13, 321, 347 의 슬롯 14</td><td>글리치 연출 (한글이 윙딩스풍 기호로 나온다. 원문도 외계 문자라 의도된 것)</td></tr></tbody></table></div>
+<ul><li>한글 글자 오른쪽에 1px 여백(<code>hangulPad</code>)을 준 스타일은 구두점이 한글에 붙어 보이는 문제를 피하기 위한 것이다.</li><li>한글 글자 폭은 영문 칸의 약 2배이다 (16px 칸 폰트에 32px).</li><li>글자가 폰트에 없으면 <code>fallbackChar</code>(<code>?</code>)로 그린다. 추가로 넣을 글자는 <code>extraChars</code>에 적는다.</li></ul>
+<hr>
+<h2 id="4-번역할-때-규칙">4. 번역할 때 규칙</h2>
+<h3 id="4-1-대사-frameeventtextjson">4-1. 대사 (<code>frameEventText.json</code>)</h3>
+<ul><li><strong>번역 대상 찾기</strong>: <code>python docs/dtge/list_dialogue.py &lt;추출 폴더&gt; [출력 tsv]</code>가 문장처럼 보이는 문자열을 프레임 이름과 함께 표로 뽑아 준다. 후보일 뿐이다. 이 표에는 디버그 문자열과 설정 키도 섞여 있다 (총 919개 후보 중 대부분이 <code>snowdin battle</code> 404개, <code>snowdin ow</code> 165개).</li><li>대사가 많은 프레임: <code>starting cutscene 1/2</code>(5, 7), <code>intro</code>(8), <code>ruins cutscene</code>(10), <code>snowdin ow 0~2</code>(11~13), <code>snowdin battle</code>(14), <code>snowdin ending</code>(15), <code>game over snowdin</code>(16).</li><li><strong>같은 문자열은 모든 곳에서 같이 바뀐다.</strong> 번역은 원문 전체가 정확히 같은 문자열만 바꾼다. 서로 다른 대사에 같은 번역을 넣으면 대사 내용으로 분기하는 이벤트가 전부 동시에 참이 되어 한꺼번에 출력되거나 색이 달라진다. 대사마다 다른 번역을 넣는다.</li><li><strong>내부 문자열은 번역하지 않는다</strong>: 파일 경로, <code>glitch</code>, <code>Gy</code> 같은 내부 이름, 비교용 키.</li><li><strong>일시정지 효과의 접두 문자열</strong>: 대사 중간의 멈춤 효과는 대사의 앞부분과 같은 문자열을 비교하는 조건으로 걸려 있는 경우가 있다. 그런 접두 문자열이 별도 항목으로 보이면, 대사를 번역한 것과 같은 앞부분으로 번역해야 효과가 맞는다. 한글로 바꾸면 효과가 위치와 길이가 달라지므로 게임에서 확인한다.</li><li><strong>글자 칸 수</strong>: 한글 글자 이미지는 영문 칸의 2배 폭(32px 대 16px)이라 한 줄에 들어가는 글자 수가 절반 정도로 줄어든다. 줄바꿈(<code>\r\n</code>)은 번역문에서 직접 넣어 조정한다. 유니코드 파서 모듈을 쓴 이전 시험에서는 한글 대사의 정렬과 줄바꿈이 정상이었다.</li><li><strong>타이머와 대사 길이</strong>: 컷신 대사는 타이머로 넘어간다. 번역문이 길면 다음 장면으로 넘어가기 전에 다 못 읽을 수 있다. 이 부분은 번역 후에 확인이 필요하다 (아직 확인 안 함).</li></ul>
+<h3 id="4-2-네이티브-텍스트-objecttextjson의-paragraphs">4-2. 네이티브 텍스트 (<code>objectText.json</code>의 <code>paragraphs</code>)</h3>
+<ul><li><code>original</code>이 현재 값과 같을 때만 <code>translation</code>을 적용한다.</li><li>경고 화면, 옵션, 엑스트라, 크레딧, 게임오버 안내가 대부분이다. 이름 입력 화면은 건드리지 않기로 했다.</li><li>상자 폭이 정해져 있어 글이 넘칠 수 있다. 예: 경고 화면의 <code>Press [Z] to continue</code>는 한글이 두 줄로 넘어가 잘리고, 노란 강조 텍스트는 별도 오브젝트라 겹칠 수 있다. 번역 후 오브젝트 크기를 확인한다.</li><li>게임오버 안내는 반각 문장부호를 쓴다: <code>[Z] - 재시도</code>, <code>[X] - 메인 메뉴</code>.</li><li>글자 폭이 폰트마다 달라 영문보다 넓어질 수 있다. 예: Determination Sans를 고정폭 K2로 바꾸면 영문 폭이 커져 <code>[Z] - Try again</code>이 잘린 적이 있다. 이는 폰트 교체 때문이지 문자셋 때문이 아니다.</li></ul>
+<h3 id="4-3-파티클-문구-17개">4-3. 파티클 문구 (17개)</h3>
+<p>원문: <code>KILLER</code>, <code>MURDERER</code>, <code>TRAITOR</code>, <code>Pathetic</code>, <code>Despicable</code>, <code>Disgusting</code>, <code>Miserable</code>, <code>"It hurts"</code>, <code>"I was young"</code>, <code>"For what?"</code>, <code>"Are you proud?"</code>, <code>"Was it worth it?"</code>, <code>"Why did this happen?"</code>, <code>"I didn't want to die"</code>, <code>"We didn't deserve it"</code>, <code>"Why?"</code>, <code>"youre GENOCIDE'S"</code>.</p>
+<ul><li>이 문구들은 <code>flow</code> 추출(<code>text/textFlow.json</code>)로도 확인된다. dtge에서 텍스트 블리터는 <code>Text Blitter (particle)</code> 하나뿐이고, 여기에 들어가는 것은 위 상수 문구 17개뿐이다 (참조, 계산식, INI 없음).</li><li>서로 다른 문자열당 음절 약 51개까지만 나온다 (초과분은 <code>?</code>, 마지막 음절은 반쪽만 나올 수 있다). KS X 1001 2350자만 쓴다.</li><li>코드페이지 949 / 로케일 1042로 바꿔야 한글이 두 바이트로 확장에 전달된다.</li><li>이 문구는 전투 프레임(14)의 공격 10번에서 나오고, 턴이 길어서 문구는 한참 뒤에 나온다.</li><li>dtge의 <code>txtblt.mfx</code>는 119KB판이다. 일반 한글화 도구의 <code>다. 게임에 넣기</code>가 지원하는 37376바이트판과 다르므로, dtge는 <code>--txtblt-limited-hangul</code>을 쓴다.</li></ul>
+<hr>
+<h2 id="5-화면별-확인표">5. 화면별 확인표</h2>
+<p>프레임 순서: 0 start, 1 test, 2 warning, 3 sequel disclaimer, 4 dtlg team presents, 5 starting cutscene 1, 6 select name, 7 starting cutscene 2, 8 intro, 9 main menu, 10 ruins cutscene, 11~13 snowdin ow 0~2, 14 snowdin battle, 15 snowdin ending, 16 game over snowdin, 17 quick game over, 18 to be continued in act 2.</p>
+<div class="table-wrap"><table><thead><tr><th>확인할 것</th><th>프레임</th><th>비고</th></tr></thead><tbody><tr><td>경고 문구 줄바꿈</td><td>2, 3</td><td>네이티브 텍스트 + <code>Parser</code>(유니코드 모듈)</td></tr><tr><td>컷신 대사 정렬, 줄바꿈</td><td>5, 7, 8, 10</td><td><code>Alignment Parser</code>가 쓰이는 프레임 (5~8, 10, 14~16)</td></tr><tr><td>필드 대사</td><td>11~13</td><td>글씨체 3 슬롯은 글리치 연출이라 기호로 보이는 것이 정상</td></tr><tr><td>전투 대사, 말풍선</td><td>14</td><td>글씨체 3은 Papyrus 슬롯이라 한글이 DOSPilgi로 나온다. 영문 <code>C</code>가 <code>e</code>처럼 보이는 것은 원본 글리프 (미확인)</td></tr><tr><td>파티클 문구</td><td>14 (공격 10)</td><td>한참 기다려야 나온다</td></tr><tr><td>엔딩 자막</td><td>15</td><td>글씨체 2</td></tr><tr><td>게임오버</td><td>16, 17</td><td>안내문은 반각, 대사는 확률로 나오는 이스터에그</td></tr><tr><td>옵션, 엑스트라, 크레딧</td><td>메뉴</td><td>네이티브 텍스트. 크레딧 1쪽(이름 목록)은 번역을 넣어도 영문으로 나온다 (원인 미확인)</td></tr><tr><td>메뉴 이미지 글자</td><td>9</td><td>START, CREDITS, EXTRAS, OPTIONS는 그림이라 번역되지 않는다</td></tr></tbody></table></div>
+<h3 id="시험할-때-쓸-수-있는-방법">시험할 때 쓸 수 있는 방법</h3>
+<ul><li>프레임 이동은 이벤트의 "프레임 이동" 동작(<code>objectType -3</code>, <code>num 2</code>, 값 N)이다. N은 프레임 번호가 아니라 <code>0x222B</code> 프레임 핸들 목록의 위치이다 (dtge: <code>[14,19,12,9,0,13,1,20,8,17,16,7,5,6,11,2,4,3,15,10,18]</code>). 시험용으로 경고 화면(프레임 2)의 이동 값을 바꾸면 원하는 장면으로 바로 갈 수 있다. 시험용 복사본에서만 한다.</li><li>게임오버 대사는 프레임 16의 이벤트 조건을 풀어야 강제로 나온다.</li><li>창 캡처로 확인하는 방법은 한글화 작업 흐름 문서의 시험 항목을 따른다.</li></ul>
+<hr>
+<h2 id="6-알려진-제한과-문제-해결">6. 알려진 제한과 문제 해결</h2>
+<div class="table-wrap"><table><thead><tr><th>증상</th><th>원인 / 해결</th></tr></thead><tbody><tr><td>대사 줄이 오른쪽으로 쏠리거나 출력이 멈춘다</td><td>원본 <code>parser.mfx</code>가 ANSI라서 생긴다. 유니코드 파서 모듈로 바꿨는지 확인 (<code>modules/0020_*_parser.mfx</code>)</td></tr><tr><td>파티클 문구가 <code>?</code>로 나온다</td><td>코드페이지/로케일이 1252/1033 그대로이다. 7단계 <code>codepage=949 locale=1042</code> 또는 GUI의 변경 버튼</td></tr><tr><td>파티클 문구가 라틴 기호로 나온다</td><td><code>--txtblt-limited-hangul</code>을 하지 않아 모듈이 한글을 바이트마다 따로 조회한 것이다</td></tr><tr><td>대사의 글자가 <code>?</code>나 빈칸</td><td>글자 이미지 생성 때 폰트에 없던 글자이다. 설정의 <code>fallbackChar</code>, 또는 폰트를 11172자 폰트로</td></tr><tr><td>네이티브 텍스트에서 일부 음절이 비어 보인다</td><td>2350자 폰트(DeterminationMonoK2, Pixel-winding-edit)에 없는 음절</td></tr><tr><td><code>--glyphs</code>가 appendImages.json 이 있다며 거부</td><td>새로 추출해서 다시 한다 (<code>build_dtge.sh</code>는 매번 새로 추출)</td></tr><tr><td>한글 글자가 겹치거나 구두점이 붙는다</td><td>스타일의 <code>hangulPad</code>, <code>dx</code>, <code>dy</code>를 조정</td></tr><tr><td>파티클 문구가 일부만 나온다</td><td>서로 다른 문자열당 음절 약 51개 제한</td></tr></tbody></table></div>
+<p>알려진 제한:</p>
+<ul><li>크레딧 1쪽과 일부 이미지 글자는 번역되지 않는다.</li><li>한글화 도구의 <code>다. 게임에 넣기</code>(37376바이트 <code>txtblt.mfx</code>용)는 dtge에 쓰지 않는다.</li><li>전체 번역을 채운 뒤의 플레이 확인은 번역이 끝난 뒤에 해야 한다.</li></ul>
+<hr>
+<h2 id="파일">파일</h2>
+<div class="code"><div class="code-bar"><span>코드</span><button type="button" class="copy">복사</button></div><pre><code>docs/
+  dtge_번역_가이드.md      이 문서
+  dtge/
+    build_dtge.sh           원본 exe에서 새 exe까지 한 번에 (Git Bash)
+    apply_ko_fonts.py       한글 폰트 교체 (위의 대응표)
+    dtge_glyph_config.json  글자 이미지 스타일 + 파티클 설정
+    list_dialogue.py        번역할 문장 후보 표 만들기 (읽기만 함)
+Extensions/ParserUnicode/   유니코드 parser.mfx 소스와 빌드 스크립트</code></pre></div>
+    </article>
+  </main>
+</div>
+<footer>이 문서는 <code>docs/dtge_번역_가이드.md</code> 에서 <code>docs/build_docs.py</code> 로 만든 것입니다. 고칠 때는 .md 를 고치고 다시 만드세요.</footer>
+<script>
+(function () {
+  var root = document.documentElement;
+  try { var saved = localStorage.getItem('docs-theme'); if (saved) root.setAttribute('data-theme', saved); } catch (e) {}
+  var btn = document.querySelector('.theme');
+  function current() {
+    var t = root.getAttribute('data-theme');
+    if (t) return t;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  function label() { btn.textContent = current() === 'dark' ? '밝게' : '어둡게'; }
+  if (btn) {
+    label();
+    btn.addEventListener('click', function () {
+      var next = current() === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('docs-theme', next); } catch (e) {}
+      label();
+    });
+  }
+  document.querySelectorAll('.copy').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var code = b.closest('.code').querySelector('code').innerText;
+      var done = function () { b.textContent = '복사됨'; setTimeout(function () { b.textContent = '복사'; }, 1400); };
+      if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(code).then(done, done); }
+      else { var t = document.createElement('textarea'); t.value = code; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(t); done(); }
+    });
+  });
+  var links = document.querySelectorAll('.toc a');
+  var map = {};
+  links.forEach(function (a) { map[a.getAttribute('href').slice(1)] = a; });
+  var heads = Array.prototype.slice.call(document.querySelectorAll('article h2, article h3')).filter(function (h) { return map[h.id]; });
+  function onScroll() {
+    var y = window.scrollY + 110, cur = null;
+    heads.forEach(function (h) { if (h.offsetTop <= y) cur = h; });
+    links.forEach(function (a) { a.classList.remove('active'); });
+    if (cur && map[cur.id]) { map[cur.id].classList.add('active'); }
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+})();
+</script>
+</body>
+</html>

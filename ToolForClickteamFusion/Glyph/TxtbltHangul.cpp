@@ -518,7 +518,7 @@ bool CTT::Glyph::patchTxtbltHangul(const wstring& gameDir, const wstring& config
 int CTT::Glyph::runTxtbltHangulCommand(int argc, WCHAR** argv)
 {
 	if (argc < 4) {
-		wcout << L"usage: --txtblt-hangul <extracted folder> <glyph config json>" << endl;
+		wcout << L"usage: --txtblt-limited-hangul <extracted folder> <glyph config json>" << endl;
 		return 2;
 	}
 	return patchTxtbltHangul(argv[2], argv[3]) ? 0 : 1;

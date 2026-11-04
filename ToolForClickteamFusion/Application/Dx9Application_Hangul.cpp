@@ -40,6 +40,7 @@ HangulUiState::HangulUiState()
 	memset(moduleOutput, 0, sizeof(moduleOutput));
 
 	blittersLoaded = false;
+	strcpy_s(liveSample, u8"한글 폰트 미리보기 가나다라 마바사 ABC abc 123 ?!");
 	fontReloadKnown = false;
 	fontReloadDetected = false;
 	fontReloadCount = 0;
@@ -72,6 +73,12 @@ void HangulUiState::releaseTextures()
 		}
 	}
 	previewCache.clear();
+	if (livePreview.texture != NULL) {
+		livePreview.texture->Release();
+		livePreview.texture = NULL;
+	}
+	livePreview.data = CTT::Glyph::FontAtlasData();
+	liveKey.clear();
 }
 
 
@@ -259,6 +266,68 @@ namespace {
 		texture->UnlockRect(0);
 		pa.texture = texture;
 		return &pa;
+	}
+
+
+	// 폼의 값으로 메모리에 작은 아틀라스를 만들어 미리보기 텍스처를 갱신한다. 설정이 같으면 다시 만들지 않는다
+	void updateLivePreview(LPDIRECT3DDEVICE9 device, HangulUiState& h)
+	{
+		char colorKey[96];
+		sprintf_s(colorKey, "%.3f,%.3f,%.3f|%.3f,%.3f,%.3f", h.color[0], h.color[1], h.color[2], h.outlineColor[0], h.outlineColor[1], h.outlineColor[2]);
+		string key = string(h.fontPath) + "|" + to_string(h.fontSize) + "|" + to_string(h.outlineSize) + "|" + to_string(h.letterSpacing) + "|" + to_string(h.dy) + "|" + colorKey + "|" + h.liveSample;
+		if (key == h.liveKey) {
+			return;
+		}
+		h.liveKey = key;
+		if (h.livePreview.texture != NULL) {
+			h.livePreview.texture->Release();
+			h.livePreview.texture = NULL;
+		}
+		h.livePreview.data = CTT::Glyph::FontAtlasData();
+		h.liveError.clear();
+		if (strlen(h.fontPath) == 0 || h.fontSize <= 0) {
+			return;
+		}
+
+		Json::Value cfg(Json::objectValue);
+		cfg["name"] = "preview";
+		cfg["font"] = h.fontPath;
+		cfg["size"] = h.fontSize;
+		cfg["mode"] = "limitedHangul";
+		cfg["extraChars"] = h.liveSample;
+		cfg["outlineSize"] = h.outlineSize;
+		cfg["letterSpacing"] = h.letterSpacing;
+		cfg["dy"] = h.dy;
+		cfg["atlasWidth"] = 1024;
+		Json::Value color(Json::arrayValue);
+		Json::Value outline(Json::arrayValue);
+		for (int c = 0; c < 3; c++) {
+			color.append((int)(h.color[c] * 255.0f + 0.5f));
+			outline.append((int)(h.outlineColor[c] * 255.0f + 0.5f));
+		}
+		cfg["color"] = color;
+		cfg["outlineColor"] = outline;
+		if (!CTT::Glyph::buildFontAtlasData(cfg, wstring(), h.livePreview.data, true) || h.livePreview.data.bgra.empty()) {
+			h.liveError = u8"폰트를 열지 못했거나 글자를 만들지 못했습니다. 폰트 파일 경로와 글자 크기를 확인하세요";
+			h.livePreview.data = CTT::Glyph::FontAtlasData();
+			return;
+		}
+		LPDIRECT3DTEXTURE9 texture = NULL;
+		if (FAILED(device->CreateTexture(h.livePreview.data.atlasWidth, h.livePreview.data.atlasHeight, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &texture, NULL)) || texture == NULL) {
+			h.liveError = u8"미리보기 그림을 만들지 못했습니다";
+			return;
+		}
+		D3DLOCKED_RECT rect;
+		if (FAILED(texture->LockRect(0, &rect, NULL, 0))) {
+			texture->Release();
+			h.liveError = u8"미리보기 그림을 만들지 못했습니다";
+			return;
+		}
+		for (UINT y = 0; y < h.livePreview.data.atlasHeight; y++) {
+			memcpy((BYTE*)rect.pBits + (size_t)y * rect.Pitch, &h.livePreview.data.bgra[(size_t)y * h.livePreview.data.atlasWidth * 4], (size_t)h.livePreview.data.atlasWidth * 4);
+		}
+		texture->UnlockRect(0);
+		h.livePreview.texture = texture;
 	}
 
 	void setPointSampler(const ImDrawList*, const ImDrawCmd* cmd)
@@ -689,6 +758,34 @@ void Dx9Application::renderHangulAtlasTab()
 		ImGui::SetNextItemWidth(80.0f);
 		ImGui::InputInt(u8"이미지 폭", &h.atlasWidth, 0);
 		helpMarker(u8"폰트 아틀라스 이미지(PNG)의 폭입니다. 보통 그대로 두면 됩니다.");
+	}
+
+	// ---- 간격 미리보기: 만들기 전에 글자 간격, 외곽선, 크기를 눈으로 확인한다
+	if (ImGui::CollapsingHeader(u8"간격 미리보기", ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::SetNextItemWidth(full * 0.7f);
+		ImGui::InputText(u8"미리보기 문구", h.liveSample, IM_ARRAYSIZE(h.liveSample));
+		helpMarker(u8"이 문구를 지금 폼의 값(폰트, 글자 크기, 외곽선, 글자 간격, 세로 위치)으로 그려 줍니다. 번역한 문장을 넣어 보면 실제와 가깝습니다.");
+		if (strlen(h.fontPath) == 0) {
+			ImGui::TextDisabled(u8"폰트 파일을 정하면 여기서 미리 볼 수 있습니다.");
+		}
+		else {
+			updateLivePreview(pD3dDevice, h);
+			if (!h.liveError.empty()) {
+				ImGui::TextColored(ImVec4(1.0f, 0.52f, 0.46f, 1.0f), "%s", h.liveError.c_str());
+			}
+			else if (h.livePreview.texture != NULL) {
+				ImGui::SetNextItemWidth(90.0f);
+				ImGui::InputInt(u8"상자 폭(px)", &h.previewWidth, 0);
+				ImGui::SameLine();
+				ImGui::SetNextItemWidth(60.0f);
+				ImGui::InputInt(u8"확대 배율", &h.previewScale, 0);
+				h.previewWidth = max(16, min(h.previewWidth, 1024));
+				h.previewScale = max(1, min(h.previewScale, 8));
+				const int fitScale = max(1, (int)((ImGui::GetContentRegionAvail().x - 20.0f) / (float)h.previewWidth));
+				drawPreview(pD3dDevice, h.livePreview, h.liveSample, h.previewWidth, min(h.previewScale, fitScale));
+				ImGui::TextDisabled(u8"줄 높이 %d px, 글자 %d개", (int)h.livePreview.data.lineHeight, (int)h.livePreview.data.glyphs.size());
+			}
+		}
 	}
 
 	bool canBuild = (strlen(h.atlasName) > 0) && (strlen(h.fontPath) > 0) && (h.fontSize > 0) && !h.buildRunning;

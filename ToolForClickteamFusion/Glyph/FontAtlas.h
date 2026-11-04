@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "../Common.h"
+#include "../Util/JsonUtil.h"
 #include <map>
 
 namespace CTT {
@@ -67,6 +68,10 @@ namespace CTT {
 		// 폴더(<이름>.png, <이름>.kft, <이름>.json)에 저장 / 읽기
 		bool saveFontAtlas(const FontAtlasData& atlas, const wstring& directory);
 		bool loadFontAtlas(FontAtlasData& atlas, const wstring& directory, const wstring& name);
+
+		// fontAtlas 설정 블록(name, font, size ...)으로 메모리에 아틀라스를 만든다 (저장하지 않는다). 화면 미리보기에 쓴다.
+		// baseDir 은 설정 안의 상대 경로를 푸는 기준이고, quiet 이면 정보 출력을 하지 않는다
+		bool buildFontAtlasData(const Json::Value& config, const wstring& baseDir, FontAtlasData& atlas, bool quiet = false);
 
 		// 설정 json 대로 폰트에서 아틀라스를 만든다 (설정은 FontAtlas.cpp 위쪽 설명 참고)
 		bool buildFontAtlas(const wstring& configPath);

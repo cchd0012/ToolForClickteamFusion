@@ -109,6 +109,11 @@ namespace CTT {
 			int previewScale;
 			int previewAtlas;				// atlases 의 위치 (아틀라스 창의 미리보기용)
 			map<wstring, HangulPreviewAtlas> previewCache;
+			// 아틀라스를 만들기 전에 간격을 보는 실시간 미리보기 (폼의 값으로 메모리에 작은 아틀라스를 만든다)
+			char liveSample[512];
+			HangulPreviewAtlas livePreview;
+			string liveKey;					// 마지막으로 만든 설정 (같으면 다시 만들지 않는다)
+			string liveError;
 
 			// 메시지
 			string message;

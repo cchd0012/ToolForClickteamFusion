@@ -387,20 +387,13 @@ bool CTT::Glyph::loadFontAtlas(FontAtlasData& atlas, const wstring& directory, c
 }
 
 
-bool CTT::Glyph::buildFontAtlas(const wstring& configPath)
+bool CTT::Glyph::buildFontAtlasData(const Json::Value& c, const wstring& baseDir, FontAtlasData& atlas, bool quiet)
 {
-	Json::Value root;
-	wstring configFile = configPath;
-	if (!readFromJson(root, configFile)) {
-		return false;
-	}
-	const Json::Value& c = root["fontAtlas"];
-	if (!c.isObject() || !c["name"].isString() || !c["font"].isString() || !c["size"].isInt() || !c["outputDir"].isString()) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 설정에 fontAtlas 블록(name, font, size, outputDir)이 필요합니다." << endl;
+	if (!c.isObject() || !c["name"].isString() || !c["font"].isString() || !c["size"].isInt()) {
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 설정에 fontAtlas 블록(name, font, size)이 필요합니다." << endl;
 		return false;
 	}
 
-	const wstring baseDir = getOnlyDirPath(configFile);
 	FontAtlasMode mode = FontAtlasMode::Hangul;
 	const string modeText = c.get("mode", "hangul").asString();
 	if (modeText == "extendedHangul") {
@@ -425,7 +418,7 @@ bool CTT::Glyph::buildFontAtlas(const wstring& configPath)
 		return false;
 	}
 
-	FontAtlasData atlas;
+	atlas = FontAtlasData();
 	atlas.name = fromUtf8(c["name"].asString());
 	atlas.flags = (mode == FontAtlasMode::ExtendedHangul) ? 1 : 0;
 	const int ascent = font.ascent();
@@ -518,9 +511,11 @@ bool CTT::Glyph::buildFontAtlas(const wstring& configPath)
 			codes.push_back(*it);
 		}
 		atlas.flags = outsideHangulArea ? 1 : 0;
-		wcout << infoPrefix << L"LimitedHangul: 글자 " << dec << limited.size() << L"종 (읽은 파일 " << sourceFileCount << L"개)" << endl;
-		if (!unmappable.empty()) {
-			wcout << infoPrefix << L"주의: CP949 로 표현할 수 없어 뺀 글자가 있습니다. 예: " << unmappable << endl;
+		if (!quiet) {
+			wcout << infoPrefix << L"LimitedHangul: 글자 " << dec << limited.size() << L"종 (읽은 파일 " << sourceFileCount << L"개)" << endl;
+			if (!unmappable.empty()) {
+				wcout << infoPrefix << L"주의: CP949 로 표현할 수 없어 뺀 글자가 있습니다. 예: " << unmappable << endl;
+			}
 		}
 	}
 	else {
@@ -668,17 +663,39 @@ bool CTT::Glyph::buildFontAtlas(const wstring& configPath)
 	}
 	atlas.missingAdvance = (UINT16)(std::max)(1, missing);
 
-
-	if (!saveFontAtlas(atlas, resolvePath(baseDir, fromUtf8(c["outputDir"].asString())))) {
-		return false;
-	}
-	wcout << infoPrefix << atlas.name << L": 글자 " << dec << atlas.glyphs.size() << L"개, 줄 높이 " << cellHeight << L", 아틀라스 " << atlasWidth << L"x" << atlasHeight << L" (폰트에 없던 코드 " << missingInFont << L"개)" << endl;
-	if (blankGlyphs > 0) {
-		wcout << infoPrefix << L"주의: 폰트가 이 크기에서 그림을 비워 둔 글자가 " << dec << blankGlyphs << L"개 있습니다 (빈 칸으로 출력됩니다). 예: " << blankSamples << L" ... 크기를 바꾸거나 다른 폰트를 쓰세요." << endl;
+	if (!quiet) {
+		wcout << infoPrefix << atlas.name << L": 글자 " << dec << atlas.glyphs.size() << L"개, 줄 높이 " << cellHeight << L", 아틀라스 " << atlasWidth << L"x" << atlasHeight << L" (폰트에 없던 코드 " << missingInFont << L"개)" << endl;
+		if (blankGlyphs > 0) {
+			wcout << infoPrefix << L"주의: 폰트가 이 크기에서 그림을 비워 둔 글자가 " << dec << blankGlyphs << L"개 있습니다 (빈 칸으로 출력됩니다). 예: " << blankSamples << L" ... 크기를 바꾸거나 다른 폰트를 쓰세요." << endl;
+		}
 	}
 	return true;
 }
 
+
+bool CTT::Glyph::buildFontAtlas(const wstring& configPath)
+{
+	Json::Value root;
+	wstring configFile = configPath;
+	if (!readFromJson(root, configFile)) {
+		return false;
+	}
+	const Json::Value& c = root["fontAtlas"];
+	if (!c.isObject() || !c["name"].isString() || !c["font"].isString() || !c["size"].isInt() || !c["outputDir"].isString()) {
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 설정에 fontAtlas 블록(name, font, size, outputDir)이 필요합니다." << endl;
+		return false;
+	}
+
+	const wstring baseDir = getOnlyDirPath(configFile);
+	FontAtlasData atlas;
+	if (!buildFontAtlasData(c, baseDir, atlas, false)) {
+		return false;
+	}
+	if (!saveFontAtlas(atlas, resolvePath(baseDir, fromUtf8(c["outputDir"].asString())))) {
+		return false;
+	}
+	return true;
+}
 
 namespace {
 

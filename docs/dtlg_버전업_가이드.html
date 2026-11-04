@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DustTale: Last Genocide 한글패치 버전업 가이드</title>
+<style>
+:root {
+  --bg: #f7f7f4; --panel: #ffffff; --ink: #1f2328; --muted: #5d6670; --line: #d9dde1;
+  --accent: #1f6feb; --accent-soft: #e3eefc; --code-bg: #f0f2f4; --pre-bg: #14181d; --pre-ink: #e6e9ed;
+  --head: #111418; --ok: #1a7f37; --warn-bg: #fff4d6; --warn-line: #e2b93d;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14171a; --panel: #1b1f23; --ink: #dde1e5; --muted: #98a2ad; --line: #2e353c;
+    --accent: #6ea8ff; --accent-soft: #1d2b40; --code-bg: #262c32; --pre-bg: #0d1013; --pre-ink: #dde3e9;
+    --head: #f2f4f6; --ok: #56d364; --warn-bg: #3a3118; --warn-line: #a8862a;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14171a; --panel: #1b1f23; --ink: #dde1e5; --muted: #98a2ad; --line: #2e353c;
+  --accent: #6ea8ff; --accent-soft: #1d2b40; --code-bg: #262c32; --pre-bg: #0d1013; --pre-ink: #dde3e9;
+  --head: #f2f4f6; --ok: #56d364; --warn-bg: #3a3118; --warn-line: #a8862a;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 16px/1.75 "Pretendard", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.topbar {
+  position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--panel) 92%, transparent);
+  backdrop-filter: blur(8px); border-bottom: 1px solid var(--line);
+}
+.topbar-inner { max-width: 1180px; margin: 0 auto; padding: 0 20px; height: 52px; display: flex; align-items: center; gap: 18px; }
+.brand { font-weight: 700; color: var(--head); white-space: nowrap; }
+.topnav { display: flex; gap: 4px; flex: 1; overflow-x: auto; }
+.topnav a {
+  padding: 6px 12px; border-radius: 8px; color: var(--muted); text-decoration: none; white-space: nowrap; font-size: 14px;
+}
+.topnav a:hover { background: var(--accent-soft); color: var(--accent); }
+.topnav a.current { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.theme { border: 1px solid var(--line); background: var(--panel); color: var(--muted); border-radius: 8px; padding: 5px 10px; cursor: pointer; font: inherit; font-size: 13px; }
+.theme:hover { color: var(--accent); border-color: var(--accent); }
+.layout { max-width: 1180px; margin: 0 auto; padding: 28px 20px 80px; display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 36px; }
+.toc { position: sticky; top: 76px; align-self: start; max-height: calc(100vh - 100px); overflow-y: auto; font-size: 14px; padding-right: 6px; }
+.toc-title { font-size: 12px; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px; font-weight: 700; }
+.toc ul { list-style: none; margin: 0; padding: 0; }
+.toc li a { display: block; padding: 5px 10px; border-left: 2px solid var(--line); color: var(--muted); text-decoration: none; line-height: 1.45; }
+.toc li.sub a { padding-left: 24px; font-size: 13px; }
+.toc li a:hover { color: var(--accent); }
+.toc li a.active { color: var(--accent); border-left-color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+.toc-mobile { display: none; }
+article {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 36px 44px 44px; min-width: 0;
+}
+article h1 { font-size: 30px; line-height: 1.3; margin: 0 0 18px; color: var(--head); letter-spacing: -0.01em; }
+article h2 { font-size: 23px; margin: 48px 0 14px; padding-top: 22px; border-top: 1px solid var(--line); color: var(--head); letter-spacing: -0.01em; }
+article h2:first-of-type { margin-top: 30px; }
+article h3 { font-size: 18px; margin: 32px 0 10px; color: var(--head); }
+article h4 { font-size: 16px; margin: 22px 0 8px; color: var(--head); }
+article p { margin: 12px 0; }
+article ul, article ol { margin: 12px 0; padding-left: 24px; }
+article li { margin: 6px 0; }
+article li::marker { color: var(--accent); }
+article a { color: var(--accent); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); }
+article a:hover { border-bottom-color: var(--accent); }
+article hr { border: 0; border-top: 1px solid var(--line); margin: 30px 0; }
+code { font: 0.88em/1.4 "Cascadia Mono", "D2Coding", Consolas, "Courier New", monospace; background: var(--code-bg); padding: 2px 6px; border-radius: 5px; word-break: break-word; }
+.code { margin: 16px 0; border-radius: 10px; overflow: hidden; background: var(--pre-bg); }
+.code-bar { display: flex; justify-content: space-between; align-items: center; padding: 6px 12px; font-size: 12px; color: #9aa4af; background: rgba(255,255,255,.05); }
+.copy { border: 1px solid rgba(255,255,255,.2); background: transparent; color: #c9d1d9; border-radius: 6px; padding: 2px 10px; cursor: pointer; font: inherit; font-size: 12px; }
+.copy:hover { background: rgba(255,255,255,.1); }
+pre { margin: 0; padding: 14px 16px; overflow-x: auto; color: var(--pre-ink); }
+pre code { background: none; padding: 0; font-size: 13.5px; line-height: 1.65; word-break: normal; white-space: pre; }
+.table-wrap { overflow-x: auto; margin: 16px 0; border: 1px solid var(--line); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; line-height: 1.55; }
+th, td { padding: 9px 14px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+th { background: var(--accent-soft); color: var(--head); font-weight: 600; white-space: nowrap; }
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--code-bg) 55%, transparent); }
+td code, th code { white-space: nowrap; }
+blockquote { margin: 16px 0; padding: 4px 18px; border-left: 4px solid var(--accent); background: var(--accent-soft); border-radius: 0 10px 10px 0; }
+footer { max-width: 1180px; margin: 0 auto; padding: 0 20px 40px; color: var(--muted); font-size: 13px; }
+@media (max-width: 960px) {
+  .layout { grid-template-columns: minmax(0, 1fr); padding-top: 16px; }
+  .toc { display: none; }
+  .toc-mobile { display: block; margin-bottom: 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; font-size: 14px; }
+  .toc-mobile summary { cursor: pointer; font-weight: 600; }
+  .toc-mobile a { display: block; padding: 5px 0; color: var(--accent); text-decoration: none; }
+  article { padding: 22px 18px 30px; border-radius: 10px; }
+  article h1 { font-size: 24px; }
+  article h2 { font-size: 20px; }
+}
+@media print {
+  .topbar, .toc, .toc-mobile, .copy, .theme { display: none !important; }
+  .layout { display: block; padding: 0; }
+  article { border: 0; padding: 0; }
+  body { background: #fff; color: #000; }
+  .code { background: #f3f3f3; } pre { color: #000; } .code-bar { display: none; }
+}
+</style>
+</head>
+<body>
+<header class="topbar"><div class="topbar-inner">
+  <span class="brand">ToolForClickteamFusion 문서</span>
+  <nav class="topnav"><a href="한글화_작업흐름.html">한글화 작업 흐름</a><a href="dtge_번역_가이드.html">dtge (DustTale: The Genocide's End) 번역 가이드</a><a href="dtlg_버전업_가이드.html" class="current">DustTale: Last Genocide 한글패치 버전업 가이드</a><a href="사용_가이드.html">ToolForClickteamFusion 사용 가이드</a></nav>
+  <button type="button" class="theme">어둡게</button>
+</div></header>
+<div class="layout">
+  <aside class="toc"><p class="toc-title">목차</p><ul><li class=""><a href="#멈춤의-원인-105-한글판-2페이즈">멈춤의 원인 (1.0.5 한글판 2페이즈)</a></li><li class=""><a href="#게임이-스스로-꺼지는-곳-정상">게임이 스스로 꺼지는 곳 (정상)</a></li><li class=""><a href="#순서">순서</a></li><li class=""><a href="#점검-스크립트-재합성한-exe를-다시-추출해서-돌린다">점검 스크립트 (재합성한 exe를 다시 추출해서 돌린다)</a></li><li class=""><a href="#게임에서-확인하는-법">게임에서 확인하는 법</a></li><li class=""><a href="#110에서-직접-확인이-필요한-것">1.1.0에서 직접 확인이 필요한 것</a></li></ul></aside>
+  <main>
+    <details class="toc-mobile"><summary>목차</summary><a href="#멈춤의-원인-105-한글판-2페이즈">멈춤의 원인 (1.0.5 한글판 2페이즈)</a><a href="#게임이-스스로-꺼지는-곳-정상">게임이 스스로 꺼지는 곳 (정상)</a><a href="#순서">순서</a><a href="#점검-스크립트-재합성한-exe를-다시-추출해서-돌린다">점검 스크립트 (재합성한 exe를 다시 추출해서 돌린다)</a><a href="#게임에서-확인하는-법">게임에서 확인하는 법</a><a href="#110에서-직접-확인이-필요한-것">1.1.0에서 직접 확인이 필요한 것</a></details>
+    <article>
+<h1 id="dusttale-last-genocide-한글패치-버전업-가이드">DustTale: Last Genocide 한글패치 버전업 가이드</h1>
+<p>게임이 새 버전으로 올라갔을 때, 이전 버전 한글판(1.0.5)의 번역·폰트·이미지를 새 버전(1.1.0)에 옮기는 방법과, 2페이즈에서 멈추던 원인이다. 스크립트는 <code>docs/dtlg/</code>에 있다.</p>
+<p>이 게임은 글자를 윈도우 글꼴(Text 오브젝트)로 그린다. dtge와 달리 글자 이미지, 파서 모듈, 텍스트 블리터가 없어서 일반 한글화 흐름(문구, 폰트, 이미지)만 쓴다. 코드페이지는 949, 로케일은 1042로 바꾼다.</p>
+<h2 id="멈춤의-원인-105-한글판-2페이즈">멈춤의 원인 (1.0.5 한글판 2페이즈)</h2>
+<p><code>whatever limit you want to break so badly, kiddo...</code> 말풍선에서 게임이 멈췄다. 이 게임의 대사는 아래 두 곳이 같은 문자열이어야 다음으로 넘어간다.</p>
+<div class="table-wrap"><table><thead><tr><th>위치</th><th>하는 일</th></tr></thead><tbody><tr><td>동작 (줄 1050)</td><td>말풍선 글자(<code>bubble text</code>)를 이 대사로 정한다</td></tr><tr><td>조건 (줄 754)</td><td><code>bubble string</code>이 이 대사와 같고 Z키를 눌렀을 때 다음 대사로 넘어간다</td></tr></tbody></table></div>
+<p>1.0.5 한글판에서는 동작이 <code>네가 그토록 간절히 깨고 싶은 한계가 있다면...</code>, 조건이 <code>네가 그토록 간절히 부수고픈 한계가 있다면...</code>으로 서로 다르게 번역되어 있었다. 조건이 영원히 거짓이라서 Z를 눌러도 넘어가지 않았다. 게임 창을 직접 닫을 수밖에 없는 상태가 된 것이다.</p>
+<p>같은 종류의 어긋남이 <code>* Sans - ??? ATK ??? DEF\r\n* His time is up.</code>(프레임 13 줄 695)에도 하나 더 있었다.</p>
+<p><strong>재발 방지:</strong> 번역은 <code>text/frameEventText.json</code>에서 원문 문자열 하나에 번역 하나로 정한다. 이 도구는 같은 원문을 어디서나 같은 번역으로 바꾸기 때문에 동작과 조건이 어긋날 수 없다. 이벤트 JSON에서 문자열을 곳곳마다 따로 고치지 않는다.</p>
+<h2 id="게임이-스스로-꺼지는-곳-정상">게임이 스스로 꺼지는 곳 (정상)</h2>
+<p>2페이즈가 끝나면 지지직 거리는 화면과 윙딩 문자가 나온 뒤 게임이 꺼진다. 프레임 14(<code>phase 2 ending glitch</code>)의 <code>crash</code> 이벤트가 "응용 프로그램 종료"를 실행하는 연출이다. 영어 원본에도 있다. 다시 실행하면 이어진다.</p>
+<h2 id="순서">순서</h2>
+<p>폴더 규칙: 새 버전은 <code>v110/dtlg110.exe</code>와 그 추출 폴더 <code>v110/dtlg110/</code>, 이전 한글판은 <code>v105k/dtlg105k.exe</code>와 <code>v105k/dtlg105k/</code>로 둔다. (Git Bash에서는 <code>dtlg110</code>이 <code>dtlg110.exe</code>로 해석되므로 폴더 복사는 PowerShell로 한다.)</p>
+<div class="code"><div class="code-bar"><span>bash</span><button type="button" class="copy">복사</button></div><pre><code># 1. 두 exe 를 같은 방식으로 추출 (스크립트와 문구, 이미지, 폰트)
+ToolForClickteamFusion.exe --extract v110/dtlg110.exe font blobs image script text module flow
+ToolForClickteamFusion.exe --extract v105k/dtlg105k.exe font blobs image script text module flow
+
+# 2. 한글판 문자열을 새 영어 문자열에 짝짓는다 (프레임별 순서 정렬) -&gt; align_text.json
+python align_text.py
+
+# 3. 번역, 폰트, 이미지를 새 추출 폴더에 옮긴다 (DTLG_EX_FONT 는 이전 작업의 ex_font 폴더)
+DTLG_EX_FONT=&lt;ex_font&gt; python build_ko.py &lt;작업 폴더&gt;
+DTLG_EX_FONT=&lt;ex_font&gt; python make_ko_images.py &lt;작업 폴더&gt;     # 새로 생긴 영어 글자 그림의 한글 초안
+
+# 4. 재합성
+ToolForClickteamFusion.exe --replace dtlg110.exe font image text script codepage=949 locale=1042</code></pre></div>
+<p><code>build_ko.py</code>가 하는 일:</p>
+<ul><li><strong>문구:</strong> 한글이 들어 있는 짝만 옮긴다. 영어끼리 다른 것(영어 원문이 바뀐 것)은 새 영어를 쓴다.</li><li><strong>위치별 보정:</strong> 같은 문자열이라도 곳마다 다르게 둔 것(크레딧의 <code>by </code> / <code>| </code>, 이름 SOUP의 반응)은 이벤트 JSON에서 그 위치만 고친다.</li><li><strong>오브젝트 문구:</strong> 오브젝트 번호가 버전마다 달라서 이름 순서로 짝짓는다.</li><li><strong>폰트:</strong> 옛 영문 TTF의 내용 해시로 어떤 한글 폰트와 짝인지 찾는다. 오브젝트의 글꼴 이름은 그대로 두고 charset을 129로 바꾼다.</li><li><strong>이미지:</strong> 한글판에서 한글로 바꾼 이미지를 새 버전의 같은 이미지에 덮어쓴다. 핸들이 바뀐 것은 눈으로 확인해서 <code>IMG_MAP</code>에 적어 둔다.</li></ul>
+<h2 id="점검-스크립트-재합성한-exe를-다시-추출해서-돌린다">점검 스크립트 (재합성한 exe를 다시 추출해서 돌린다)</h2>
+<div class="table-wrap"><table><thead><tr><th>스크립트</th><th>찾는 것</th></tr></thead><tbody><tr><td><code>mismatch.py &lt;추출 폴더&gt;</code></td><td>비교 조건에 쓰인 문자열이 같은 프레임의 어떤 "텍스트 설정" 동작에서도 설정되지 않는 곳. 위의 멈춤 원인을 찾는다. 영어 원본에도 남는 것(이름 입력의 이스터에그, 한 줄 접두 비교)은 정상이다</td></tr><tr><td><code>prefixcheck.py &lt;작업 폴더&gt;</code></td><td>대사의 앞부분만 비교하는 조건이 번역 뒤에도 맞는지</td></tr><tr><td><code>dupall.py</code></td><td>번역하다가 서로 다른 두 대사가 같은 한글이 되어 한 번의 Z키로 둘 다 실행되는 곳 (대사 건너뛰기). 새 한글판은 0건이다</td></tr><tr><td><code>loops.py &lt;추출 폴더&gt;</code></td><td>지연 없이 스스로를 다시 부르는 루프 (무한 반복으로 멈출 수 있는 곳). 1.1.0은 프레임 10에 하나 있고 영어 원본과 같다</td></tr></tbody></table></div>
+<h2 id="게임에서-확인하는-법">게임에서 확인하는 법</h2>
+<ul><li><code>make_debug.py &lt;추출 폴더&gt; &lt;이동 값&gt; [--nodamage 프레임:uid,uid;...]</code>: 시작하자마자 특정 장면으로 이동하고 HP가 줄지 않게 한 시험용 빌드를 만든다. 이동 값은 프레임 번호가 아니라 프레임 이동 값이다 (<code>PHASE 2</code> = 5, <code>PHASE 3</code> = 12, <code>PHASE 3.5</code> = 26, <code>PHASE 4</code> = 27). 이동 값을 원래대로(15) 두면 정상 흐름으로 시작한다.</li><li><code>run_game.ps1 -Exe &lt;exe&gt; -OutDir &lt;폴더&gt; -Keys "6:z;9:z" -Seconds 540</code>: 게임을 띄워 키를 보내고 창을 캡처한다. 스스로 꺼지면 종료 코드를 로그에 남긴다.</li><li>게임은 <code>%APPDATA%\MMFApplications\save</code>에 진행 상황을 저장한다. 시험은 이 파일을 바꾸므로 시험 전에 복사해 둔다.</li><li>시험용 빌드는 배포하지 않는다. 배포용은 <code>--nodamage</code>와 이동 값을 쓰지 않은 빌드이다.</li></ul>
+<h2 id="110에서-직접-확인이-필요한-것">1.1.0에서 직접 확인이 필요한 것</h2>
+<ul><li><code>* Nice moves, partner...</code>, <code>* But we have some work to do.</code>, <code>no hit</code>, <code>no heal</code>, <code>no item</code>, <code>no hit: on/off</code>, <code> left</code>: 1.0.5 한글판에 없던 문구라서 초안 번역이다.</li><li>새로 생긴 영어 글자 그림(조작 안내 2장, 일기/성과 알림 4장)은 <code>make_ko_images.py</code>가 한글판 글꼴로 다시 그린 초안이다. 이전 이미지와 느낌이 다를 수 있다.</li><li>새 홍보 이미지(<code>dtge banner</code>, 640x480)와 일부 이름 입력 이스터에그 응답은 번역하지 않았다.</li></ul>
+    </article>
+  </main>
+</div>
+<footer>이 문서는 <code>docs/dtlg_버전업_가이드.md</code> 에서 <code>docs/build_docs.py</code> 로 만든 것입니다. 고칠 때는 .md 를 고치고 다시 만드세요.</footer>
+<script>
+(function () {
+  var root = document.documentElement;
+  try { var saved = localStorage.getItem('docs-theme'); if (saved) root.setAttribute('data-theme', saved); } catch (e) {}
+  var btn = document.querySelector('.theme');
+  function current() {
+    var t = root.getAttribute('data-theme');
+    if (t) return t;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  function label() { btn.textContent = current() === 'dark' ? '밝게' : '어둡게'; }
+  if (btn) {
+    label();
+    btn.addEventListener('click', function () {
+      var next = current() === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('docs-theme', next); } catch (e) {}
+      label();
+    });
+  }
+  document.querySelectorAll('.copy').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var code = b.closest('.code').querySelector('code').innerText;
+      var done = function () { b.textContent = '복사됨'; setTimeout(function () { b.textContent = '복사'; }, 1400); };
+      if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(code).then(done, done); }
+      else { var t = document.createElement('textarea'); t.value = code; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(t); done(); }
+    });
+  });
+  var links = document.querySelectorAll('.toc a');
+  var map = {};
+  links.forEach(function (a) { map[a.getAttribute('href').slice(1)] = a; });
+  var heads = Array.prototype.slice.call(document.querySelectorAll('article h2, article h3')).filter(function (h) { return map[h.id]; });
+  function onScroll() {
+    var y = window.scrollY + 110, cur = null;
+    heads.forEach(function (h) { if (h.offsetTop <= y) cur = h; });
+    links.forEach(function (a) { a.classList.remove('active'); });
+    if (cur && map[cur.id]) { map[cur.id].classList.add('active'); }
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+})();
+</script>
+</body>
+</html>

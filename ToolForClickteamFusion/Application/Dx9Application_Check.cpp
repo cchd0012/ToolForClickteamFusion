@@ -166,7 +166,7 @@ namespace {
 			}
 		}
 		else {
-			c.message = u8"그림 목록(image/imageList.json)이 없어 그림은 그리지 못하고 상자로만 보여 줍니다 (옛 형식 아카이브는 그림 목록이 없습니다).";
+			c.message = u8"그림 목록(image/imageList.json)이 없어 그림은 그리지 못하고 상자로만 보여 줍니다. 추출 단계에서 '이미지'를 추출하세요 (이전 버전으로 추출했다면 다시 추출해야 목록이 만들어집니다).";
 		}
 		// 배경 오브젝트(크기, 그림 번호). 배경은 오브젝트 JSON 이 없어서 따로 읽는다
 		Json::Value backdrops;

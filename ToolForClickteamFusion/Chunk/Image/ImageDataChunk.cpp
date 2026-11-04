@@ -16,11 +16,7 @@ static const UINT32 maxAppendableHandle = 32767;
 
 bool ImageDataChunk::exportImageList(wstring& exportJsonPath)
 {
-	if (!getArchive()->isTwoPointFiveImage()) {
-		// 2.5+ 가 아닌 이미지는 핸들 개념이 없으므로 목록을 만들지 않는다
-		return true;
-	}
-
+	// 옛 형식(NormalImage)도 항목마다 핸들을 갖는다 (빌드 0x11C 이상은 저장값에서 1을 뺀 값). 확인 화면이 읽는 보기용 목록이다
 	Json::Value root(Json::objectValue);
 	root["type"] = "imageList";
 	root["version"] = 1;

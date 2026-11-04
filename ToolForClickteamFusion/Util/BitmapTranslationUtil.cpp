@@ -308,7 +308,8 @@ bool CTT::BitmapTranslationUtil::Normal16BitImageToRGBA(BYTE* translatingData, U
 		for (UINT32 j = 0; j < width; j++) {
 			UINT16 cv = *(UINT16*)(&translatingData[translationStartPos + (j * 2)]);
 			bitmapData[bitmapStartPos + (j * 4) + 0] = (BYTE)((cv & 0x001F)) << 3;
-			bitmapData[bitmapStartPos + (j * 4) + 1] = (BYTE)((cv & 0x07E0) >> 5) << 3;
+			// 초록은 6비트라서 2칸만 올린다 (3칸 올리면 BYTE 를 넘쳐 값이 감긴다). 게임이 정하는 투명색도 이 값(흰색이면 g=252)이다
+				bitmapData[bitmapStartPos + (j * 4) + 1] = (BYTE)(((cv & 0x07E0) >> 5) << 2);
 			bitmapData[bitmapStartPos + (j * 4) + 2] = (BYTE)((cv & 0xF800) >> 11) << 3;
 			if ((bitmapData[bitmapStartPos + (j * 4) + 0] == transparent.r)
 				&& (bitmapData[bitmapStartPos + (j * 4) + 1] == transparent.g)

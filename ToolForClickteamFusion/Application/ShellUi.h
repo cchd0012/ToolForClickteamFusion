@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include "../Common.h"
+#include "../Util/JsonUtil.h"
 
 // 화면 틀(껍데기)의 상태: 왼쪽 단계 목록, 위쪽 상태 줄, 아래 문제/로그 패널
 // 구조는 docs/UI_와이어프레임.html 을 따른다.
@@ -59,8 +60,11 @@ namespace CTT {
 			bool scrollLogToEnd;
 			vector<ShellLogLine> logs;
 			vector<ShellProblem> problems;
+			Json::Value diagnosis;		// 진단 결과 (Diagnosis/Diagnosis.h 의 JSON 형식)
+			bool diagnosed;
+			bool suggestDiagnosis;		// 전체 추출이 끝난 뒤 진단을 권하는 창을 띄운다
 
-			ShellUiState() : step(SHELL_STEP_DIAGNOSE), bottomTab(0), bottomOpen(true), scrollLogToEnd(false) {}
+			ShellUiState() : step(SHELL_STEP_DIAGNOSE), bottomTab(0), bottomOpen(true), scrollLogToEnd(false), diagnosed(false), suggestDiagnosis(false) {}
 		};
 
 	}

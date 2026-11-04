@@ -35,6 +35,9 @@ bool Dx9Application::openArchive()
 		addShellLog(ShellLogLevel::Info, string(u8"아카이브를 열었습니다: ") + archivePathUtf8);
 		shell.step = SHELL_STEP_DIAGNOSE;
 		shell.problems.clear();
+		shell.diagnosis = Json::Value();
+		shell.diagnosed = false;
+		shell.suggestDiagnosis = false;
 	}
 	else {
 		addShellLog(ShellLogLevel::Error, string(u8"아카이브를 열지 못했습니다: ") + archivePathUtf8);

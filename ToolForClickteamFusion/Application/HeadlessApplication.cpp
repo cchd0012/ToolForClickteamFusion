@@ -3,6 +3,7 @@
 //   ToolForClickteamFusion.exe --roundtrip <아카이브 경로> [데이터 종류...]   읽은 뒤 그대로 다시 쓴다 (기본: script)
 //   ToolForClickteamFusion.exe --extract   <아카이브 경로> [데이터 종류...]   데이터를 추출한다 (기본: text)
 //   ToolForClickteamFusion.exe --replace   <아카이브 경로> [데이터 종류...]   추출해 둔 데이터로 교체한다 (기본: text)
+//   ToolForClickteamFusion.exe --diagnose  <아카이브 경로>                  구조를 분석해 한글화 진행 방향을 알려 준다 (추출 폴더가 있으면 text/diagnosis.json 도 저장)
 //                                          데이터 종류 자리에 codepage=949 locale=1042 를 적으면 앱 코드페이지/로케일도 바꾼다
 //
 // --roundtrip / --replace 는 일반 "저장" 과정(rewriteNewArchive)을 실행하고, 입력 파일 옆에
@@ -15,6 +16,8 @@
 #include "../Archive/Exe/ExeArchive.h"
 #include "../Archive/Dat/DatArchive.h"
 #include "../Archive/Ccn/CcnArchive.h"
+#include "../Diagnosis/Diagnosis.h"
+#include "../Util/CommonUtil.h"
 
 // Application.cpp 에 정의되어 있다
 extern CTT::App::Application* _application;
@@ -23,6 +26,7 @@ namespace CTT { namespace App { int runHeadlessCommand(int argc, WCHAR** argv); 
 
 using namespace CTT::App;
 using namespace CTT::Archive;
+using namespace CTT::CommonUtil;
 
 namespace {
 
@@ -85,7 +89,17 @@ int CTT::App::runHeadlessCommand(int argc, WCHAR** argv)
 	}
 	else {
 		bool success;
-		if (mode == L"--extract") {
+		if (mode == L"--diagnose") {
+			Json::Value diagnosis;
+			success = CTT::Diagnosis::diagnoseArchive(arc, diagnosis);
+			if (success) {
+				vector<string> lines = CTT::Diagnosis::diagnosisSummaryLines(diagnosis);
+				for (size_t i = 0; i < lines.size(); i++) {
+					wcout << getUniStr(lines[i], CodePage::CP_UTF_8) << endl;
+				}
+			}
+		}
+		else if (mode == L"--extract") {
 			arc->setDataCount(types);
 			success = arc->exportFromArchive(types);
 		}

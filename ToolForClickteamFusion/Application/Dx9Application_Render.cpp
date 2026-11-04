@@ -671,6 +671,7 @@ void Dx9Application::renderArchiveExtractModal()
 		// 추출이 끝났으면 상태 초기화 후 이 모달이 꺼지도록 세팅한다
 		if (states.extractingThreadState == ThreadState::THREAD_FINISHED) {
 			addShellLog(ShellLogLevel::Info, u8"전체 추출을 마쳤습니다");
+			shell.suggestDiagnosis = true;
 			states.isExtractModalShow = false;
 			states.extractingThreadState = ThreadState::THREAD_READY;
 			ImGui::CloseCurrentPopup();

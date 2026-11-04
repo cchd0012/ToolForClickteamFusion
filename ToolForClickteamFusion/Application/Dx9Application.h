@@ -56,6 +56,8 @@ namespace CTT {
 			void renderShellStepScriptJson();
 			int shellStepStatus(int step);
 			void addShellLog(ShellLogLevel level, const string& text);
+			void runDiagnosis();
+			void renderDiagnosisSuggestModal();
 			// 한글화 도구 창 (수정 단계), Dx9Application_Hangul.cpp
 			void renderHangulToolWindow();
 			void renderHangulAtlasTab();

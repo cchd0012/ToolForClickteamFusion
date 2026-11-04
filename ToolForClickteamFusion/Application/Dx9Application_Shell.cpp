@@ -1,6 +1,7 @@
 ﻿#include "Dx9Application.h"
 #include "../ImGUI/Headers.h"
 #include "../Util/CommonUtil.h"
+#include "../Diagnosis/Diagnosis.h"
 
 #include <shellapi.h>
 #include <ctime>
@@ -30,7 +31,7 @@ namespace {
 	};
 
 	const StepInfo kSteps[SHELL_STEP_COUNT] = {
-		{ u8"진단", u8"아카이브의 구조를 분석해서 한글화 진행 방향을 안내합니다 (준비 중)" },
+		{ u8"진단", u8"아카이브의 구조를 분석해서 한글화 진행 방향을 안내합니다" },
 		{ u8"추출", u8"아카이브의 데이터를 파일(PNG, JSON 등)로 꺼냅니다" },
 		{ u8"문구", u8"번역할 문자열이 들어 있는 파일을 엽니다" },
 		{ u8"글꼴·글자", u8"한글 폰트 아틀라스를 만들고 글자 오브젝트와 게임 모듈에 적용합니다" },
@@ -183,7 +184,7 @@ int Dx9Application::shellStepStatus(int step)
 	wstring baseDir = shellBaseDir(archive);
 	switch (step) {
 		case SHELL_STEP_DIAGNOSE:
-			return shell.problems.empty() ? 0 : 2;
+			return !shell.diagnosed ? 0 : (shell.problems.empty() ? 1 : 2);
 		case SHELL_STEP_EXTRACT:
 			return pathExists(baseDir, true) ? 1 : 0;
 		case SHELL_STEP_REBUILD:
@@ -226,6 +227,10 @@ void Dx9Application::renderShell()
 	renderShellNav(0.0f, middleTop, navWidth, middleHeight);
 	renderShellWork(navWidth, middleTop, width - navWidth, middleHeight);
 	renderShellBottom(0.0f, height - bottomHeight, width, bottomHeight);
+
+	if (shell.suggestDiagnosis) {
+		renderDiagnosisSuggestModal();
+	}
 }
 
 
@@ -271,7 +276,12 @@ void Dx9Application::renderShellStatus(float x, float y, float w, float h)
 		string folderPath = (slash == string::npos) ? string() : pathUtf8.substr(0, slash + 1);
 
 		char diagnoseLabel[64];
-		sprintf_s(diagnoseLabel, u8"진단: 문제 %d", (int)shell.problems.size());
+		if (shell.diagnosed) {
+			sprintf_s(diagnoseLabel, u8"진단: 문제 %d", (int)shell.problems.size());
+		}
+		else {
+			sprintf_s(diagnoseLabel, u8"진단 전");
+		}
 		const char* saveLabel = states.isDirty ? u8"저장 필요" : u8"변경 없음";
 		float pillsWidth = pillWidth(diagnoseLabel) + pillWidth(saveLabel) + ImGui::GetStyle().ItemSpacing.x;
 
@@ -288,7 +298,7 @@ void Dx9Application::renderShellStatus(float x, float y, float w, float h)
 		}
 		ImGui::SameLine(w - pillsWidth - 12.0f);
 		ImGui::SetCursorPosY((h - lineHeight) * 0.5f);
-		if (pillButton("diag", diagnoseLabel, shell.problems.empty() ? kMutedColor : kWarnColor)) {
+		if (pillButton("diag", diagnoseLabel, (shell.diagnosed && !shell.problems.empty()) ? kWarnColor : (shell.diagnosed ? kOkColor : kMutedColor))) {
 			shell.step = SHELL_STEP_DIAGNOSE;
 		}
 		ImGui::SameLine();
@@ -406,14 +416,16 @@ void Dx9Application::renderShellBottom(float x, float y, float w, float h)
 					shell.bottomTab = 0;
 					ImGui::BeginChild("##problemlist", ImVec2(0.0f, 0.0f), false);
 					if (shell.problems.empty()) {
-						ImGui::TextDisabled(u8"문제가 없습니다. 진단 기능이 들어오면 진단 결과가 여기에 모입니다.");
+						ImGui::TextDisabled(shell.diagnosed ? u8"진단에서 확인할 문제가 없습니다." : u8"진단 단계에서 진단을 실행하면 문제가 여기에 모입니다.");
 					}
 					for (size_t i = 0; i < shell.problems.size(); i++) {
 						const ShellProblem& problem = shell.problems[i];
 						ImGui::PushID((int)i);
 						ImGui::TextColored(problem.severity == 0 ? kWarnColor : kMutedColor, "%s", problem.severity == 0 ? u8"확인 필요" : u8"알 수 없음");
 						ImGui::SameLine();
+						ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + ImGui::GetContentRegionAvail().x - 70.0f);
 						ImGui::TextWrapped("%s", problem.text.c_str());
+						ImGui::PopTextWrapPos();
 						ImGui::SameLine();
 						if (ImGui::SmallButton(u8"이동")) {
 							shell.step = problem.goStep;
@@ -461,25 +473,151 @@ void Dx9Application::renderShellBottom(float x, float y, float w, float h)
 // ------------------- BEGIN [단계 화면] ---------------------
 
 
+// 진단을 실행해 결과를 보관하고, 확인이 필요한 항목을 문제 패널에 모은다
+void Dx9Application::runDiagnosis()
+{
+	Json::Value result;
+	if (!CTT::Diagnosis::diagnoseArchive(archive, result)) {
+		addShellLog(ShellLogLevel::Error, u8"진단을 실행하지 못했습니다");
+		return;
+	}
+	shell.diagnosis = result;
+	shell.diagnosed = true;
+	shell.problems.clear();
+	const Json::Value& items = result["items"];
+	for (Json::ArrayIndex i = 0; i < items.size(); i++) {
+		const string status = items[i]["status"].asString();
+		if (status != "warn" && status != "unknown") {
+			continue;
+		}
+		ShellProblem problem;
+		problem.severity = (status == "warn") ? 0 : 1;
+		problem.text = items[i]["title"].asString() + ": " + items[i]["detail"].asString();
+		int step = items[i]["step"].asInt();
+		problem.goStep = (step >= 0) ? step : SHELL_STEP_DIAGNOSE;
+		shell.problems.push_back(problem);
+	}
+	char message[128];
+	sprintf_s(message, u8"진단을 마쳤습니다 (확인 필요 %d, 알 수 없음 %d)", result["summary"]["warn"].asInt(), result["summary"]["unknown"].asInt());
+	addShellLog(ShellLogLevel::Info, message);
+}
+
+
+// 전체 추출이 끝난 직후 진단을 권한다
+void Dx9Application::renderDiagnosisSuggestModal()
+{
+	ImGui::OpenPopup(u8"진단 권유");
+	ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+	if (ImGui::BeginPopupModal(u8"진단 권유", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove)) {
+		ImGui::Text(u8"추출이 끝났습니다.");
+		ImGui::Spacing();
+		ImGui::TextWrapped(u8"진단을 실행하면 게임의 글자 방식과 문구를 분석해서 한글화를 어떤 순서로 진행할지 안내합니다. 실행해 보시겠습니까?");
+		ImGui::Spacing();
+		if (ImGui::Button(u8"진단 실행")) {
+			runDiagnosis();
+			shell.step = SHELL_STEP_DIAGNOSE;
+			shell.suggestDiagnosis = false;
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button(u8"나중에")) {
+			shell.suggestDiagnosis = false;
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+}
+
+
+static ImVec4 diagnosisStatusColor(const string& status)
+{
+	if (status == "ok") {
+		return kOkColor;
+	}
+	if (status == "warn") {
+		return kWarnColor;
+	}
+	if (status == "info") {
+		return kAccentColor;
+	}
+	return kMutedColor;
+}
+
+
+static const char* diagnosisStatusLabel(const string& status)
+{
+	if (status == "ok") {
+		return u8"확인됨";
+	}
+	if (status == "warn") {
+		return u8"확인 필요";
+	}
+	if (status == "info") {
+		return u8"정보";
+	}
+	return u8"알 수 없음";
+}
+
+
 void Dx9Application::renderShellStepDiagnose()
 {
 	if (ImGui::CollapsingHeader(u8"프로젝트 정보", ImGuiTreeNodeFlags_DefaultOpen)) {
 		renderArchiveInfoContent();
 	}
 	ImGui::Spacing();
-	ImGui::TextWrapped(u8"진단 기능은 아직 없습니다. 만들어지면 이곳에 구조 분석 결과와 진행 방향이 나옵니다. 지금은 아래 순서로 작업하세요.");
+	if (ImGui::Button(shell.diagnosed ? u8"다시 진단" : u8"진단 실행")) {
+		runDiagnosis();
+	}
+	ImGui::SameLine();
+	ImGui::TextDisabled(u8"추출한 폴더와 아카이브를 읽어서 구조를 분석합니다. 확신할 수 없는 것은 '알 수 없음'으로 표시합니다.");
 	ImGui::Spacing();
-	const int order[6] = { SHELL_STEP_EXTRACT, SHELL_STEP_TEXT, SHELL_STEP_FONT, SHELL_STEP_IMAGE, SHELL_STEP_REBUILD, SHELL_STEP_CHECK };
-	for (int i = 0; i < 6; i++) {
-		ImGui::PushID(i);
-		ImGui::TextColored(kAccentColor, "%d", i + 1);
+	if (!shell.diagnosed) {
+		ImGui::TextWrapped(u8"아직 진단하지 않았습니다. 처음이라면 먼저 '추출'에서 전체 추출을 한 뒤 진단하세요 (추출하지 않아도 진단할 수 있지만 알 수 있는 것이 줄어듭니다).");
+		return;
+	}
+
+	ImGui::Separator();
+	ImGui::Spacing();
+	const Json::Value& items = shell.diagnosis["items"];
+	for (Json::ArrayIndex i = 0; i < items.size(); i++) {
+		const Json::Value& item = items[i];
+		const string status = item["status"].asString();
+		ImGui::PushID((int)i);
+		ImGui::TextColored(diagnosisStatusColor(status), "%s", diagnosisStatusLabel(status));
+		ImGui::SameLine(96.0f);
+		ImGui::Text("%s", item["title"].asString().c_str());
+		int step = item["step"].asInt();
+		if (step >= 0 && step != shell.step) {
+			ImGui::SameLine(ImGui::GetWindowWidth() - 90.0f);
+			if (ImGui::SmallButton(u8"이동")) {
+				shell.step = step;
+			}
+		}
+		ImGui::Indent(96.0f);
+		ImGui::TextWrapped("%s", item["detail"].asString().c_str());
+		ImGui::Unindent(96.0f);
+		ImGui::Spacing();
+		ImGui::PopID();
+	}
+
+	ImGui::Separator();
+	ImGui::Spacing();
+	ImGui::Text(u8"진행 방향");
+	ImGui::Spacing();
+	const Json::Value& guide = shell.diagnosis["guide"];
+	for (Json::ArrayIndex i = 0; i < guide.size(); i++) {
+		ImGui::PushID(1000 + (int)i);
+		ImGui::TextColored(kAccentColor, "%d", (int)i + 1);
 		ImGui::SameLine(40.0f);
-		ImGui::Text("%s", kSteps[order[i]].name);
-		ImGui::SameLine(170.0f);
-		ImGui::TextDisabled("%s", kSteps[order[i]].tip);
-		ImGui::SameLine(ImGui::GetWindowWidth() - 70.0f);
-		if (ImGui::SmallButton(u8"이동")) {
-			shell.step = order[i];
+		ImGui::PushTextWrapPos(ImGui::GetWindowWidth() - 110.0f);
+		ImGui::TextWrapped("%s", guide[i]["text"].asString().c_str());
+		ImGui::PopTextWrapPos();
+		int step = guide[i]["step"].asInt();
+		if (step >= 0 && step != shell.step) {
+			ImGui::SameLine(ImGui::GetWindowWidth() - 90.0f);
+			if (ImGui::SmallButton(u8"이동")) {
+				shell.step = step;
+			}
 		}
 		ImGui::PopID();
 	}

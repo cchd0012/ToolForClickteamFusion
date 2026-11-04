@@ -462,6 +462,30 @@ bool Archive::setApplicationInfo()
 
 
 
+// 배경(Backdrop, 타입 1)과 빠른 배경(Quick Backdrop, 타입 0)의 속성 데이터에서 크기와 그림 번호를 읽는다 (script/backdrops.json 용)
+// 공통 앞부분: u32 크기, u16 장애물 종류, u16 충돌 종류, i32 폭, i32 높이. 배경은 이어서 u16 그림 번호가 온다.
+// 빠른 배경의 채움 방식(색, 그라데이션, 무늬)은 아직 해석하지 않는다
+static bool readBackdropProperties(const ByteBuffer& data, INT16 objectType, Json::Value& out)
+{
+	if (data.size() < 16) {
+		return false;
+	}
+	UINT16 obstacle = (UINT16)(data[4] | (data[5] << 8));
+	UINT16 collision = (UINT16)(data[6] | (data[7] << 8));
+	INT32 width = (INT32)(data[8] | (data[9] << 8) | (data[10] << 16) | ((UINT32)data[11] << 24));
+	INT32 height = (INT32)(data[12] | (data[13] << 8) | (data[14] << 16) | ((UINT32)data[15] << 24));
+	out = Json::Value(Json::objectValue);
+	out["objectType"] = (int)objectType;
+	out["obstacle"] = (int)obstacle;
+	out["collision"] = (int)collision;
+	out["width"] = width;
+	out["height"] = height;
+	if (objectType == 1 && data.size() >= 18) {
+		out["imageHandle"] = (int)(data[16] | (data[17] << 8));
+	}
+	return true;
+}
+
 bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 {
 	wcout << endl << infoPrefix << L"<<function>> " << __FUNCTIONW__ << L": processing..." << endl;
@@ -495,6 +519,7 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 	frameEventTextFlow.clear();
 	frameScriptContext.objectNames.clear();
 	frameScriptContextLoaded = false;
+	Json::Value backdropList(Json::arrayValue);		// 배경 오브젝트의 크기와 그림 번호 (script/backdrops.json)
 
 	// 초기화 및 chunk 시작 위치 지정
 	memset(&chunkInfo, 0, sizeof(ChunkInfo));
@@ -842,8 +867,16 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 						return false;
 					}
 					for (size_t i = 0; i < elements.size(); i++) {
-						// 타입 0 ~ 1 (배경)은 ObjectCommon 이 없다
+						// 타입 0 ~ 1 (배경)은 ObjectCommon 이 없다. 크기와 그림 번호만 backdrops.json 에 모은다
 						if (headers[i].type < 2) {
+							if (contains(extractingDataTypes, L"script")) {
+								Json::Value backdrop;
+								if (readBackdropProperties(elements[i].data, headers[i].type, backdrop)) {
+									backdrop["index"] = (int)i;
+									backdrop["name"] = (i < names.size()) ? names[i] : string();
+									backdropList.append(backdrop);
+								}
+							}
 							continue;
 						}
 						ObjectCommon common;
@@ -931,6 +964,21 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 			return false;
 		}
 		wcout << infoPrefix << L"텍스트 흐름: 블리터 " << dec << frameEventTextFlow.getBlitterCount() << L"개 (이름 " << flowValue["summary"]["blitters"].asUInt() << L"종), 텍스트 설정 동작 " << flowValue["summary"]["assignments"].asUInt() << L"개를 분석했습니다." << endl;
+	}
+
+	// 배경 오브젝트 정보를 JSON 으로 저장한다 (확인 화면이 읽는다. 재합성에는 쓰이지 않는다)
+	if (contains(extractingDataTypes, L"script") && (backdropList.size() > 0)) {
+		Json::Value backdropValue(Json::objectValue);
+		backdropValue["type"] = "backdrops";
+		backdropValue["version"] = 1;
+		backdropValue["backdrops"] = backdropList;
+		wstring exportJsonPath = getExtentionRemovedPath(archivePath) + L"/script/backdrops.json";
+		if (!writeIntoJson(backdropValue, exportJsonPath, 300)) {
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 배경 오브젝트 정보를 json 으로 저장하지 못했습니다." << endl;
+			triggerError(__FUNCTION__, u8"배경 오브젝트 정보를 json 으로 저장하지 못했습니다");
+			return false;
+		}
+		wcout << infoPrefix << L"배경 오브젝트 " << dec << backdropList.size() << L"개의 정보를 추출했습니다." << endl;
 	}
 
 	// 만일 개수를 다 세어도 합이 0이라면 그냥 1/1로 맞춘다

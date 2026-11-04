@@ -59,11 +59,13 @@ void CheckUiState::reset()
 	background[0] = background[1] = background[2] = 0;
 	images.clear();
 	objects.clear();
+	backdrops.clear();
 	selectedInstance = -1;
 	hiddenObjects.clear();
 	frameSnap = DirSnapshot();
 	objectSnap = DirSnapshot();
 	imageSnap = DirSnapshot();
+	backdropSnap = DirSnapshot();
 }
 
 
@@ -131,6 +133,7 @@ namespace {
 		c.frameSnap = takeDirSnapshot(base + L"\\script\\frame", L"*.json");
 		c.objectSnap = takeDirSnapshot(base + L"\\script\\object", L"*.json");
 		c.imageSnap = takeDirSnapshot(base + L"\\image", L"*");
+		c.backdropSnap = takeDirSnapshot(base + L"\\script", L"backdrops.json");
 		vector<wstring> files = listJsonFiles(base + L"\\script\\frame");
 		if (files.empty()) {
 			c.message = u8"추출한 프레임 스크립트가 없습니다. 추출 단계에서 '스크립트'를 추출하세요.";
@@ -162,6 +165,23 @@ namespace {
 		}
 		else {
 			c.message = u8"그림 목록(image/imageList.json)이 없어 그림은 그리지 못하고 상자로만 보여 줍니다 (옛 형식 아카이브는 그림 목록이 없습니다).";
+		}
+		// 배경 오브젝트(크기, 그림 번호). 배경은 오브젝트 JSON 이 없어서 따로 읽는다
+		Json::Value backdrops;
+		wstring backdropPath = base + L"\\script\\backdrops.json";
+		if (GetFileAttributesW(backdropPath.c_str()) != INVALID_FILE_ATTRIBUTES && readFromJson(backdrops, backdropPath) && backdrops["backdrops"].isArray()) {
+			const Json::Value& list = backdrops["backdrops"];
+			for (Json::ArrayIndex i = 0; i < list.size(); i++) {
+				CheckObjectInfo info;
+				info.found = true;
+				info.isBackdrop = true;
+				info.name = list[i].get("name", "").asString();
+				info.objectType = list[i].get("objectType", 1).asInt();
+				info.imageHandle = list[i].get("imageHandle", 0).asInt();
+				info.width = list[i].get("width", 0).asInt();
+				info.height = list[i].get("height", 0).asInt();
+				c.backdrops[list[i].get("index", 0).asInt()] = info;
+			}
 		}
 		c.loaded = true;
 		return true;
@@ -204,6 +224,11 @@ namespace {
 			return found->second;
 		}
 		CheckObjectInfo& info = c.objects[objectInfo];
+		map<int, CheckObjectInfo>::const_iterator backdrop = c.backdrops.find(objectInfo);
+		if (backdrop != c.backdrops.end()) {
+			info = backdrop->second;
+			return info;
+		}
 		wchar_t fileName[32];
 		swprintf_s(fileName, L"%06d.json", objectInfo);
 		wstring path = base + L"\\script\\object\\" + fileName;
@@ -431,7 +456,7 @@ void Dx9Application::renderShellStepCheck()
 		if (object.found && object.imageHandle > 0) {
 			map<int, CheckImageInfo>::iterator img = c.images.find(object.imageHandle);
 			if (img != c.images.end()) {
-				minPos = ImVec2(origin.x + (x - img->second.hotX) * scale, origin.y + (y - img->second.hotY) * scale);
+				minPos = ImVec2(origin.x + (x - (object.isBackdrop ? 0 : img->second.hotX)) * scale, origin.y + (y - (object.isBackdrop ? 0 : img->second.hotY)) * scale);
 				maxPos = ImVec2(minPos.x + img->second.width * scale, minPos.y + img->second.height * scale);
 				LPDIRECT3DTEXTURE9 texture = c.showImages ? ensureImageTexture(pD3dDevice, base, img->second) : NULL;
 				if (texture != NULL) {
@@ -613,6 +638,7 @@ void Dx9Application::scanCheckFiles(CheckChanges& changes)
 	changes.frames = compareDir(check.frameSnap, base + L"\\script\\frame", L"*.json");
 	changes.objects = compareDir(check.objectSnap, base + L"\\script\\object", L"*.json");
 	changes.images = compareDir(check.imageSnap, base + L"\\image", L"*");
+	changes.backdrops = compareDir(check.backdropSnap, base + L"\\script", L"backdrops.json");
 }
 
 
@@ -627,6 +653,9 @@ void Dx9Application::applyCheckFiles(CheckChanges& changes)
 		if (changes.images.changed[i] == L"imageList.json") {
 			imageListChanged = true;
 		}
+	}
+	if (changes.backdrops.any()) {
+		imageListChanged = true;		// 배경 정보도 처음부터 다시 읽는다
 	}
 	bool frameSetChanged = false;
 	if (changes.frames.any()) {
@@ -656,7 +685,7 @@ void Dx9Application::applyCheckFiles(CheckChanges& changes)
 				break;
 			}
 		}
-		addShellLog(ShellLogLevel::Info, frameSetChanged ? u8"프레임 파일 목록이 바뀌어 확인 화면을 다시 읽었습니다" : u8"그림 목록(imageList.json)이 바뀌어 확인 화면을 다시 읽었습니다");
+		addShellLog(ShellLogLevel::Info, frameSetChanged ? u8"프레임 파일 목록이 바뀌어 확인 화면을 다시 읽었습니다" : u8"그림 목록이나 배경 정보가 바뀌어 확인 화면을 다시 읽었습니다");
 		return;
 	}
 

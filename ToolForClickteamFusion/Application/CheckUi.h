@@ -42,7 +42,8 @@ namespace CTT {
 
 		struct CheckObjectInfo
 		{
-			bool found;					// 오브젝트 JSON 이 있다 (배경 오브젝트는 JSON 이 없다)
+			bool found;					// 오브젝트 JSON 이 있다 (배경 오브젝트는 script/backdrops.json 에서 채운다)
+			bool isBackdrop;			// 배경(Backdrop)이다. 그림은 핫스팟 없이 놓인 위치에 그린다
 			string name;
 			string identifier;
 			int objectType;
@@ -59,7 +60,7 @@ namespace CTT {
 			int cellWidth;
 			int align;					// 0 왼쪽, 1 가운데, 2 오른쪽
 			bool pixelLayout;
-			CheckObjectInfo() : found(false), objectType(0), imageHandle(0), width(0), height(0), isBlitter(false), fontTable(0), flags(0), boxWidth(0), boxHeight(0), cellWidth(8), align(0), pixelLayout(false) {}
+			CheckObjectInfo() : found(false), isBackdrop(false), objectType(0), imageHandle(0), width(0), height(0), isBlitter(false), fontTable(0), flags(0), boxWidth(0), boxHeight(0), cellWidth(8), align(0), pixelLayout(false) {}
 		};
 
 		// 지켜보는 폴더들에서 달라진 파일
@@ -68,8 +69,9 @@ namespace CTT {
 			WatchResult frames;
 			WatchResult objects;
 			WatchResult images;
-			bool any() const { return frames.any() || objects.any() || images.any(); }
-			wstring fingerprint() const { return fingerprintOf(frames) + L"#" + fingerprintOf(objects) + L"#" + fingerprintOf(images); }
+			WatchResult backdrops;
+			bool any() const { return frames.any() || objects.any() || images.any() || backdrops.any(); }
+			wstring fingerprint() const { return fingerprintOf(frames) + L"#" + fingerprintOf(objects) + L"#" + fingerprintOf(images) + L"#" + fingerprintOf(backdrops); }
 		};
 
 		struct CheckUiState
@@ -85,6 +87,7 @@ namespace CTT {
 			int background[3];
 			map<int, CheckImageInfo> images;		// 그림 핸들 -> 정보
 			map<int, CheckObjectInfo> objects;		// 오브젝트 번호 -> 정보
+			map<int, CheckObjectInfo> backdrops;	// 배경 오브젝트 번호 -> 정보 (script/backdrops.json)
 			int selectedInstance;		// layout.instances 의 위치, -1 이면 없음
 			int zoom;					// 0 = 화면에 맞춤, 1 이상 = 배율
 			bool showNames;
@@ -97,6 +100,7 @@ namespace CTT {
 			DirSnapshot frameSnap;		// script/frame
 			DirSnapshot objectSnap;		// script/object
 			DirSnapshot imageSnap;		// image
+			DirSnapshot backdropSnap;	// script/backdrops.json
 
 			CheckUiState();
 			~CheckUiState();

@@ -428,6 +428,15 @@ namespace {
 			const Json::Value& blitter = root["textBlitter"];
 			item.initialText = blitter.get("text", "").asString();
 			item.fontTable = blitter.get("fontTable", 0).asInt();
+			item.cellWidth = blitter.get("cellWidth", 0).asInt();
+			item.cellHeight = blitter.get("cellHeight", 0).asInt();
+			item.imageHandle = blitter.get("imageHandle", 0).asInt();
+			item.imageWidth = blitter.get("imageWidth", 0).asInt();
+			item.imageHeight = blitter.get("imageHeight", 0).asInt();
+			const Json::Value& flagNames = blitter["flagNames"];
+			for (Json::ArrayIndex f = 0; f < flagNames.size(); f++) {
+				item.flagNames.push_back(flagNames[f].asString());
+			}
 			item.pixel = (blitter.get("layout", "byte").asString() == "pixel");
 			item.jsonPath = path;
 			hangul.blitters.push_back(item);
@@ -960,7 +969,7 @@ void Dx9Application::renderHangulBlitterTab()
 		}
 		ImGui::EndTable();
 	}
-	ImGui::TextDisabled(u8"번호를 누르면 그 오브젝트의 문구 미리보기가 아래에 나옵니다. * 는 저장하지 않은 변경입니다.");
+	ImGui::TextDisabled(u8"번호를 누르면 그 오브젝트의 상세와 문구 미리보기가 오른쪽 패널에 나옵니다. * 는 저장하지 않은 변경입니다.");
 
 	// ---- 적용
 	ImGui::SeparatorText(u8"체크한 오브젝트에 적용");
@@ -1022,50 +1031,9 @@ void Dx9Application::renderHangulBlitterTab()
 	}
 	messageLine(h);
 
-	// ---- 문구 미리보기
-	ImGui::SeparatorText(u8"이 오브젝트에 나올 수 있는 문구 (정한 폰트 아틀라스로 미리보기)");
-	if (h.currentBlitter >= 0 && h.currentBlitter < (int)h.blitters.size()) {
-		const HangulBlitterItem& b = h.blitters[h.currentBlitter];
-		ImGui::Text(u8"%d번 %s (원래 글꼴 %s)", b.index, b.name.c_str(), b.font.c_str());
-		ImGui::SetNextItemWidth(100.0f);
-		ImGui::InputInt(u8"상자 폭(px)", &h.previewWidth, 0);
-		ImGui::SameLine();
-		ImGui::SetNextItemWidth(100.0f);
-		ImGui::InputInt(u8"확대 배율", &h.previewScale, 0);
-		h.previewWidth = max(16, min(h.previewWidth, 1024));
-		h.previewScale = max(1, min(h.previewScale, 8));
-
-		wstring atlasName = atlasNameForId(h, b.fontTable);
-		HangulPreviewAtlas* pa = atlasName.empty() ? NULL : ensurePreviewAtlas(pD3dDevice, archive, h, atlasName);
-		vector<string> texts;
-		map<string, vector<string> >::iterator found = h.textsByName.find(b.name);
-		if (found != h.textsByName.end()) {
-			texts = found->second;
-		}
-		else if (!b.initialText.empty()) {
-			texts.push_back(b.initialText);
-		}
-		if (pa == NULL) {
-			ImGui::TextDisabled(u8"폰트 아틀라스를 지정하면(번호가 있는 폰트 아틀라스) 그 폰트 아틀라스로 그려 보여 줍니다");
-		}
-		if (texts.empty()) {
-			ImGui::TextDisabled(u8"문구가 없습니다 (텍스트 흐름을 추출하면 이벤트가 넣는 문구도 나옵니다)");
-		}
-		ImGui::BeginChild("##texts", ImVec2(0.0f, 0.0f), ImGuiChildFlags_Border);
-		for (size_t i = 0; i < texts.size(); i++) {
-			ImGui::PushID((int)i);
-			if (pa != NULL) {
-				drawPreview(pD3dDevice, *pa, texts[i], h.previewWidth, h.previewScale);
-			}
-			ImGui::TextDisabled("%s", oneLine(texts[i]).c_str());
-			ImGui::Spacing();
-			ImGui::PopID();
-		}
-		ImGui::EndChild();
-	}
-	else {
-		ImGui::TextDisabled(u8"목록에서 오브젝트 번호를 눌러 선택하세요");
-	}
+	// 선택한 오브젝트의 상세와 문구 미리보기는 오른쪽 패널(인스펙터, 미리보기)에 나온다
+	ImGui::Spacing();
+	ImGui::TextDisabled(u8"목록에서 오브젝트를 선택하면 오른쪽 패널에 상세와 문구 미리보기가 나옵니다.");
 }
 
 
@@ -1254,4 +1222,132 @@ void Dx9Application::renderHangulToolContent()
 		ImGui::EndTabBar();
 	}
 
+}
+
+// 오른쪽 패널의 인스펙터: 선택한 글자 오브젝트의 상세
+void Dx9Application::renderHangulBlitterInspector()
+{
+	HangulUiState& h = hangul;
+	if (h.currentBlitter < 0 || h.currentBlitter >= (int)h.blitters.size()) {
+		ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
+		ImGui::TextWrapped("%s", u8"'나. 오브젝트에 적용' 탭에서 글자 오브젝트를 선택하면 상세가 여기에 나옵니다.");
+		ImGui::PopStyleColor();
+		return;
+	}
+	const HangulBlitterItem& b = h.blitters[h.currentBlitter];
+	ImGui::TextWrapped("%s", b.name.c_str());
+	ImGui::TextDisabled(u8"오브젝트 번호 %d", b.index);
+	ImGui::Spacing();
+
+	const float labelWidth = 108.0f;
+	auto row = [&](const char* label, const string& value) {
+		ImGui::TextDisabled("%s", label);
+		ImGui::SameLine(labelWidth);
+		ImGui::TextWrapped("%s", value.c_str());
+	};
+	row(u8"원래 글꼴", b.font.empty() ? string(u8"(없음)") : b.font);
+	wstring atlasName = atlasNameForId(h, b.fontTable);
+	string table = (b.fontTable > 0) ? (to_string(b.fontTable) + (atlasName.empty() ? string() : string(" (") + utf8(atlasName) + ")")) : string(u8"없음 (원래 방식)");
+	row(u8"폰트 아틀라스", table);
+	row(u8"줄 폭 계산", b.pixel ? string(u8"글자 폭 합산") : string(u8"원래"));
+	row(u8"칸 크기", to_string(b.cellWidth) + " x " + to_string(b.cellHeight));
+	row(u8"이미지", string(u8"핸들 ") + to_string(b.imageHandle) + ", " + to_string(b.imageWidth) + " x " + to_string(b.imageHeight));
+	if (b.dirty) {
+		ImGui::TextColored(ImVec4(0.32f, 0.77f, 0.82f, 1.0f), u8"저장하지 않은 변경이 있습니다");
+	}
+
+	ImGui::Spacing();
+	ImGui::TextDisabled(u8"옵션");
+	if (b.flagNames.empty()) {
+		ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
+		ImGui::TextWrapped("%s", u8"(옵션 정보 없음. 스크립트를 다시 추출하세요)");
+		ImGui::PopStyleColor();
+	}
+	// 옵션 이름을 줄바꿈하며 나열한다
+	float lineLeft = ImGui::GetCursorPosX();
+	float lineWidth = ImGui::GetContentRegionAvail().x;
+	float used = 0.0f;
+	for (size_t i = 0; i < b.flagNames.size(); i++) {
+		const string& name = b.flagNames[i];
+		float width = ImGui::CalcTextSize(name.c_str()).x + 18.0f;
+		if (used > 0.0f && used + width > lineWidth) {
+			used = 0.0f;
+			ImGui::SetCursorPosX(lineLeft);
+		}
+		else if (used > 0.0f) {
+			ImGui::SameLine();
+		}
+		bool known = !(name.size() > 2 && name[0] == '0' && name[1] == 'x');
+		ImGui::PushStyleColor(ImGuiCol_Button, known ? ImVec4(0.14f, 0.27f, 0.32f, 1.0f) : ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
+		ImGui::SmallButton(name.c_str());
+		ImGui::PopStyleColor();
+		if (ImGui::IsItemHovered()) {
+			const char* tip = NULL;
+			if (name == "ESCAPE") { tip = u8"백슬래시 이스케이프 처리 (탭 칸이 0보다 크면 탭 문자도 처리)"; }
+			else if (name == "WRAP") { tip = u8"자동 줄바꿈"; }
+			else if (name == "CRLF") { tip = u8"CR/LF 를 줄바꿈으로 처리"; }
+			else if (name == "CHAR_EVENT") { tip = u8"글자 하나를 그릴 때마다 이벤트를 보냅니다. 글자표가 있는 오브젝트는 이 옵션이 꺼진 것으로 처리됩니다"; }
+			else if (name == "BOX") { tip = u8"상자 안에 맞춰 그립니다"; }
+			else { tip = u8"이름을 모르는 옵션 비트입니다"; }
+			ImGui::SetTooltip("%s", tip);
+		}
+		used += width + ImGui::GetStyle().ItemSpacing.x;
+	}
+}
+
+
+// 오른쪽 패널의 미리보기: 선택한 글자 오브젝트에 나올 수 있는 문구를 정한 폰트 아틀라스로 그린다
+void Dx9Application::renderHangulBlitterPreview()
+{
+	HangulUiState& h = hangul;
+	if (h.currentBlitter < 0 || h.currentBlitter >= (int)h.blitters.size()) {
+		ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
+		ImGui::TextWrapped("%s", u8"글자 오브젝트를 선택하면 나올 수 있는 문구를 폰트 아틀라스로 그려 보여 줍니다.");
+		ImGui::PopStyleColor();
+		return;
+	}
+	const HangulBlitterItem& b = h.blitters[h.currentBlitter];
+	ImGui::SetNextItemWidth(84.0f);
+	ImGui::InputInt(u8"상자 폭(px)", &h.previewWidth, 0);
+	ImGui::SameLine();
+	ImGui::SetNextItemWidth(56.0f);
+	ImGui::InputInt(u8"배율", &h.previewScale, 0);
+	h.previewWidth = max(16, min(h.previewWidth, 1024));
+	h.previewScale = max(1, min(h.previewScale, 8));
+
+	// 패널 폭에 맞게 배율을 줄인다 (정한 배율이 크면 잘리기 때문)
+	const int fitScale = max(1, (int)((ImGui::GetContentRegionAvail().x - 20.0f) / (float)h.previewWidth));
+	const int drawScale = min(h.previewScale, fitScale);
+
+	wstring atlasName = atlasNameForId(h, b.fontTable);
+	HangulPreviewAtlas* pa = atlasName.empty() ? NULL : ensurePreviewAtlas(pD3dDevice, archive, h, atlasName);
+	vector<string> texts;
+	map<string, vector<string> >::iterator found = h.textsByName.find(b.name);
+	if (found != h.textsByName.end()) {
+		texts = found->second;
+	}
+	else if (!b.initialText.empty()) {
+		texts.push_back(b.initialText);
+	}
+	if (pa == NULL) {
+		ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
+		ImGui::TextWrapped("%s", u8"폰트 아틀라스를 지정하면(번호가 있는 폰트 아틀라스) 그 폰트 아틀라스로 그려 보여 줍니다");
+		ImGui::PopStyleColor();
+	}
+	if (texts.empty()) {
+		ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
+		ImGui::TextWrapped("%s", u8"문구가 없습니다 (텍스트 흐름을 추출하면 이벤트가 넣는 문구도 나옵니다)");
+		ImGui::PopStyleColor();
+	}
+	ImGui::BeginChild("##texts", ImVec2(0.0f, 0.0f), ImGuiChildFlags_Border);
+	for (size_t i = 0; i < texts.size(); i++) {
+		ImGui::PushID((int)i);
+		if (pa != NULL) {
+			drawPreview(pD3dDevice, *pa, texts[i], h.previewWidth, drawScale);
+		}
+		ImGui::TextDisabled("%s", oneLine(texts[i]).c_str());
+		ImGui::Spacing();
+		ImGui::PopID();
+	}
+	ImGui::EndChild();
 }

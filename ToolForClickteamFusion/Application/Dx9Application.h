@@ -45,6 +45,7 @@ namespace CTT {
 			void renderShellNav(float x, float y, float w, float h);
 			void renderShellWork(float x, float y, float w, float h);
 			void renderShellBottom(float x, float y, float w, float h);
+			void renderShellSide(float x, float y, float w, float h);
 			void renderShellStepDiagnose();
 			void renderShellStepExtract();
 			void renderShellStepText();
@@ -60,6 +61,8 @@ namespace CTT {
 			void renderDiagnosisSuggestModal();
 			// 한글화 도구 (글꼴·글자 단계 화면 안에서 그린다), Dx9Application_Hangul.cpp
 			void renderHangulToolContent();
+			void renderHangulBlitterInspector();
+			void renderHangulBlitterPreview();
 			void renderHangulAtlasTab();
 			void renderHangulBlitterTab();
 			void renderHangulModuleTab();

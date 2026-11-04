@@ -223,9 +223,16 @@ void Dx9Application::renderShell()
 	const float middleTop = top + statusHeight;
 	const float middleHeight = height - middleTop - bottomHeight;
 
+	// 오른쪽 패널(인스펙터, 미리보기)은 선택한 항목의 상세를 보여 주는 단계에서만 연다
+	const bool showSide = (shell.step == SHELL_STEP_FONT);
+	const float sideWidth = showSide ? fontSize * 21.0f : 0.0f;
+
 	renderShellStatus(0.0f, top, width, statusHeight);
 	renderShellNav(0.0f, middleTop, navWidth, middleHeight);
-	renderShellWork(navWidth, middleTop, width - navWidth, middleHeight);
+	renderShellWork(navWidth, middleTop, width - navWidth - sideWidth, middleHeight);
+	if (showSide) {
+		renderShellSide(width - sideWidth, middleTop, sideWidth, middleHeight);
+	}
 	renderShellBottom(0.0f, height - bottomHeight, width, bottomHeight);
 
 	if (shell.suggestDiagnosis) {
@@ -385,6 +392,27 @@ void Dx9Application::renderShellWork(float x, float y, float w, float h)
 			case SHELL_STEP_SCRIPT_JSON: renderShellStepScriptJson(); break;
 			default: break;
 		}
+	}
+	ImGui::End();
+	ImGui::PopStyleVar();
+}
+
+
+// 오른쪽 패널: 위는 인스펙터(선택한 항목의 상세), 아래는 미리보기
+void Dx9Application::renderShellSide(float x, float y, float w, float h)
+{
+	ImGui::SetNextWindowPos(ImVec2(x, y), ImGuiCond_Always);
+	ImGui::SetNextWindowSize(ImVec2(w, h), ImGuiCond_Always);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10.0f, 8.0f));
+	if (ImGui::Begin("##shell_side", NULL, kPanelFlags | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
+		const float inspectorHeight = h * 0.46f;
+		ImGui::TextDisabled(u8"인스펙터");
+		ImGui::BeginChild("##inspector", ImVec2(0.0f, inspectorHeight - ImGui::GetTextLineHeightWithSpacing() - 6.0f), false);
+		renderHangulBlitterInspector();
+		ImGui::EndChild();
+		ImGui::Separator();
+		ImGui::TextDisabled(u8"미리보기");
+		renderHangulBlitterPreview();
 	}
 	ImGui::End();
 	ImGui::PopStyleVar();

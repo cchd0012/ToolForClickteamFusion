@@ -39,7 +39,14 @@ namespace CTT {
 			bool selected;
 			bool dirty;
 			wstring jsonPath;
-			HangulBlitterItem() : index(0), fontTable(0), pixel(false), selected(false), dirty(false) {}
+			// 인스펙터에 보이는 오브젝트 옵션 (오브젝트 JSON 의 textBlitter)
+			vector<string> flagNames;		// 옵션 플래그 이름 (ESCAPE, CHAR_EVENT, 0x4000 ...)
+			INT32 cellWidth;
+			INT32 cellHeight;
+			INT32 imageHandle;
+			INT32 imageWidth;
+			INT32 imageHeight;
+			HangulBlitterItem() : index(0), fontTable(0), pixel(false), selected(false), dirty(false), cellWidth(0), cellHeight(0), imageHandle(0), imageWidth(0), imageHeight(0) {}
 		};
 
 		// 미리보기에 쓰는 아틀라스: 글자표 + D3D 텍스처

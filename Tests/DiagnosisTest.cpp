@@ -208,6 +208,29 @@ int main()
 		check(statusOf(result, "extract") == "warn", "missing flow is reported");
 	}
 
+	// 8) 데이터가 여러 파일로 나뉜 게임
+	{
+		DiagnosisInput in = baseInput();
+		buildDiagnosis(in, result);
+		check(statusOf(result, "related") == "ok", "single archive is fine");
+
+		in.relatedArchives.push_back("part2.ccn");
+		in.relatedArchives.push_back("Data/extra.dat");
+		buildDiagnosis(in, result);
+		check(statusOf(result, "related") == "warn", "other archives in the folder are reported");
+		check(findItem(result, "related")->get("detail", "").asString().find("part2.ccn, Data/extra.dat") != string::npos, "related archive names are listed");
+		check(guideHas(result, "각각 열어서 추출"), "guide mentions the other archives");
+
+		in.relatedArchives.clear();
+		in.subApplicationCount = 2;
+		buildDiagnosis(in, result);
+		check(statusOf(result, "related") == "unknown", "sub applications without files are unknown");
+
+		in.hasScript = false;
+		buildDiagnosis(in, result);
+		check(statusOf(result, "related") == "info", "sub applications are not counted without script");
+	}
+
 	if (failureCount == 0) {
 		printf("DiagnosisTest: all checks passed\n");
 		return 0;

@@ -70,6 +70,10 @@ namespace CTT {
 			int blitterCount;				// 텍스트 블리터(TLBT)
 			int blittersAssigned;			// 글자표를 배정한 블리터
 
+			// 데이터가 여러 파일로 나뉜 게임: 서브 애플리케이션 오브젝트(식별자 "CCA ")와 같은 폴더의 다른 아카이브 후보
+			int subApplicationCount;
+			vector<string> relatedArchives;	// 이 아카이브 말고 아카이브로 보이는 파일 (UTF-8, 게임 폴더 기준 이름)
+
 			// txtblt 모듈
 			bool txtbltFound;
 			string txtbltName;				// 파일 이름 (UTF-8)
@@ -83,7 +87,7 @@ namespace CTT {
 
 			DiagnosisInput() : build(0), codepageKnown(false), codepage(0), localeKnown(false), locale(0),
 				folderExists(false), hasScript(false), hasText(false), hasFlow(false), hasImage(false),
-				objectScriptCount(0), blitterCount(0), blittersAssigned(0),
+				objectScriptCount(0), blitterCount(0), blittersAssigned(0), subApplicationCount(0),
 				txtbltFound(false), txtbltSize(0), txtbltHasKfont(false), txtbltHasKfold(false) {}
 		};
 

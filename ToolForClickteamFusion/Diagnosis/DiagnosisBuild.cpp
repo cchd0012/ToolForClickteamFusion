@@ -108,6 +108,22 @@ void CTT::Diagnosis::buildDiagnosis(const DiagnosisInput& in, Json::Value& out)
 		}
 	}
 
+	// 이 게임이 여러 아카이브 파일로 나뉘어 있는가
+	const int relatedCount = (int)in.relatedArchives.size();
+	if (relatedCount > 0) {
+		string names = join(in.relatedArchives, ", ");
+		addItem(items, "related", "warn", u8"관련 아카이브", u8"같은 폴더에 아카이브로 보이는 파일이 " + to_string(relatedCount) + u8"개 더 있습니다: " + names + u8". 데이터가 여러 파일로 나뉜 게임이면 파일마다 따로 열어서 추출하고 교체해야 합니다. 이 진단은 지금 연 파일만 본 결과입니다.", DIAG_STEP_NONE);
+	}
+	else if (in.hasScript && in.subApplicationCount > 0) {
+		addItem(items, "related", "unknown", u8"관련 아카이브", u8"서브 애플리케이션 오브젝트가 " + to_string(in.subApplicationCount) + u8"개 있지만 같은 폴더에서 다른 아카이브를 찾지 못했습니다. 이 파일 안에 들어 있거나 다른 위치에 있을 수 있습니다.", DIAG_STEP_NONE);
+	}
+	else if (!in.hasScript) {
+		addItem(items, "related", "info", u8"관련 아카이브", u8"같은 폴더에서 다른 아카이브를 찾지 못했습니다. 스크립트를 추출하지 않아 서브 애플리케이션은 세지 못했습니다.", DIAG_STEP_NONE);
+	}
+	else {
+		addItem(items, "related", "ok", u8"관련 아카이브", u8"같은 폴더에서 다른 아카이브를 찾지 못했고 서브 애플리케이션도 없습니다. 이 파일 하나로 구성된 것으로 보입니다.", DIAG_STEP_NONE);
+	}
+
 	// 글자를 그리는 방식
 	const string blitterHead = u8"텍스트 블리터 " + to_string(in.blitterCount) + u8"개. ";
 	if (!in.hasScript) {
@@ -251,6 +267,9 @@ void CTT::Diagnosis::buildDiagnosis(const DiagnosisInput& in, Json::Value& out)
 	}
 	addGuide(guide, u8"이벤트 문자열과 오브젝트 문자열을 번역합니다", DIAG_STEP_TEXT);
 	addGuide(guide, codepageOk ? u8"재합성합니다" : u8"코드페이지 949, 로케일 1042로 바꾸고 재합성합니다", DIAG_STEP_REBUILD);
+	if (relatedCount > 0) {
+		addGuide(guide, u8"같은 폴더의 다른 아카이브(" + join(in.relatedArchives, ", ") + u8")도 각각 열어서 추출, 진단, 교체합니다", DIAG_STEP_NONE);
+	}
 	addGuide(guide, u8"게임 화면에서 확인합니다", DIAG_STEP_CHECK);
 
 	int warnCount = 0;

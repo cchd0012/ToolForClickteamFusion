@@ -2,6 +2,7 @@
 #include "../Archive/Archive.h"
 #include "../Util/CommonUtil.h"
 
+#include <cwctype>
 #include <fstream>
 #include <memory>
 #include <sstream>
@@ -39,6 +40,55 @@ namespace {
 		} while (FindNextFileW(handle, &data));
 		FindClose(handle);
 		return result;
+	}
+
+	// 파일 앞 4바이트
+	bool readFirstWord(const wstring& path, UINT32& word)
+	{
+		ifstream file(path.c_str(), ios::binary);
+		if (!file) {
+			return false;
+		}
+		file.read((char*)&word, sizeof(word));
+		return file.gcount() == (streamsize)sizeof(word);
+	}
+
+	// 게임 폴더(와 그 아래 Data)에서 이 아카이브 말고 Fusion 아카이브로 보이는 파일을 찾는다.
+	// .ccn 은 맨 앞이 "PAMU"/"PAME", .dat 은 맨 앞이 0x77777777 이다 (exe 는 겉만 봐서는 알 수 없어 세지 않는다)
+	void scanRelatedArchives(const wstring& archivePath, const wstring& archiveDir, vector<string>& out)
+	{
+		const wstring dirs[2] = { archiveDir, archiveDir + L"\\Data" };
+		const wchar_t* labels[2] = { L"", L"Data/" };
+		const wchar_t* patterns[2] = { L"*.ccn", L"*.dat" };
+		for (int d = 0; d < 2; d++) {
+			if (!dirExists(dirs[d])) {
+				continue;
+			}
+			for (int k = 0; k < 2; k++) {
+				vector<wstring> files = findFiles(dirs[d], patterns[k]);
+				for (size_t i = 0; i < files.size(); i++) {
+					if (_wcsicmp(files[i].c_str(), archivePath.c_str()) == 0) {
+						continue;
+					}
+					size_t slash = files[i].find_last_of(L"\\/");
+					wstring name = files[i].substr((slash == wstring::npos) ? 0 : slash + 1);
+					// 이 도구가 만든 결과물(_new)은 뺀다
+					wstring lowered = name;
+					for (size_t c = 0; c < lowered.size(); c++) { lowered[c] = (wchar_t)towlower(lowered[c]); }
+					if (lowered.find(L"_new.") != wstring::npos) {
+						continue;
+					}
+					UINT32 word = 0;
+					if (!readFirstWord(files[i], word)) {
+						continue;
+					}
+					bool isArchive = (k == 0) ? (word == 0x554D4150 || word == 0x454D4150) : (word == 0x77777777);
+					if (isArchive) {
+						out.push_back(getAnsiStr(wstring(labels[d]) + name, CodePage::CP_UTF_8));
+					}
+				}
+			}
+		}
 	}
 
 	bool readWholeFile(const wstring& path, string& content, size_t limit)
@@ -151,11 +201,23 @@ bool CTT::Diagnosis::collectDiagnosisInput(CTT::Archive::Archive* archive, Diagn
 		in.objectScriptCount = (int)files.size();
 		for (size_t i = 0; i < files.size(); i++) {
 			string content;
-			if (!readWholeFile(files[i], content, 4u * 1024u * 1024u) || content.find("\"TLBT\"") == string::npos) {
+			if (!readWholeFile(files[i], content, 4u * 1024u * 1024u)) {
+				continue;
+			}
+			bool maybeBlitter = content.find("\"TLBT\"") != string::npos;
+			bool maybeSubApplication = content.find("\"CCA \"") != string::npos;
+			if (!maybeBlitter && !maybeSubApplication) {
 				continue;
 			}
 			Json::Value value;
-			if (!parseJsonText(content, value) || value.get("identifier", "").asString() != "TLBT" || !value.isMember("textBlitter")) {
+			if (!parseJsonText(content, value)) {
+				continue;
+			}
+			if (value.get("identifier", "").asString() == "CCA ") {
+				in.subApplicationCount++;
+				continue;
+			}
+			if (value.get("identifier", "").asString() != "TLBT" || !value.isMember("textBlitter")) {
 				continue;
 			}
 			in.blitterCount++;
@@ -164,6 +226,9 @@ bool CTT::Diagnosis::collectDiagnosisInput(CTT::Archive::Archive* archive, Diagn
 			}
 		}
 	}
+
+	// 데이터가 여러 파일로 나뉜 게임인지 (같은 폴더의 다른 아카이브 후보)
+	scanRelatedArchives(archivePath, archiveDir, in.relatedArchives);
 
 	// txtblt 모듈: 추출한 modules 폴더(exe) 또는 게임 폴더의 외부 모듈 위치
 	const wstring moduleDirs[4] = { baseDir + L"/modules", archiveDir + L"/Data/Modules", archiveDir + L"/Extensions", archiveDir };

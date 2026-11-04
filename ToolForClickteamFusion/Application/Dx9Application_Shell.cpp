@@ -596,11 +596,13 @@ void Dx9Application::renderShellStepDiagnose()
 		ImGui::Indent(96.0f);
 		ImGui::TextWrapped("%s", item["detail"].asString().c_str());
 		ImGui::Unindent(96.0f);
+		// 항목 사이에 얇은 구분선 (마지막 항목 뒤에는 아래의 구분선이 있다)
+		ImGui::Spacing();
+		ImGui::Separator();
 		ImGui::Spacing();
 		ImGui::PopID();
 	}
 
-	ImGui::Separator();
 	ImGui::Spacing();
 	ImGui::Text(u8"진행 방향");
 	ImGui::Spacing();
@@ -618,6 +620,9 @@ void Dx9Application::renderShellStepDiagnose()
 			if (ImGui::SmallButton(u8"이동")) {
 				shell.step = step;
 			}
+		}
+		if (i + 1 < guide.size()) {
+			ImGui::Separator();
 		}
 		ImGui::PopID();
 	}

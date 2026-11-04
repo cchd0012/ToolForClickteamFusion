@@ -11,6 +11,7 @@
 #   PARSER   유니코드 파서 모듈 (Extensions/ParserUnicode/build_parser_unicode.bat 로 만든 parser.mfx)
 #   TRANS    번역 폴더: frameEventText.json, objectText.json (추출된 것과 같은 형식에 translation 을 채운 것)
 #   작업 폴더는 지우고 다시 만든다 (원본 exe 는 건드리지 않는다)
+#   NODAMAGE  (선택) 값이 비어 있지 않으면 시험용으로 플레이어 HP 가 닳지 않게 한다 (patch_nodamage.py). 배포용 빌드에는 쓰지 않는다
 set -e
 
 : "${TOOL:?TOOL 에 도구 exe 경로를 지정하세요}"
@@ -41,6 +42,11 @@ python "$HERE/apply_ko_fonts.py" dtge "$EX_FONT" | tail -1
 echo "== 3. 번역 json 넣기"
 cp "$TRANS/frameEventText.json" dtge/text/frameEventText.json
 cp "$TRANS/objectText.json" dtge/text/objectText.json
+
+if [ -n "$NODAMAGE" ]; then
+	echo "== 3-1. (시험용) 플레이어 HP 가 닳지 않게 하기"
+	python "$HERE/patch_nodamage.py" dtge | head -1
+fi
 
 echo "== 4. 글자 이미지 만들기 (대사 글자)"
 # 이미지 교체는 image 폴더의 PNG 를 모두 다시 읽으므로 원본 PNG 는 지운다. 000953.png(파티클 문구 글꼴 이미지)만 남긴다

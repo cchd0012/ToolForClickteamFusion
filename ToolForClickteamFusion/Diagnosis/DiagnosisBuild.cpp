@@ -188,6 +188,9 @@ void CTT::Diagnosis::buildDiagnosis(const DiagnosisInput& in, Json::Value& out)
 	if (!in.hasScript) {
 		addItem(items, "glyph", "unknown", u8"글자 방식", u8"스크립트를 추출하지 않아 글자 오브젝트를 알 수 없습니다.", DIAG_STEP_EXTRACT);
 	}
+	else if (in.objectScriptCount == 0) {
+		addItem(items, "glyph", "info", u8"글자 방식", u8"이 파일에는 오브젝트가 없습니다. 이미지나 사운드 같은 리소스만 담은 파일일 수 있습니다. 글자를 그리는 오브젝트는 다른 아카이브에 있을 수 있습니다.", DIAG_STEP_NONE);
+	}
 	else if (in.blitterCount == 0) {
 		addItem(items, "glyph", "ok", u8"글자 방식", u8"텍스트 블리터가 없습니다. 일반 텍스트 오브젝트는 폰트 교체로 처리합니다.", DIAG_STEP_FONT);
 	}

@@ -208,6 +208,16 @@ int main()
 		check(statusOf(result, "extract") == "warn", "missing flow is reported");
 	}
 
+	// 7-1) 오브젝트가 없는 리소스 전용 파일
+	{
+		DiagnosisInput in = baseInput();
+		in.objectScriptCount = 0;
+		in.blitterCount = 0;
+		buildDiagnosis(in, result);
+		check(statusOf(result, "glyph") == "info", "a file without objects is not judged");
+		check(findItem(result, "glyph")->get("detail", "").asString().find("다른 아카이브") != string::npos, "points to other archives");
+	}
+
 	// 8) 데이터가 여러 파일로 나뉜 게임
 	{
 		DiagnosisInput in = baseInput();

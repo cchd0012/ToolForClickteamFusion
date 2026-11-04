@@ -21,7 +21,12 @@ namespace CTT {
 			bool isCondition;
 			bool matched;				// 찾는 조건에 맞은 줄
 			string text;				// UTF-8
-			EventSearchLine() : isCondition(false), matched(false) {}
+			int eventIndex;				// 그룹 안의 조건/동작 배열에서의 위치
+			vector<int> exprParams;		// 맞은 줄의 식(expression) 파라미터 위치 (숫자로 바꿀 수 있다)
+			vector<string> exprTexts;	// 그 식의 글자
+			int editValue;				// 식을 바꿀 숫자 (입력 칸)
+			string note;				// 바꾼 결과 안내
+			EventSearchLine() : isCondition(false), matched(false), eventIndex(0), editValue(0) {}
 		};
 
 		struct EventSearchResult

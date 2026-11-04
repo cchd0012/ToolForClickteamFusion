@@ -264,6 +264,104 @@ namespace {
 		return "";
 	}
 
+	// 이벤트(조건 또는 동작)의 식(expression) 파라미터 위치와 글자를 모은다
+	void collectExpressionParams(const Json::Value& e, vector<int>& indices, vector<string>& texts)
+	{
+		const Json::Value& params = e["params"];
+		for (Json::ArrayIndex i = 0; i < params.size(); i++) {
+			if (params[i].get("kind", "").asString() == "expression") {
+				indices.push_back((int)i);
+				string text = params[i].get("text", "").asString();
+				if (text.size() > 70) {
+					text.resize(70);
+					text += "...";
+				}
+				texts.push_back(text);
+			}
+		}
+	}
+
+	void collectGroupsMutable(Json::Value& node, vector<Json::Value*>& out)
+	{
+		if (node.isObject()) {
+			// 쓰기용 operator[] 는 없는 키를 null 로 만들어 넣으므로, 먼저 isMember 로 확인한다
+			if (node.isMember("conditions") && node["conditions"].isArray() && node.isMember("actions") && node["actions"].isArray()) {
+				out.push_back(&node);
+			}
+			for (Json::Value::iterator it = node.begin(); it != node.end(); ++it) {
+				if ((*it).isObject() || (*it).isArray()) {
+					collectGroupsMutable(*it, out);
+				}
+			}
+		}
+		else if (node.isArray()) {
+			for (Json::ArrayIndex i = 0; i < node.size(); i++) {
+				collectGroupsMutable(node[i], out);
+			}
+		}
+	}
+
+	// 프레임 JSON 의 한 이벤트의 식 하나를 숫자 하나로 바꿔 저장한다. 처음 고칠 때 원본을 script/backup 에 둔다
+	bool replaceExpressionWithNumber(const wstring& baseDir, int frame, int groupLine, int groupUid, bool isCondition, int eventIndex, int paramIndex, int value, string& message)
+	{
+		wchar_t fileName[32];
+		swprintf_s(fileName, L"%06d.json", frame);
+		const wstring path = baseDir + L"\\script\\frame\\" + fileName;
+		const wstring backupDir = baseDir + L"\\script\\backup";
+		createDirectoryRecursively(backupDir);
+		CopyFileW(path.c_str(), (backupDir + L"\\" + fileName).c_str(), TRUE);		// 이미 있으면 그대로 둔다 (가장 처음 원본을 지킨다)
+
+		Json::Value root;
+		wstring readPath = path;
+		if (!readFromJson(root, readPath)) {
+			message = u8"프레임 JSON 을 읽지 못했습니다";
+			return false;
+		}
+		vector<Json::Value*> groups;
+		collectGroupsMutable(root, groups);
+		for (size_t g = 0; g < groups.size(); g++) {
+			Json::Value& group = *groups[g];
+			if (group.get("uid", -1).asInt() != groupUid || group.get("line", -1).asInt() != groupLine) {
+				continue;
+			}
+			Json::Value& events = group[isCondition ? "conditions" : "actions"];
+			if (eventIndex < 0 || eventIndex >= (int)events.size()) {
+				message = u8"이벤트의 위치가 달라졌습니다. 다시 찾아 주세요";
+				return false;
+			}
+			Json::Value& eventNode = events[(Json::ArrayIndex)eventIndex];
+			if (!eventNode.isMember("params")) {
+				message = u8"그 이벤트에 파라미터가 없습니다. 다시 찾아 주세요";
+				return false;
+			}
+			Json::Value& params = eventNode["params"];
+			if (!params.isArray() || paramIndex < 0 || paramIndex >= (int)params.size() || params[(Json::ArrayIndex)paramIndex].get("kind", "").asString() != "expression") {
+				message = u8"그 파라미터가 식이 아닙니다. 다시 찾아 주세요";
+				return false;
+			}
+			Json::Value& expression = params[(Json::ArrayIndex)paramIndex];
+			Json::Value token(Json::objectValue);
+			token["kind"] = "long";
+			token["num"] = 0;
+			token["objectType"] = -1;
+			token["value"] = value;
+			Json::Value tokens(Json::arrayValue);
+			tokens.append(token);
+			expression["tokens"] = tokens;
+			expression["text"] = to_string(value);
+			expression.removeMember("tail");
+			wstring writePath = path;
+			if (!writeIntoJson(root, writePath, 700)) {
+				message = u8"프레임 JSON 을 저장하지 못했습니다";
+				return false;
+			}
+			message = string(u8"식을 ") + to_string(value) + u8"(으)로 바꿔 저장했습니다. 3.교체의 '스크립트'로 반영하세요 (원본은 script/backup 에 있습니다)";
+			return true;
+		}
+		message = u8"이벤트 그룹을 찾지 못했습니다 (스크립트를 다시 추출했다면 다시 찾아 주세요)";
+		return false;
+	}
+
 	// 이 게임에 쓰인 (조건/동작, 오브젝트 종류, 번호) 마다 한 줄로 센다
 	void addKind(map<string, EventKindRow>& rows, const Json::Value& e, bool isCondition, int frame)
 	{
@@ -428,6 +526,10 @@ namespace {
 					line.isCondition = true;
 					line.matched = condMatched[i] != 0;
 					line.text = eventLine(conditions[i], true);
+					line.eventIndex = (int)i;
+					if (line.matched) {
+						collectExpressionParams(conditions[i], line.exprParams, line.exprTexts);
+					}
 					result.lines.push_back(line);
 				}
 				for (Json::ArrayIndex i = 0; i < actions.size(); i++) {
@@ -440,6 +542,10 @@ namespace {
 					line.isCondition = false;
 					line.matched = actMatched[i] != 0;
 					line.text = eventLine(actions[i], false);
+					line.eventIndex = (int)i;
+					if (line.matched) {
+						collectExpressionParams(actions[i], line.exprParams, line.exprTexts);
+					}
 					result.lines.push_back(line);
 				}
 				// 맞은 이벤트에 뜻을 아는 것이 있으면 안내를 붙인다
@@ -721,11 +827,11 @@ void Dx9Application::renderShellStepEventSearch()
 	if (!s.results.empty()) {
 		ImGui::Spacing();
 		ImGui::SeparatorText(u8"찾은 이벤트");
-		ImGui::TextDisabled(u8"고치려면 해당 프레임의 JSON(script/frame/<프레임 번호 6자리>.json)에서 그 동작을 찾아 고치고, 3.교체의 '스크립트'로 재합성하세요. 번호 뒤 괄호의 이름은 이 도구가 확인한 것만 붙습니다.");
+		ImGui::TextDisabled(u8"맞은 줄(>)에 식이 있으면 [숫자로 바꾸기]로 바로 고칠 수 있습니다. 고친 뒤에는 3.교체의 '스크립트'로 재합성하세요. 번호 뒤 괄호의 이름은 이 도구가 확인한 것만 붙습니다.");
 	}
 
 	for (size_t i = 0; i < s.results.size(); i++) {
-		const EventSearchResult& r = s.results[i];
+		EventSearchResult& r = s.results[i];
 		char label[160];
 		sprintf_s(label, u8"프레임 %d  ·  이벤트 줄 %d  ·  그룹 uid %d###res%d", r.frame, r.line, r.uid, (int)i);
 		if (s.results.size() <= 12) {
@@ -733,7 +839,7 @@ void Dx9Application::renderShellStepEventSearch()
 		}
 		if (ImGui::CollapsingHeader(label)) {
 			for (size_t k = 0; k < r.lines.size(); k++) {
-				const EventSearchLine& line = r.lines[k];
+				EventSearchLine& line = r.lines[k];
 				ImVec4 color = line.matched ? kMatchColor : (line.isCondition ? kConditionColor : ImGui::GetStyleColorVec4(ImGuiCol_Text));
 				if (!line.matched) {
 					color.w = 0.78f;
@@ -741,6 +847,32 @@ void Dx9Application::renderShellStepEventSearch()
 				ImGui::PushStyleColor(ImGuiCol_Text, color);
 				ImGui::TextWrapped("%s%s", line.matched ? u8"> " : "   ", line.text.c_str());
 				ImGui::PopStyleColor();
+				// 맞은 줄의 식은 숫자 하나로 바꿀 수 있다
+				for (size_t q = 0; q < line.exprParams.size(); q++) {
+					ImGui::PushID((int)(i * 4096 + k * 16 + q));
+					ImGui::TextDisabled(u8"      파라미터 %d 의 식: %s", line.exprParams[q] + 1, line.exprTexts[q].c_str());
+					ImGui::SameLine();
+					ImGui::SetNextItemWidth(ImGui::GetFontSize() * 6.0f);
+					ImGui::InputInt("##value", &line.editValue, 0);
+					ImGui::SameLine();
+					if (ImGui::SmallButton(u8"숫자로 바꾸기")) {
+						string message;
+						wstring archivePath = archive->getArchivePath();
+						const bool ok = replaceExpressionWithNumber(getExtentionRemovedPath(archivePath), r.frame, r.line, r.uid, line.isCondition, line.eventIndex, line.exprParams[q], line.editValue, message);
+						line.note = message;
+						if (ok) {
+							line.exprTexts[q] = to_string(line.editValue);
+							addShellLog(ShellLogLevel::Info, string(u8"이벤트 찾기: 프레임 ") + to_string(r.frame) + u8" 의 식을 " + to_string(line.editValue) + u8"(으)로 바꿨습니다");
+						}
+					}
+					if (ImGui::IsItemHovered()) {
+						ImGui::SetTooltip(u8"이 식 전체를 입력한 숫자 하나로 바꿔 프레임 JSON 에 저장합니다.\\n처음 고칠 때 원본을 script/backup 에 두고, 다시 추출하면 원래대로 돌아갑니다.\\n게임에 넣으려면 3.교체의 '스크립트'로 재합성하세요");
+					}
+					ImGui::PopID();
+				}
+				if (!line.note.empty()) {
+					ImGui::TextColored(kHintColor, "      %s", line.note.c_str());
+				}
 			}
 			if (r.hiddenLines > 0) {
 				ImGui::TextDisabled(u8"   ...(맞지 않는 %d줄은 줄였습니다)", r.hiddenLines);

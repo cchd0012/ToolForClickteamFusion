@@ -37,6 +37,8 @@ bool ImageDataChunk::exportImageList(wstring& exportJsonPath)
 		item["handle"] = image->getHandle();
 		item["width"] = image->getWidth();
 		item["height"] = image->getHeight();
+		item["hotspotX"] = (int)(INT16)image->getHotSpotX();
+		item["hotspotY"] = (int)(INT16)image->getHotSpotY();
 		item["graphicMode"] = image->getGraphicMode();
 		item["flags"] = image->getFlags();
 		wostringstream fileName;

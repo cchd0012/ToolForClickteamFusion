@@ -373,6 +373,57 @@ static FrameNameChunk* findFrameNameChunk(vector<CTT::Chunk::Chunk*>& chunkList)
 }
 
 
+// 프레임의 화면 배치(크기, 배경색, 오브젝트 인스턴스 위치)를 JSON 으로 만든다. 보기 전용이라 리컴파일은 이 값을 쓰지 않는다
+// 인스턴스 청크(0x3338): [개수 i32] + 20바이트 항목 (핸들 u16, 오브젝트 번호 u16, x i32, y i32, 부모 종류 i16, 레이어 i16, 인스턴스 i16, 부모 핸들 i16)
+static void decompileFrameLayout(vector<CTT::Chunk::Chunk*>& chunkList, Json::Value& value)
+{
+	Json::Value layout(Json::objectValue);
+	for (size_t i = 0; i < chunkList.size(); i++) {
+		if (chunkList[i]->getType() == ChunkType::CHUNK_FRAME_HEADER) {
+			FrameHeaderChunk* header = dynamic_cast<FrameHeaderChunk*>(chunkList[i]);
+			if (header != NULL) {
+				layout["width"] = (Json::UInt)header->getValue().width;
+				layout["height"] = (Json::UInt)header->getValue().height;
+				Json::Value background(Json::arrayValue);
+				background.append((int)header->getValue().bgColor.r);
+				background.append((int)header->getValue().bgColor.g);
+				background.append((int)header->getValue().bgColor.b);
+				layout["background"] = background;
+			}
+		}
+		else if (chunkList[i]->getType() == ChunkType::CHUNK_FRAME_OBJECT_INSTANCE) {
+			UnknownChunk* raw = dynamic_cast<UnknownChunk*>(chunkList[i]);
+			if (raw == NULL || raw->getValue() == NULL || raw->getValueSize() < 4) {
+				continue;
+			}
+			const BYTE* data = raw->getValue();
+			INT32 count = *(const INT32*)data;
+			Json::Value instances(Json::arrayValue);
+			for (INT32 n = 0; n < count; n++) {
+				size_t offset = 4 + (size_t)n * 20;
+				if (offset + 20 > raw->getValueSize()) {
+					break;
+				}
+				const BYTE* p = data + offset;
+				Json::Value instance(Json::objectValue);
+				instance["handle"] = (int)*(const UINT16*)(p + 0);
+				instance["objectInfo"] = (int)*(const UINT16*)(p + 2);
+				instance["x"] = (int)*(const INT32*)(p + 4);
+				instance["y"] = (int)*(const INT32*)(p + 8);
+				instance["parentType"] = (int)*(const INT16*)(p + 12);
+				instance["layer"] = (int)*(const INT16*)(p + 14);
+				instance["instance"] = (int)*(const INT16*)(p + 16);
+				instance["parentHandle"] = (int)*(const INT16*)(p + 18);
+				instances.append(instance);
+			}
+			layout["instances"] = instances;
+		}
+	}
+	if (layout.size() > 0) {
+		value["layout"] = layout;
+	}
+}
+
 bool FrameChunk::decompileScript(UINT32 frameIndex, const FrameEventScriptContext& context, Json::Value& value)
 {
 	value = Json::Value(Json::objectValue);
@@ -384,6 +435,8 @@ bool FrameChunk::decompileScript(UINT32 frameIndex, const FrameEventScriptContex
 	if (nameChunk != NULL) {
 		value["name"] = getAnsiStr(nameChunk->getValue(), CodePage::CP_UTF_8);
 	}
+
+	decompileFrameLayout(chunkList, value);
 
 	FrameEventChunk* eventChunk = findFrameEventChunk(chunkList);
 	if (eventChunk != NULL) {

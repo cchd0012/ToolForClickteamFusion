@@ -62,4 +62,5 @@ void Dx9Application::closeArchive()
 	hangul.blitters.clear();
 	hangul.atlases.clear();
 	hangul.releaseTextures();
+	check.reset();
 }

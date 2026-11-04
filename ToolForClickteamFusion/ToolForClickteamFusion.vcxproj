@@ -145,6 +145,7 @@
     <ClCompile Include="Application\Dx9Application_Render.cpp" />
     <ClCompile Include="Application\Dx9Application_Hangul.cpp" />
     <ClCompile Include="Application\Dx9Application_Shell.cpp" />
+    <ClCompile Include="Application\Dx9Application_Check.cpp" />
     <ClCompile Include="Diagnosis\Diagnosis.cpp" />
     <ClCompile Include="Diagnosis\DiagnosisBuild.cpp" />
     <ClCompile Include="archive\Archive.cpp" />
@@ -296,6 +297,7 @@
     <ClInclude Include="Application\Dx9Application.h" />
     <ClInclude Include="Application\HangulUi.h" />
     <ClInclude Include="Application\ShellUi.h" />
+    <ClInclude Include="Application\CheckUi.h" />
     <ClInclude Include="Diagnosis\Diagnosis.h" />
     <ClInclude Include="archive\Archive.h" />
     <ClInclude Include="archive\ArchiveConstant.h" />

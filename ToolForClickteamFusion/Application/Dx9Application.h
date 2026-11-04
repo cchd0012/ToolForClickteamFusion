@@ -4,6 +4,7 @@
 #include "../ImGUI/Headers.h"
 #include "HangulUi.h"
 #include "ShellUi.h"
+#include "CheckUi.h"
 
 namespace CTT {
 
@@ -53,6 +54,7 @@ namespace CTT {
 			void renderShellStepImage();
 			void renderShellStepRebuild();
 			void renderShellStepCheck();
+			void renderCheckInspector();
 			void renderShellStepChunkTree();
 			void renderShellStepScriptJson();
 			int shellStepStatus(int step);
@@ -80,6 +82,7 @@ namespace CTT {
 			D3DPRESENT_PARAMETERS d3dPp;
 			HangulUiState hangul;
 			ShellUiState shell;
+			CheckUiState check;
 		};
 
 	}

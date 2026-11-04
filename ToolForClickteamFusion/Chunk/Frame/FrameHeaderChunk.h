@@ -12,6 +12,7 @@ namespace CTT {
 		public:
 			FrameHeaderChunk();
 			~FrameHeaderChunk();
+			FrameHeader& getValue() { return value; }
 			// 데이터 렌더링용 함수
 			void renderData();
 		protected:

@@ -44,6 +44,8 @@ namespace CTT {
 			void setWidth(UINT32 width) { info.width = (UINT16)width; }
 
 			UINT32 getHeight() { return info.height; }
+			UINT32 getHotSpotX() { return info.hotSpotX; }
+			UINT32 getHotSpotY() { return info.hotSpotY; }
 			void setHeight(UINT32 height) { info.height = (UINT16)height; }
 
 			BYTE getFlags() { return info.flags; }

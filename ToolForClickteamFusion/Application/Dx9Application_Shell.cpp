@@ -37,7 +37,7 @@ namespace {
 		{ u8"글꼴·글자", u8"한글 폰트 아틀라스를 만들고 글자 오브젝트와 게임 모듈에 적용합니다" },
 		{ u8"이미지", u8"이미지를 고치거나 추가합니다" },
 		{ u8"재합성", u8"고친 파일을 아카이브에 합쳐 새 아카이브(~_new)로 저장합니다" },
-		{ u8"확인", u8"프레임 배치도와 번역 글자 미리보기 (준비 중)" },
+		{ u8"확인", u8"프레임 배치도로 오브젝트가 놓인 모습을 봅니다" },
 		{ u8"청크 트리", u8"아카이브의 청크 구조를 봅니다" },
 		{ u8"스크립트 JSON", u8"디컴파일한 이벤트와 오브젝트 JSON을 고치고 리컴파일합니다" }
 	};
@@ -224,7 +224,7 @@ void Dx9Application::renderShell()
 	const float middleHeight = height - middleTop - bottomHeight;
 
 	// 오른쪽 패널(인스펙터, 미리보기)은 선택한 항목의 상세를 보여 주는 단계에서만 연다
-	const bool showSide = (shell.step == SHELL_STEP_FONT);
+	const bool showSide = (shell.step == SHELL_STEP_FONT || shell.step == SHELL_STEP_CHECK);
 	const float sideWidth = showSide ? fontSize * 21.0f : 0.0f;
 
 	renderShellStatus(0.0f, top, width, statusHeight);
@@ -405,14 +405,22 @@ void Dx9Application::renderShellSide(float x, float y, float w, float h)
 	ImGui::SetNextWindowSize(ImVec2(w, h), ImGuiCond_Always);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10.0f, 8.0f));
 	if (ImGui::Begin("##shell_side", NULL, kPanelFlags | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
-		const float inspectorHeight = h * 0.46f;
-		ImGui::TextDisabled(u8"인스펙터");
-		ImGui::BeginChild("##inspector", ImVec2(0.0f, inspectorHeight - ImGui::GetTextLineHeightWithSpacing() - 6.0f), false);
-		renderHangulBlitterInspector();
-		ImGui::EndChild();
-		ImGui::Separator();
-		ImGui::TextDisabled(u8"미리보기");
-		renderHangulBlitterPreview();
+		if (shell.step == SHELL_STEP_CHECK) {
+			ImGui::TextDisabled(u8"인스펙터");
+			ImGui::BeginChild("##inspector", ImVec2(0.0f, 0.0f), false);
+			renderCheckInspector();
+			ImGui::EndChild();
+		}
+		else {
+			const float inspectorHeight = h * 0.46f;
+			ImGui::TextDisabled(u8"인스펙터");
+			ImGui::BeginChild("##inspector", ImVec2(0.0f, inspectorHeight - ImGui::GetTextLineHeightWithSpacing() - 6.0f), false);
+			renderHangulBlitterInspector();
+			ImGui::EndChild();
+			ImGui::Separator();
+			ImGui::TextDisabled(u8"미리보기");
+			renderHangulBlitterPreview();
+		}
 	}
 	ImGui::End();
 	ImGui::PopStyleVar();
@@ -788,12 +796,6 @@ void Dx9Application::renderShellStepRebuild()
 		states.usingText = true;
 		states.usingScript = true;
 	}
-}
-
-
-void Dx9Application::renderShellStepCheck()
-{
-	ImGui::TextWrapped(u8"프레임 배치도와 번역한 글자의 미리보기가 이 단계에 들어옵니다. 아직 만들어지지 않았습니다.");
 }
 
 

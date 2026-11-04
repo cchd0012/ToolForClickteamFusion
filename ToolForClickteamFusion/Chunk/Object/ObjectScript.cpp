@@ -61,6 +61,8 @@ static const size_t kTextBlitterImageWidth = 0x5b8;
 static const size_t kTextBlitterImageHeight = 0x5bc;
 static const size_t kTextBlitterImageHandle = 0x5d0;			// u16. 실행 중에는 런타임이 다른 값으로 바꿔서 쓴다
 static const size_t kTextBlitterFlags = 0x5c8;					// u32 옵션 플래그. 알려진 비트는 아래 kTextBlitterFlagNames 에 있다
+static const size_t kTextBlitterTabWidth = 0x5cc;				// i32 탭 문자가 차지하는 칸 수 (읽기 전용으로 내보낸다)
+static const size_t kTextBlitterAlign = 0x1be4;				// i32 줄 정렬 (읽기 전용으로 내보낸다)
 // 옵션 플래그 이름 (txtblt.mfx 의 그리기/줄나누기 코드에서 확인한 비트만. 나머지는 "0x4000" 같은 16진수로 표시한다)
 struct TextBlitterFlagName { UINT32 bit; const char* name; };
 static const TextBlitterFlagName kTextBlitterFlagNames[] = {
@@ -283,6 +285,10 @@ bool CTT::Chunk::decompileObjectScript(INT32 index, const string& name, INT16 ob
 					}
 				}
 				blitter["flagNames"] = names;		// 읽기 전용 설명. 고칠 때는 flags(숫자)를 고친다
+			}
+			if (block.size() >= kTextBlitterAlign + 4) {
+				blitter["tabWidth"] = readBlockI32(block, kTextBlitterTabWidth);
+				blitter["align"] = readBlockI32(block, kTextBlitterAlign);		// 읽기 전용
 			}
 			if (block.size() >= kTextBlitterTextEnd) {
 				blitter["text"] = readBlitterText(block);

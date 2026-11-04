@@ -72,7 +72,7 @@ namespace CTT {
 			void renderHangulToolContent();
 			void renderHangulBlitterInspector();
 			void renderHangulBlitterPreview();
-			bool drawBlitterGlyphs(INT32 fontTable, const string& text, ImVec2 origin, float scale, int boxWidth, ImVec2& outSize);
+			bool drawBlitterGlyphs(INT32 fontTable, const string& text, ImVec2 origin, float scale, const BlitterLayout& layout, ImVec2& outSize);
 			void renderHangulAtlasTab();
 			void renderHangulBlitterTab();
 			void renderHangulModuleTab();

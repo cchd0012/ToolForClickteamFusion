@@ -368,9 +368,11 @@ namespace {
 		int line;
 	};
 
-	// 문자열을 상자 폭에 맞춰 놓는다. 게임 안의 배치(txtblt 의 layout: pixel)와 같은 규칙의 근사이다:
-	// 폭은 글자 폭(advance)의 합, 공백 뒤 단어는 통째로 다음 줄로 넘기고, 단어가 줄보다 길면 글자 단위로 끊는다
-	int layoutPreview(const FontAtlasData& atlas, const wstring& text, int boxWidth, vector<PlacedGlyph>& placed)
+	// 문자열을 상자 폭에 맞춰 놓는다. 게임 안의 배치(txtblt 의 layout)와 같은 규칙의 근사이다:
+	// 줄 폭은 pixel 방식이면 글자 폭(advance)의 합, 원래 방식이면 글자 수 x 칸 폭이다 (그리는 위치는 늘 글자 폭대로 이어 붙인다).
+	// 자동 줄바꿈이면 공백 뒤 단어는 통째로 다음 줄로 넘기고, 단어가 줄보다 길면 글자 단위로 끊는다.
+	// 줄마다 정렬(가운데, 오른쪽)을 줄 폭 기준으로 옮긴다
+	int layoutPreview(const FontAtlasData& atlas, const wstring& text, const BlitterLayout& lay, vector<PlacedGlyph>& placed)
 	{
 		struct Local
 		{
@@ -379,10 +381,18 @@ namespace {
 				map<UINT16, FontAtlasGlyph>::const_iterator it = a.glyphs.find(code);
 				return (it != a.glyphs.end()) ? (int)it->second.advance : (int)a.missingAdvance;
 			}
+			// 줄 폭을 잴 때 글자 하나가 차지하는 폭
+			static int measureOf(const FontAtlasData& a, const BlitterLayout& l, UINT16 code)
+			{
+				return l.pixel ? advanceOf(a, code) : l.cellWidth * ((code > 0xFF) ? 2 : 1);
+			}
 		};
 
+		const int boxWidth = lay.boxWidth;
 		int line = 0;
-		int x = 0;
+		int x = 0;				// 그리는 위치
+		int measured = 0;		// 줄 폭 계산에 쓰는 폭
+		vector<int> lineWidths;
 		size_t i = 0;
 		while (i < text.size()) {
 			wchar_t ch = text[i];
@@ -391,18 +401,20 @@ namespace {
 				continue;
 			}
 			if (ch == L'\n') {
+				lineWidths.push_back(measured);
 				line++;
 				x = 0;
+				measured = 0;
 				i++;
 				continue;
 			}
 			if (ch == L' ') {
 				// 줄 맨 앞의 공백은 건너뛴다
-				if (x > 0) {
-					int adv = Local::advanceOf(atlas, ' ');
+				if (measured > 0) {
 					PlacedGlyph g = { (UINT16)' ', x, line };
 					placed.push_back(g);
-					x += adv;
+					x += Local::advanceOf(atlas, ' ');
+					measured += Local::measureOf(atlas, lay, ' ');
 				}
 				i++;
 				continue;
@@ -411,25 +423,40 @@ namespace {
 			size_t j = i;
 			int wordWidth = 0;
 			while (j < text.size() && text[j] != L' ' && text[j] != L'\n' && text[j] != L'\r') {
-				wordWidth += Local::advanceOf(atlas, toCode(text[j]));
+				wordWidth += Local::measureOf(atlas, lay, toCode(text[j]));
 				j++;
 			}
-			if (x > 0 && x + wordWidth > boxWidth) {
+			if (lay.wrap && measured > 0 && measured + wordWidth > boxWidth) {
+				lineWidths.push_back(measured);
 				line++;
 				x = 0;
+				measured = 0;
 			}
 			for (size_t k = i; k < j; k++) {
 				UINT16 code = toCode(text[k]);
-				int adv = Local::advanceOf(atlas, code);
-				if (x > 0 && x + adv > boxWidth) {
+				int measure = Local::measureOf(atlas, lay, code);
+				if (lay.wrap && measured > 0 && measured + measure > boxWidth) {
+					lineWidths.push_back(measured);
 					line++;
 					x = 0;
+					measured = 0;
 				}
 				PlacedGlyph g = { code, x, line };
 				placed.push_back(g);
-				x += adv;
+				x += Local::advanceOf(atlas, code);
+				measured += measure;
 			}
 			i = j;
+		}
+		lineWidths.push_back(measured);
+
+		if (lay.align != 0) {
+			for (size_t k = 0; k < placed.size(); k++) {
+				int room = boxWidth - lineWidths[placed[k].line];
+				if (room > 0) {
+					placed[k].x += (lay.align == 1) ? room / 2 : room;
+				}
+			}
 		}
 		return line + 1;
 	}
@@ -437,10 +464,11 @@ namespace {
 	// 글자를 상자 안에 그려서 미리 보여 준다. 반환값은 그린 줄 수
 	// 문자열을 폰트 아틀라스 글자로 origin 에 그린다 (화면 좌표). background 이면 초록 바탕을 깐다.
 	// 그린 글자 전체의 크기를 outSize 로 돌려주고, 줄 수를 돌려준다
-	int drawPreviewAt(LPDIRECT3DDEVICE9 device, HangulPreviewAtlas& pa, const string& utf8Text, int boxWidth, float scale, ImVec2 origin, bool background, ImVec2* outSize)
+	int drawPreviewAt(LPDIRECT3DDEVICE9 device, HangulPreviewAtlas& pa, const string& utf8Text, const BlitterLayout& layout, float scale, ImVec2 origin, bool background, ImVec2* outSize)
 	{
+		const int boxWidth = layout.boxWidth;
 		vector<PlacedGlyph> placed;
-		int lines = layoutPreview(pa.data, fromUtf8(utf8Text), boxWidth, placed);
+		int lines = layoutPreview(pa.data, fromUtf8(utf8Text), layout, placed);
 		int lineHeight = pa.data.lineHeight;
 
 		ImDrawList* drawList = ImGui::GetWindowDrawList();
@@ -467,7 +495,7 @@ namespace {
 		}
 		drawList->AddCallback(setLinearSampler, device);
 		if (outSize != NULL) {
-			*outSize = ImVec2(background ? boxWidth * scale : right * scale, lines * lineHeight * scale);
+			*outSize = ImVec2((background || layout.showBox) ? boxWidth * scale : right * scale, lines * lineHeight * scale);
 		}
 		return lines;
 	}
@@ -475,7 +503,9 @@ namespace {
 	int drawPreview(LPDIRECT3DDEVICE9 device, HangulPreviewAtlas& pa, const string& utf8Text, int boxWidth, int scale)
 	{
 		ImVec2 size;
-		int lines = drawPreviewAt(device, pa, utf8Text, boxWidth, (float)scale, ImGui::GetCursorScreenPos(), true, &size);
+		BlitterLayout layout;
+		layout.boxWidth = boxWidth;
+		int lines = drawPreviewAt(device, pa, utf8Text, layout, (float)scale, ImGui::GetCursorScreenPos(), true, &size);
 		ImGui::Dummy(size);
 		return lines;
 	}
@@ -1487,7 +1517,7 @@ void Dx9Application::renderHangulBlitterPreview()
 
 
 // 글자 오브젝트의 문자열을 배정한 폰트 아틀라스 글자로 origin(화면 좌표)에 그린다. 아틀라스가 없으면 false
-bool Dx9Application::drawBlitterGlyphs(INT32 fontTable, const string& text, ImVec2 origin, float scale, int boxWidth, ImVec2& outSize)
+bool Dx9Application::drawBlitterGlyphs(INT32 fontTable, const string& text, ImVec2 origin, float scale, const BlitterLayout& layout, ImVec2& outSize)
 {
 	HangulUiState& h = hangul;
 	if (fontTable <= 0) {
@@ -1501,7 +1531,9 @@ bool Dx9Application::drawBlitterGlyphs(INT32 fontTable, const string& text, ImVe
 	if (pa == NULL) {
 		return false;
 	}
-	drawPreviewAt(pD3dDevice, *pa, text, max(boxWidth, 8), scale, origin, false, &outSize);
+	BlitterLayout adjusted = layout;
+	adjusted.boxWidth = max(layout.boxWidth, 8);
+	drawPreviewAt(pD3dDevice, *pa, text, adjusted, scale, origin, false, &outSize);
 	return true;
 }
 

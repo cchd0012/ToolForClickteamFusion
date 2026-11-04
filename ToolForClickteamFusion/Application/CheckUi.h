@@ -53,7 +53,13 @@ namespace CTT {
 			string blitterText;
 			int fontTable;
 			vector<string> flagNames;
-			CheckObjectInfo() : found(false), objectType(0), imageHandle(0), width(0), height(0), isBlitter(false), fontTable(0) {}
+			UINT32 flags;
+			int boxWidth;				// 글자 오브젝트의 줄 폭 (이미지 폭), 0 이면 모름
+			int boxHeight;
+			int cellWidth;
+			int align;					// 0 왼쪽, 1 가운데, 2 오른쪽
+			bool pixelLayout;
+			CheckObjectInfo() : found(false), objectType(0), imageHandle(0), width(0), height(0), isBlitter(false), fontTable(0), flags(0), boxWidth(0), boxHeight(0), cellWidth(8), align(0), pixelLayout(false) {}
 		};
 
 		// 지켜보는 폴더들에서 달라진 파일

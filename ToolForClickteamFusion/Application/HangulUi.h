@@ -20,6 +20,18 @@ namespace CTT {
 
 		using namespace std;
 
+		// 글자 오브젝트 하나의 글자 배치 설정 (확인 단계와 미리보기가 같이 쓴다)
+		struct BlitterLayout
+		{
+			int boxWidth;					// 줄 폭 (오브젝트의 이미지 폭)
+			bool wrap;						// 자동 줄바꿈 (옵션 WRAP)
+			int align;						// 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽
+			bool pixel;						// true = 글자 폭의 합으로 줄 폭을 잰다, false = 글자 수 x 칸 폭 (원래 방식)
+			int cellWidth;					// 원래 방식의 칸 폭
+			bool showBox;					// 돌려주는 크기를 줄 폭 전체로 한다
+			BlitterLayout() : boxWidth(160), wrap(true), align(0), pixel(true), cellWidth(8), showBox(false) {}
+		};
+
 		struct HangulAtlasItem
 		{
 			wstring name;

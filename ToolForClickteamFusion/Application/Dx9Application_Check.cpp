@@ -234,6 +234,12 @@ namespace {
 			info.isBlitter = true;
 			info.blitterText = blitter.get("text", "").asString();
 			info.fontTable = blitter.get("fontTable", 0).asInt();
+			info.flags = blitter.get("flags", 0).asUInt();
+			info.boxWidth = blitter.get("imageWidth", 0).asInt();
+			info.boxHeight = blitter.get("imageHeight", 0).asInt();
+			info.cellWidth = blitter.get("cellWidth", 8).asInt();
+			info.align = blitter.get("align", 0).asInt();
+			info.pixelLayout = (blitter.get("layout", "byte").asString() == "pixel");
 			const Json::Value& flagNames = blitter["flagNames"];
 			for (Json::ArrayIndex i = 0; i < flagNames.size(); i++) {
 				info.flagNames.push_back(flagNames[i].asString());
@@ -441,18 +447,30 @@ void Dx9Application::renderShellStepCheck()
 		}
 		if (!drewImage && !(object.found && object.imageHandle > 0 && c.images.count(object.imageHandle) > 0)) {
 			if (object.isBlitter && !object.blitterText.empty()) {
-				// 글자 오브젝트: 처음 문자열을 그린다 (칸 크기를 몰라 글자 크기는 근사)
+				// 글자 오브젝트: 처음 문자열을 오브젝트의 줄 폭, 자동 줄바꿈, 정렬대로 그린다 (칸 크기를 몰라 글자 크기는 근사)
 				minPos = ImVec2(origin.x + x * scale, origin.y + y * scale);
+				BlitterLayout layout;
+				layout.boxWidth = (object.boxWidth > 0) ? object.boxWidth : max(c.frameWidth - x, 8);
+				layout.wrap = ((object.flags & 0x20) != 0);
+				layout.align = object.align;
+				layout.pixel = object.pixelLayout;
+				layout.cellWidth = max(object.cellWidth, 1);
+				layout.showBox = true;
 				ImVec2 glyphSize;
-				if (c.useGlyphs && drawBlitterGlyphs(object.fontTable, object.blitterText, minPos, scale, max(c.frameWidth - x, 8), glyphSize)) {
+				if (c.useGlyphs && drawBlitterGlyphs(object.fontTable, object.blitterText, minPos, scale, layout, glyphSize)) {
 					maxPos = ImVec2(minPos.x + glyphSize.x, minPos.y + glyphSize.y);
 				}
 				else {
 					const float fontSize = max(8.0f * scale, 6.0f);
 					string text = withoutCarriageReturn(object.blitterText);
 					ImVec2 extent = font->CalcTextSizeA(fontSize, FLT_MAX, 0.0f, text.c_str());
-					maxPos = ImVec2(minPos.x + extent.x, minPos.y + extent.y);
-					drawList->AddText(font, fontSize, minPos, IM_COL32(235, 240, 255, 255), text.c_str());
+					float offsetX = 0.0f;
+					const float room = layout.boxWidth * scale - extent.x;
+					if (object.align != 0 && room > 0.0f) {
+						offsetX = (object.align == 1) ? room * 0.5f : room;
+					}
+					maxPos = ImVec2(minPos.x + max(layout.boxWidth * scale, extent.x), minPos.y + extent.y);
+					drawList->AddText(font, fontSize, ImVec2(minPos.x + offsetX, minPos.y), IM_COL32(235, 240, 255, 255), text.c_str());
 				}
 				drawList->AddRect(minPos, maxPos, IM_COL32(82, 196, 210, 140));
 			}
@@ -565,6 +583,11 @@ void Dx9Application::renderCheckInspector()
 	}
 	if (object.isBlitter) {
 		row(u8"글자표", object.fontTable > 0 ? to_string(object.fontTable) : string(u8"없음"));
+		if (object.boxWidth > 0) {
+			row(u8"줄 폭", to_string(object.boxWidth) + u8" px");
+		}
+		static const char* alignNames[3] = { u8"왼쪽", u8"가운데", u8"오른쪽" };
+		row(u8"정렬", (object.align >= 0 && object.align < 3) ? string(alignNames[object.align]) : to_string(object.align));
 		ImGui::Spacing();
 		ImGui::TextDisabled(u8"처음 문자열");
 		ImGui::TextWrapped("%s", withoutCarriageReturn(object.blitterText).c_str());

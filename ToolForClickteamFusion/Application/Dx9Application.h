@@ -58,8 +58,8 @@ namespace CTT {
 			void addShellLog(ShellLogLevel level, const string& text);
 			void runDiagnosis();
 			void renderDiagnosisSuggestModal();
-			// 한글화 도구 창 (수정 단계), Dx9Application_Hangul.cpp
-			void renderHangulToolWindow();
+			// 한글화 도구 (글꼴·글자 단계 화면 안에서 그린다), Dx9Application_Hangul.cpp
+			void renderHangulToolContent();
 			void renderHangulAtlasTab();
 			void renderHangulBlitterTab();
 			void renderHangulModuleTab();

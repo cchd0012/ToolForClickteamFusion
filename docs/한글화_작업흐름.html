@@ -131,7 +131,7 @@ footer { max-width: 1180px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
 <h2 id="1-추출">1. 추출</h2>
 <p><code>1.추출</code> 메뉴 (명령줄: <code>--extract &lt;아카이브&gt; [종류...]</code>). 아카이브 옆에 <code>&lt;아카이브 이름&gt;/</code> 폴더가 생긴다.</p>
 <div class="table-wrap"><table><thead><tr><th>종류</th><th>만들어지는 것</th><th>용도</th></tr></thead><tbody><tr><td><code>text</code></td><td><code>text/frameEventText.json</code>, <code>text/objectText.json</code></td><td>이벤트의 문자열, 오브젝트의 알터러블 문자열과 Text 문단 번역</td></tr><tr><td><code>script</code></td><td><code>script/frame/*.json</code>, <code>script/object/*.json</code></td><td>이벤트와 오브젝트를 읽을 수 있는 JSON 으로 (오브젝트 속성, 블리터 설정 포함)</td></tr><tr><td><code>flow</code></td><td><code>text/textFlow.json</code></td><td>텍스트 블리터가 받는 문구의 출처 분석 (추출만 가능)</td></tr><tr><td><code>image</code> / <code>font</code> / <code>module</code></td><td><code>image/</code>, <code>font/</code>, <code>modules/</code></td><td>이미지(PNG), 폰트, 확장 모듈(exe 게임)</td></tr></tbody></table></div>
-<ul><li>전체 추출에는 <code>flow</code>가 들어 있다. 한글화 도구의 "나. 오브젝트에 적용"이 <code>script/object</code>와 <code>text/textFlow.json</code>을 읽는다.</li><li>번역이 필요한 문구가 어디서 오는지는 <code>text/textFlow.json</code>으로 확인한다 (상수 / 다른 오브젝트의 문자열 참조 / INI 조회 / 계산식으로 분류).</li><li>같은 파일의 <code>fontReload</code>는 게임이 실행 중에 글꼴 이미지를 다시 불러오는지 알려 준다 (<code>detected</code>, 불러오는 동작 수와 프레임, 파일 이름). 한글화 도구의 "나. 오브젝트에 적용"에도 같은 내용이 표시된다. 자세한 대응은 2-4를 본다.</li></ul>
+<ul><li>전체 추출에는 <code>flow</code>가 들어 있다. <code>글꼴·글자</code> 단계의 "나. 오브젝트에 적용"이 <code>script/object</code>와 <code>text/textFlow.json</code>을 읽는다.</li><li>번역이 필요한 문구가 어디서 오는지는 <code>text/textFlow.json</code>으로 확인한다 (상수 / 다른 오브젝트의 문자열 참조 / INI 조회 / 계산식으로 분류).</li><li>같은 파일의 <code>fontReload</code>는 게임이 실행 중에 글꼴 이미지를 다시 불러오는지 알려 준다 (<code>detected</code>, 불러오는 동작 수와 프레임, 파일 이름). <code>글꼴·글자</code> 단계의 "나. 오브젝트에 적용"에도 같은 내용이 표시된다. 자세한 대응은 2-4를 본다.</li></ul>
 <h2 id="2-수정">2. 수정</h2>
 <p><code>2.수정</code> 메뉴에서 종류별 추출 폴더를 열 수 있다.</p>
 <h3 id="2-1-텍스트-번역">2-1. 텍스트 번역</h3>
@@ -139,7 +139,7 @@ footer { max-width: 1180px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
 <h3 id="2-2-이미지와-폰트">2-2. 이미지와 폰트</h3>
 <ul><li><code>image/</code>의 PNG를 같은 이름으로 바꾸거나 <code>appendImages.json</code>으로 새 이미지를 추가한다.</li><li><code>font/</code>의 TrueType 폰트를 바꾸고, <code>logFontInfo.json</code>에서 charset을 129(한글)로 맞춘다. 폰트 이름은 달라도 charset이 맞으면 동작한다.</li></ul>
 <h3 id="2-3-글자를-이미지로-그리는-오브젝트텍스트-블리터-한글화">2-3. 글자를 이미지로 그리는 오브젝트(텍스트 블리터) 한글화</h3>
-<p>게임이 이미지 글꼴(txtblt.mfx)로 글을 그린다면, 폰트에서 한글 글자 그림을 만들어 모듈에 심는다. <code>2.수정 &gt; 폰트</code>의 <strong>한글화 도구</strong> 창이 세 단계를 안내한다.</p>
+<p>게임이 이미지 글꼴(txtblt.mfx)로 글을 그린다면, 폰트에서 한글 글자 그림을 만들어 모듈에 심는다. 화면의 <code>글꼴·글자</code> 단계(<strong>한글화 도구</strong>)가 세 단계를 안내한다.</p>
 <p><strong>가. 폰트 아틀라스 만들기</strong></p>
 <ul><li>폰트 파일(.ttf/.otf), 글자 크기, 글자·외곽선 색을 고른다.</li><li>포함할 글자 (명령줄 <code>mode</code>):</li><li>기본 (<code>hangul</code>): 영문 + 한글 2350자 (KS X 1001). 대부분의 번역에 충분하다.</li><li>전체 (<code>extendedHangul</code>): 한글 11172자. 용량이 크다.</li><li>필요한 글자만 (<code>limitedHangul</code>): 번역문(<code>text</code>, <code>script/object</code>)과 <code>extraChars</code>에 쓰인 글자만. 가장 작다. 번역을 고치면 다시 만들어야 한다.</li><li>결과는 <code>glyph/atlas/&lt;이름&gt;.png</code>, <code>.kft</code>, <code>.json</code>. 같은 설정으로 다시 만들 수 있도록 <code>glyph/build_&lt;이름&gt;.json</code>을 남긴다.</li><li>쓸 폰트 아틀라스에 1 이상의 서로 다른 <strong>번호</strong>를 붙이고 저장한다 (<code>glyph/atlases.json</code>).</li><li>글꼴 크기가 작으면 일부 글자가 뭉개진다. 크기와 폰트를 바꿔 미리보기로 확인한다.</li></ul>
 <p><strong>나. 오브젝트에 적용</strong></p>
@@ -161,13 +161,13 @@ ToolForClickteamFusion.exe --extract game.dat script text flow
 # 진단 (추출한 뒤)
 ToolForClickteamFusion.exe --diagnose game.dat
 
-# 2. 수정 (한글화 도구 대신 명령줄로 할 때)
+# 2. 수정 (글꼴·글자 단계 대신 명령줄로 할 때)
 ToolForClickteamFusion.exe --font-atlas build glyph/build_atlas1.json
 ToolForClickteamFusion.exe --txtblt-font patch txtblt.mfx txtblt_patched.mfx glyph/atlases.json
 
 # 3. 교체
 ToolForClickteamFusion.exe --replace game.dat codepage=949 locale=1042 script text</code></pre></div>
-<p>GUI에서 바로 열기: <code>ToolForClickteamFusion.exe --open &lt;아카이브&gt; [atlas] [blitter] [module]</code> (한글화 도구를 해당 탭으로 연다).</p>
+<p>GUI에서 바로 열기: <code>ToolForClickteamFusion.exe --open &lt;아카이브&gt; [atlas] [blitter] [module]</code> (<code>글꼴·글자</code> 단계의 해당 탭을 연다).</p>
 <h2 id="폴더-구조">폴더 구조</h2>
 <div class="code"><div class="code-bar"><span>코드</span><button type="button" class="copy">복사</button></div><pre><code>&lt;아카이브 이름&gt;/
   text/        frameEventText.json, objectText.json, textFlow.json

@@ -35,7 +35,9 @@ void Dx9Application::render()
 		strcpy_s(states.openArchivePath, states.startupArchivePath);
 		states.startupArchivePath[0] = 0;
 		states.isArchiveOpened = openArchive();
-		hangul.showWindow = states.isArchiveOpened && (states.startupShowAtlas || states.startupShowBlitter || states.startupShowModule);
+		if (states.isArchiveOpened && (states.startupShowAtlas || states.startupShowBlitter || states.startupShowModule)) {
+			shell.step = SHELL_STEP_FONT;
+		}
 		hangul.requestTab = states.startupShowAtlas ? 0 : (states.startupShowBlitter ? 1 : (states.startupShowModule ? 2 : -1));
 	}
 
@@ -45,10 +47,6 @@ void Dx9Application::render()
 	// 화면 틀(왼쪽 단계 목록, 위쪽 상태 줄, 작업 영역, 아래 문제/로그 패널). 아카이브를 열기 전에는 시작 화면
 	renderShell();
 
-	// 한글화 도구 창 (수정 단계, 3단계에서 단계 화면 안으로 옮길 예정)
-	if (states.isArchiveOpened && hangul.showWindow) {
-		renderHangulToolWindow();
-	}
 
 	// 에러가 있다면 에러 메시지 박스 렌더링
 	if (states.isError) {
@@ -260,21 +258,21 @@ void Dx9Application::renderMenuTab()
 					ImGui::Separator();
 					ImGui::TextDisabled(u8"한글화 도구: 폰트 아틀라스를 만들어 오브젝트에 적용하고 모듈에 심습니다");
 					if (ImGui::MenuItem(u8"가. 폰트 아틀라스 만들기...")) {
-						hangul.showWindow = true;
+						shell.step = SHELL_STEP_FONT;
 						hangul.requestTab = 0;
 					}
 					if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
 						ImGui::SetTooltip(u8"폰트 파일에서 한글 글자 그림(폰트 아틀라스)을 만듭니다");
 					}
 					if (ImGui::MenuItem(u8"나. 오브젝트에 적용...")) {
-						hangul.showWindow = true;
+						shell.step = SHELL_STEP_FONT;
 						hangul.requestTab = 1;
 					}
 					if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
 						ImGui::SetTooltip(u8"글자를 그리는 오브젝트마다 쓸 폰트 아틀라스와 줄 폭 계산 방식을 정하고,\n그 오브젝트에 나올 문구를 미리 봅니다");
 					}
 					if (ImGui::MenuItem(u8"다. 게임에 넣기...")) {
-						hangul.showWindow = true;
+						shell.step = SHELL_STEP_FONT;
 						hangul.requestTab = 2;
 					}
 					if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {

@@ -52,7 +52,6 @@ namespace CTT {
 
 		struct HangulUiState
 		{
-			bool showWindow;
 			int requestTab;					// 창을 열 때 먼저 보여 줄 탭 (0 폰트 아틀라스, 1 오브젝트 적용, 2 게임에 넣기, -1 요청 없음)
 
 			// ---- 아틀라스 만들기 폼

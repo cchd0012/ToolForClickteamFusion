@@ -717,24 +717,9 @@ void Dx9Application::renderShellStepText()
 void Dx9Application::renderShellStepFont()
 {
 	wstring baseDir = shellBaseDir(archive);
-	ImGui::TextWrapped(u8"한글 폰트 아틀라스를 만들고, 글자를 그리는 오브젝트마다 쓸 아틀라스를 정한 뒤, 게임 모듈에 심습니다. 아래 버튼은 한글화 도구 창을 엽니다 (이후 단계에서 이 화면 안으로 옮깁니다).");
-	ImGui::Spacing();
-	if (ImGui::Button(u8"가. 폰트 아틀라스 만들기...")) {
-		hangul.showWindow = true;
-		hangul.requestTab = 0;
-	}
-	ImGui::SameLine();
-	if (ImGui::Button(u8"나. 오브젝트에 적용...")) {
-		hangul.showWindow = true;
-		hangul.requestTab = 1;
-	}
-	ImGui::SameLine();
-	if (ImGui::Button(u8"다. 게임에 넣기...")) {
-		hangul.showWindow = true;
-		hangul.requestTab = 2;
-	}
-	ImGui::Spacing();
 	folderButton(baseDir, L"font", u8"폰트 폴더 열기", u8"TrueType/LogFont 폰트 파일을 바꿉니다");
+	ImGui::Spacing();
+	renderHangulToolContent();
 }
 
 

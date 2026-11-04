@@ -18,7 +18,6 @@ using namespace CTT::JsonUtil;
 
 HangulUiState::HangulUiState()
 {
-	showWindow = false;
 	requestTab = -1;
 
 	strcpy_s(atlasName, "atlas1");
@@ -1192,19 +1191,11 @@ void Dx9Application::renderHangulModuleTab()
 
 
 // 한글화 도구 창 (수정 단계): 설명, 진행 상황, 세 탭
-void Dx9Application::renderHangulToolWindow()
+void Dx9Application::renderHangulToolContent()
 {
 	HangulUiState& h = hangul;
-	ImVec2 display = ImGui::GetIO().DisplaySize;
-	ImGui::SetNextWindowPos(ImVec2(20.0f, 48.0f), ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize(ImVec2(min(1000.0f, display.x - 40.0f), min(760.0f, display.y - 70.0f)), ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowBgAlpha(0.97f);
-	if (!ImGui::Begin(u8"한글화 도구", &h.showWindow)) {
-		ImGui::End();
-		return;
-	}
 
-	ImGui::TextWrapped(u8"게임 글자를 한글로 그리려면: 가. 폰트 아틀라스를 만들고, 나. 글자를 그리는 오브젝트마다 쓸 폰트 아틀라스를 정한 뒤, 다. 게임 모듈에 심습니다. 바뀐 파일은 [3.교체 (재합성)]로 아카이브에 반영합니다.");
+	ImGui::TextWrapped(u8"게임 글자를 한글로 그리려면: 가. 폰트 아틀라스를 만들고, 나. 글자를 그리는 오브젝트마다 쓸 폰트 아틀라스를 정한 뒤, 다. 게임 모듈에 심습니다. 바뀐 파일은 재합성 단계에서 아카이브에 반영합니다.");
 
 	// 진행 상황
 	if (!h.atlasesLoaded) {
@@ -1233,7 +1224,7 @@ void Dx9Application::renderHangulToolWindow()
 		ImGui::BulletText(u8"글자 오브젝트(Text Blitter): 이미지 글꼴로 글을 그리는 확장 오브젝트(txtblt.mfx)입니다. 게임의 메뉴, 대사 상자 등에 쓰입니다.");
 		ImGui::BulletText(u8"줄 폭 계산: 자동 줄바꿈과 정렬을 위해 한 줄의 폭을 재는 방식입니다. 한글에는 '글자 폭 합산'이 맞습니다.");
 		ImGui::BulletText(u8"텍스트 흐름: 각 글자 오브젝트가 받는 문구의 목록입니다. 번역이 빠진 문구를 찾거나 미리보기에 씁니다.");
-		ImGui::BulletText(u8"추출 / 수정 / 교체: 아카이브에서 파일로 꺼내고(1) 파일을 고친 뒤(2) 다시 아카이브에 합쳐 새 파일로 저장합니다(3).");
+		ImGui::BulletText(u8"추출 / 수정 / 재합성: 아카이브에서 파일로 꺼내고, 파일을 고친 뒤, 다시 아카이브에 합쳐 새 파일로 저장합니다.");
 	}
 
 	ImGui::Separator();
@@ -1243,19 +1234,19 @@ void Dx9Application::renderHangulToolWindow()
 		ImGuiTabItemFlags flag2 = (h.requestTab == 2) ? ImGuiTabItemFlags_SetSelected : 0;
 		h.requestTab = -1;
 		if (ImGui::BeginTabItem(u8"가. 폰트 아틀라스 만들기", NULL, flag0)) {
-			ImGui::BeginChild("##tab0", ImVec2(0.0f, 0.0f));
+			ImGui::BeginChild("##tab0", ImVec2(0.0f, max(ImGui::GetContentRegionAvail().y, 520.0f)));
 			renderHangulAtlasTab();
 			ImGui::EndChild();
 			ImGui::EndTabItem();
 		}
 		if (ImGui::BeginTabItem(u8"나. 오브젝트에 적용", NULL, flag1)) {
-			ImGui::BeginChild("##tab1", ImVec2(0.0f, 0.0f));
+			ImGui::BeginChild("##tab1", ImVec2(0.0f, max(ImGui::GetContentRegionAvail().y, 520.0f)));
 			renderHangulBlitterTab();
 			ImGui::EndChild();
 			ImGui::EndTabItem();
 		}
 		if (ImGui::BeginTabItem(u8"다. 게임에 넣기", NULL, flag2)) {
-			ImGui::BeginChild("##tab2", ImVec2(0.0f, 0.0f));
+			ImGui::BeginChild("##tab2", ImVec2(0.0f, max(ImGui::GetContentRegionAvail().y, 520.0f)));
 			renderHangulModuleTab();
 			ImGui::EndChild();
 			ImGui::EndTabItem();
@@ -1263,5 +1254,4 @@ void Dx9Application::renderHangulToolWindow()
 		ImGui::EndTabBar();
 	}
 
-	ImGui::End();
 }

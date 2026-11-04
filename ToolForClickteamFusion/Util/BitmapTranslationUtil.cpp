@@ -112,9 +112,10 @@ bool CTT::BitmapTranslationUtil::Normal24BitImageToRGBA(BYTE* translatingData, U
 			bitmapData[bitmapStartPos + (j * 4) + 2] = translatingData[translationStartPos + (j * 3) + 2];
 			bitmapData[bitmapStartPos + (j * 4) + 3] = 0xFF;
 			if (!isAlphaSeparated) {
-				if ((bitmapData[bitmapStartPos + (j * 4) + 0] == transparent.r)
+				// 투명색은 COLORREF 순서(R, G, B)이고, 화소 데이터는 B, G, R 순서이다 (ToolForSW 의 비교와 같다)
+				if ((bitmapData[bitmapStartPos + (j * 4) + 0] == transparent.b)
 					&& (bitmapData[bitmapStartPos + (j * 4) + 1] == transparent.g)
-					&& (bitmapData[bitmapStartPos + (j * 4) + 2] == transparent.b)) {
+					&& (bitmapData[bitmapStartPos + (j * 4) + 2] == transparent.r)) {
 					bitmapData[bitmapStartPos + (j * 4) + 3] = 0x00;
 				}
 			}
@@ -170,10 +171,11 @@ bool CTT::BitmapTranslationUtil::RGBAToNormal24BitImage(BYTE* bitmapData, UINT32
 		UINT32 bitmapStartPos = (bitmapPitch * i);
 		for (UINT32 j = 0; j < width; j++) {
 			if (!isAlphaSeparated) {
-				if (bitmapData[bitmapStartPos + (j * 4) + 3] = 0x00) {
-					translatingData[translationStartPos + (j * 3) + 0] = transparent.r;
+				if (bitmapData[bitmapStartPos + (j * 4) + 3] == 0x00) {
+					// 투명 픽셀은 투명색으로 채운다 (화소 데이터는 B, G, R 순서, 투명색은 R, G, B 순서)
+					translatingData[translationStartPos + (j * 3) + 0] = transparent.b;
 					translatingData[translationStartPos + (j * 3) + 1] = transparent.g;
-					translatingData[translationStartPos + (j * 3) + 2] = transparent.b;
+					translatingData[translationStartPos + (j * 3) + 2] = transparent.r;
 				}
 				else {
 					translatingData[translationStartPos + (j * 3) + 0] = bitmapData[bitmapStartPos + (j * 4) + 0];

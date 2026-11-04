@@ -271,6 +271,13 @@ namespace {
 	}
 
 
+	// 폰트 파일이 BMFont(.fnt)이면 폰트에서 그리지 않고 만들어진 글자 그림을 그대로 가져온다
+	bool isBmFontPath(const char* path)
+	{
+		size_t n = strlen(path);
+		return n > 4 && _stricmp(path + n - 4, ".fnt") == 0;
+	}
+
 	// 폼의 값으로 메모리에 작은 아틀라스를 만들어 미리보기 텍스처를 갱신한다. 설정이 같으면 다시 만들지 않는다
 	void updateLivePreview(LPDIRECT3DDEVICE9 device, HangulUiState& h)
 	{
@@ -287,16 +294,21 @@ namespace {
 		}
 		h.livePreview.data = CTT::Glyph::FontAtlasData();
 		h.liveError.clear();
-		if (strlen(h.fontPath) == 0 || h.fontSize <= 0) {
+		if (strlen(h.fontPath) == 0 || (!isBmFontPath(h.fontPath) && h.fontSize <= 0)) {
 			return;
 		}
 
 		Json::Value cfg(Json::objectValue);
 		cfg["name"] = "preview";
-		cfg["font"] = h.fontPath;
-		cfg["size"] = h.fontSize;
-		cfg["mode"] = "limitedHangul";
-		cfg["extraChars"] = h.liveSample;
+		if (isBmFontPath(h.fontPath)) {
+			cfg["bmfont"] = h.fontPath;
+		}
+		else {
+			cfg["font"] = h.fontPath;
+			cfg["size"] = h.fontSize;
+			cfg["mode"] = "limitedHangul";
+			cfg["extraChars"] = h.liveSample;
+		}
 		cfg["outlineSize"] = h.outlineSize;
 		cfg["letterSpacing"] = h.letterSpacing;
 		cfg["dy"] = h.dy;
@@ -767,7 +779,7 @@ void Dx9Application::renderHangulAtlasTab()
 		loadAtlasList(archive, h);
 	}
 
-	ImGui::TextWrapped(u8"폰트 파일(.ttf, .otf)에서 글자 그림을 만들어 '폰트 아틀라스'로 저장합니다. 게임 글꼴이 한글을 갖고 있지 않을 때 필요합니다.");
+	ImGui::TextWrapped(u8"폰트 파일(.ttf, .otf)에서 글자 그림을 만들어 '폰트 아틀라스'로 저장합니다. 게임 글꼴이 한글을 갖고 있지 않을 때 필요합니다. 이미 만들어진 비트맵 폰트(BMFont .fnt)도 가져올 수 있습니다.");
 	ImGui::Spacing();
 
 	// ---- 새 폰트 아틀라스
@@ -780,9 +792,14 @@ void Dx9Application::renderHangulAtlasTab()
 	ImGui::InputText(u8"폰트 파일", h.fontPath, IM_ARRAYSIZE(h.fontPath));
 	ImGui::SameLine();
 	if (ImGui::Button(u8"찾아보기##font")) {
-		openFileDialog("HangulFontDlg", u8"폰트 파일(.ttf, .otf)을 선택하세요", ".ttf,.otf");
+		openFileDialog("HangulFontDlg", u8"폰트 파일(.ttf, .otf) 또는 BMFont(.fnt)를 선택하세요", ".ttf,.otf,.fnt");
 	}
 	displayFileDialog("HangulFontDlg", h.fontPath, IM_ARRAYSIZE(h.fontPath));
+	const bool bm = isBmFontPath(h.fontPath);
+	if (bm) {
+		ImGui::TextWrapped(u8"BMFont 를 가져옵니다. 글자 그림은 다시 그리지 않고 그대로 옮기므로 글자 크기, 글자 색, 외곽선, 세로 위치는 쓰이지 않습니다. 텍스트 또는 XML 형식 .fnt 와 그 PNG 페이지(같은 폴더)가 필요하고, CP949 로 표현되는 글자만 담습니다.");
+	}
+	else {
 	ImGui::SetNextItemWidth(full * 0.2f);
 	ImGui::InputInt(u8"글자 크기(px)", &h.fontSize);
 	helpMarker(u8"게임에서 글자 한 줄이 차지하는 높이에 맞추세요. 너무 작으면 획이 뭉개져 읽기 어렵습니다 (한글은 보통 10px 이상).");
@@ -807,14 +824,17 @@ void Dx9Application::renderHangulAtlasTab()
 	ImGui::SetNextItemWidth(80.0f);
 	ImGui::InputInt(u8"외곽선 두께", &h.outlineSize, 0);
 	helpMarker(u8"0 이면 외곽선이 없습니다. 1 이상이면 글자 둘레를 외곽선 색으로 두릅니다 (배경이 복잡할 때 읽기 쉬워집니다).");
+	}
 
 	if (ImGui::CollapsingHeader(u8"고급 설정")) {
 		ImGui::SetNextItemWidth(80.0f);
 		ImGui::InputInt(u8"글자 간격", &h.letterSpacing, 0);
 		helpMarker(u8"모든 글자 폭에 더하는 값(px)입니다. 글자가 붙어 보이면 1 로 늘려 보세요.");
-		ImGui::SetNextItemWidth(80.0f);
-		ImGui::InputInt(u8"세로 위치 보정", &h.dy, 0);
-		helpMarker(u8"글자를 칸 안에서 위/아래로 옮깁니다(px). 글자가 위나 아래로 잘리면 조정하세요.");
+		if (!bm) {
+			ImGui::SetNextItemWidth(80.0f);
+			ImGui::InputInt(u8"세로 위치 보정", &h.dy, 0);
+			helpMarker(u8"글자를 칸 안에서 위/아래로 옮깁니다(px). 글자가 위나 아래로 잘리면 조정하세요.");
+		}
 		ImGui::SetNextItemWidth(80.0f);
 		ImGui::InputInt(u8"이미지 폭", &h.atlasWidth, 0);
 		helpMarker(u8"폰트 아틀라스 이미지(PNG)의 폭입니다. 보통 그대로 두면 됩니다.");
@@ -848,7 +868,7 @@ void Dx9Application::renderHangulAtlasTab()
 		}
 	}
 
-	bool canBuild = (strlen(h.atlasName) > 0) && (strlen(h.fontPath) > 0) && (h.fontSize > 0) && !h.buildRunning;
+	bool canBuild = (strlen(h.atlasName) > 0) && (strlen(h.fontPath) > 0) && (bm || h.fontSize > 0) && !h.buildRunning;
 	if (!canBuild) {
 		ImGui::BeginDisabled(true);
 	}
@@ -856,10 +876,15 @@ void Dx9Application::renderHangulAtlasTab()
 		Json::Value cfg(Json::objectValue);
 		Json::Value atlasCfg(Json::objectValue);
 		atlasCfg["name"] = h.atlasName;
-		atlasCfg["font"] = h.fontPath;
-		atlasCfg["size"] = h.fontSize;
-		atlasCfg["mode"] = (h.atlasMode == 2) ? "limitedHangul" : ((h.atlasMode == 1) ? "extendedHangul" : "hangul");
-		if (h.atlasMode == 2) {
+		if (bm) {
+			atlasCfg["bmfont"] = h.fontPath;
+		}
+		else {
+			atlasCfg["font"] = h.fontPath;
+			atlasCfg["size"] = h.fontSize;
+			atlasCfg["mode"] = (h.atlasMode == 2) ? "limitedHangul" : ((h.atlasMode == 1) ? "extendedHangul" : "hangul");
+		}
+		if (!bm && h.atlasMode == 2) {
 			// 설정 파일이 있는 glyph 폴더 기준으로 추출 폴더의 text 와 script/object 를 가리킨다
 			Json::Value sources(Json::arrayValue);
 			sources.append("../text");

@@ -19,6 +19,9 @@ using namespace CTT::PngUtil;
 //       "name": "galmuri9",                 아틀라스 이름 (출력 파일 이름)
 //       "font": "fonts/galmuri9.ttf",
 //       "size": 9,                          폰트 픽셀 크기
+//       "bmfont": "fonts/pixel.fnt",        font + size 대신 BMFont(.fnt 텍스트 또는 XML + PNG 페이지)를 그대로 가져온다.
+//                                           글자 그림은 다시 그리지 않고 칸에 옮기기만 한다 (mode, color, outline*, threshold, dy, advanceOverrides, spaceWidth 는 무시.
+//                                           lineHeight, letterSpacing, missingAdvance, atlasWidth, name, outputDir 는 쓴다)
 //       "mode": "hangul",                   hangul | extendedHangul | limitedHangul
 //       "textSources": [ "../text" ],       limitedHangul 일 때 글자를 모을 곳. json 파일, 폴더(안의 *.json), 그 밖의 텍스트 파일(UTF-8 이 아니면 CP949)
 //       "extraChars": "",                   limitedHangul 일 때 더 넣을 글자
@@ -387,10 +390,365 @@ bool CTT::Glyph::loadFontAtlas(FontAtlasData& atlas, const wstring& directory, c
 }
 
 
+namespace {
+
+	// BMFont 한 줄을 태그와 키=값으로 나눈다. 텍스트 형식("char id=65 x=1 ...")과 XML 형식(`<char id="65" x="1" />`)을 둘 다 읽는다.
+	// 값에 공백이 있으면 따옴표로 묶여 있다 (face="My Font")
+	bool parseBmFontLine(const string& line, string& tag, map<string, string>& kv)
+	{
+		kv.clear();
+		tag.clear();
+		const size_t n = line.size();
+		size_t i = 0;
+		while (i < n && (line[i] == ' ' || line[i] == '\t' || line[i] == '<' || line[i] == '\r')) {
+			i++;
+		}
+		size_t s = i;
+		while (i < n && !isspace((unsigned char)line[i]) && line[i] != '/' && line[i] != '>') {
+			i++;
+		}
+		tag = line.substr(s, i - s);
+		if (tag.empty()) {
+			return false;
+		}
+		while (i < n) {
+			while (i < n && (isspace((unsigned char)line[i]) || line[i] == '/' || line[i] == '>')) {
+				i++;
+			}
+			size_t ks = i;
+			while (i < n && line[i] != '=' && !isspace((unsigned char)line[i])) {
+				i++;
+			}
+			if (i >= n || line[i] != '=') {
+				if (i == ks) {
+					i++;
+				}
+				continue;
+			}
+			string key = line.substr(ks, i - ks);
+			i++;
+			string value;
+			if (i < n && line[i] == '"') {
+				i++;
+				size_t vs = i;
+				while (i < n && line[i] != '"') {
+					i++;
+				}
+				value = line.substr(vs, i - vs);
+				if (i < n) {
+					i++;
+				}
+			}
+			else {
+				size_t vs = i;
+				while (i < n && !isspace((unsigned char)line[i]) && line[i] != '>' && !(line[i] == '/' && i + 1 < n && line[i + 1] == '>')) {
+					i++;
+				}
+				value = line.substr(vs, i - vs);
+			}
+			kv[key] = value;
+		}
+		return true;
+	}
+
+	int bmInt(const map<string, string>& kv, const char* key, int fallback)
+	{
+		map<string, string>::const_iterator it = kv.find(key);
+		return (it == kv.end()) ? fallback : atoi(it->second.c_str());
+	}
+
+	// 유니코드 번호를 글자표 코드(아스키 1바이트 또는 CP949 2바이트)로 바꾼다. 표현할 수 없으면 false
+	bool unicodeToCode(UINT32 id, UINT16& code)
+	{
+		if (id >= 0x20 && id <= 0x7E) {
+			code = (UINT16)id;
+			return true;
+		}
+		if (id < 0x80 || id > 0xFFFF) {
+			return false;
+		}
+		wchar_t wide = (wchar_t)id;
+		char bytes[4] = { 0, 0, 0, 0 };
+		BOOL usedDefault = FALSE;
+		int n = WideCharToMultiByte(949, WC_NO_BEST_FIT_CHARS, &wide, 1, bytes, 4, NULL, &usedDefault);
+		if (n == 2 && !usedDefault) {
+			code = (UINT16)(((BYTE)bytes[0] << 8) | (BYTE)bytes[1]);
+			return true;
+		}
+		return false;
+	}
+
+	struct BmChar
+	{
+		UINT32 id;
+		int x, y, w, h, xoffset, yoffset, xadvance, page;
+	};
+
+	struct BmPage
+	{
+		BYTE* bgra;				// readFromPng 가 할당한 버퍼 (B, G, R, A)
+		UINT32 width;
+		UINT32 height;
+		bool luminanceAsAlpha;	// 알파가 전부 255 인 페이지: 밝기를 알파로 쓴다 (흰 글자 + 검은 바탕으로 저장한 비트맵 폰트)
+		BmPage() : bgra(NULL), width(0), height(0), luminanceAsAlpha(false) {}
+	};
+
+	// BMFont(.fnt + PNG 페이지)를 글자표 아틀라스로 가져온다. 글자 그림은 줄 높이 칸에 옮겨 담는다
+	bool importBmFontAtlas(const Json::Value& c, const wstring& baseDir, FontAtlasData& atlas, bool quiet)
+	{
+		const wstring fntPath = resolvePath(baseDir, fromUtf8(c["bmfont"].asString()));
+		shared_ptr<vector<unsigned char> > data = FtFont::readFile(fntPath);
+		if (!data || data->empty()) {
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": .fnt 를 읽지 못했습니다: " << fntPath << endl;
+			return false;
+		}
+		if (data->size() >= 3 && (*data)[0] == 'B' && (*data)[1] == 'M' && (*data)[2] == 'F') {
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 이진 형식 .fnt 는 지원하지 않습니다. BMFont 에서 Text 또는 XML 형식으로 내보내세요: " << fntPath << endl;
+			return false;
+		}
+
+		string text((const char*)&(*data)[0], data->size());
+		int fntLineHeight = 0;
+		map<int, wstring> pageFiles;
+		vector<BmChar> chars;
+		size_t pos = 0;
+		while (pos < text.size()) {
+			size_t end = text.find('\n', pos);
+			string line = text.substr(pos, (end == string::npos) ? string::npos : end - pos);
+			pos = (end == string::npos) ? text.size() : end + 1;
+			string tag;
+			map<string, string> kv;
+			if (!parseBmFontLine(line, tag, kv)) {
+				continue;
+			}
+			if (tag == "common") {
+				fntLineHeight = bmInt(kv, "lineHeight", 0);
+			}
+			else if (tag == "page") {
+				map<string, string>::const_iterator f = kv.find("file");
+				if (f != kv.end()) {
+					pageFiles[bmInt(kv, "id", 0)] = fromUtf8(f->second);
+				}
+			}
+			else if (tag == "char") {
+				BmChar ch;
+				ch.id = (UINT32)bmInt(kv, "id", -1);
+				ch.x = bmInt(kv, "x", 0);
+				ch.y = bmInt(kv, "y", 0);
+				ch.w = bmInt(kv, "width", 0);
+				ch.h = bmInt(kv, "height", 0);
+				ch.xoffset = bmInt(kv, "xoffset", 0);
+				ch.yoffset = bmInt(kv, "yoffset", 0);
+				ch.xadvance = bmInt(kv, "xadvance", 0);
+				ch.page = bmInt(kv, "page", 0);
+				chars.push_back(ch);
+			}
+		}
+		if (chars.empty() || pageFiles.empty()) {
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": .fnt 에서 글자나 페이지를 찾지 못했습니다 (텍스트 또는 XML 형식이어야 합니다): " << fntPath << endl;
+			return false;
+		}
+
+		const int lineHeight = c.get("lineHeight", 0).asInt() > 0 ? c["lineHeight"].asInt() : fntLineHeight;
+		const int letterSpacing = c.get("letterSpacing", 0).asInt();
+		const int atlasWidth = c.get("atlasWidth", 2048).asInt();
+		if (lineHeight <= 0 || lineHeight > 255 || atlasWidth < 64 || atlasWidth > 0xFFFF) {
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 줄 높이(1~255) 또는 아틀라스 폭이 올바르지 않습니다: " << dec << lineHeight << L", " << atlasWidth << endl;
+			return false;
+		}
+
+		// 페이지 그림 읽기
+		wstring fntPathCopy = fntPath;
+		const wstring fntDir = getOnlyDirPath(fntPathCopy);
+		map<int, BmPage> pages;
+		bool pagesOk = true;
+		for (map<int, wstring>::const_iterator it = pageFiles.begin(); it != pageFiles.end(); ++it) {
+			BmPage page;
+			UINT32 bitCount = 0;
+			wstring pagePath = resolvePath(fntDir, it->second);
+			if (!readFromPng(page.bgra, pagePath, page.width, page.height, bitCount) || bitCount != 32 || page.bgra == NULL) {
+				wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 페이지 PNG 를 읽지 못했거나 32비트(RGBA)가 아닙니다: " << pagePath << endl;
+				pagesOk = false;
+				break;
+			}
+			bool anyTransparent = false;
+			for (size_t k = 0; k < (size_t)page.width * page.height; k++) {
+				if (page.bgra[k * 4 + 3] != 255) {
+					anyTransparent = true;
+					break;
+				}
+			}
+			page.luminanceAsAlpha = !anyTransparent;
+			pages[it->first] = page;
+		}
+		if (!pagesOk) {
+			for (map<int, BmPage>::iterator it = pages.begin(); it != pages.end(); ++it) {
+				free(it->second.bgra);
+			}
+			return false;
+		}
+
+		struct Cell
+		{
+			UINT16 code;
+			int left;
+			int width;
+			int advance;
+			vector<BYTE> bgra;
+		};
+		vector<Cell> cells;
+		set<UINT16> seen;
+		size_t skippedCode = 0, skippedSize = 0, clampedOffset = 0;
+		bool outsideHangulArea = false;
+		for (size_t i = 0; i < chars.size(); i++) {
+			const BmChar& ch = chars[i];
+			UINT16 code = 0;
+			if (!unicodeToCode(ch.id, code)) {
+				if (ch.id >= 0x80) {
+					skippedCode++;
+				}
+				continue;
+			}
+			if (seen.count(code) > 0) {
+				continue;
+			}
+			seen.insert(code);
+
+			Cell cell;
+			cell.code = code;
+			cell.left = 0;
+			cell.width = 0;
+			int advance = ch.xadvance + letterSpacing;
+			cell.advance = (std::max)(0, (std::min)(255, advance));
+			if (ch.w > 0 && ch.h > 0) {
+				map<int, BmPage>::const_iterator pit = pages.find(ch.page);
+				if (ch.w > 255 || pit == pages.end()) {
+					skippedSize++;
+					continue;
+				}
+				const BmPage& page = pit->second;
+				int left = ch.xoffset;
+				if (left < -128 || left > 127) {
+					clampedOffset++;
+					left = (std::max)(-128, (std::min)(127, left));
+				}
+				cell.left = left;
+				cell.width = ch.w;
+				cell.bgra.assign((size_t)ch.w * lineHeight * 4, 0);
+				for (int row = 0; row < ch.h; row++) {
+					const int destY = ch.yoffset + row;
+					const int srcY = ch.y + row;
+					if (destY < 0 || destY >= lineHeight || srcY < 0 || (UINT32)srcY >= page.height) {
+						continue;
+					}
+					for (int col = 0; col < ch.w; col++) {
+						const int srcX = ch.x + col;
+						if (srcX < 0 || (UINT32)srcX >= page.width) {
+							continue;
+						}
+						const BYTE* src = &page.bgra[((size_t)srcY * page.width + srcX) * 4];
+						BYTE* out = &cell.bgra[((size_t)destY * ch.w + col) * 4];
+						if (page.luminanceAsAlpha) {
+							out[0] = out[1] = out[2] = 255;
+							out[3] = (BYTE)(((int)src[0] + src[1] + src[2]) / 3);
+						}
+						else {
+							out[0] = src[0]; out[1] = src[1]; out[2] = src[2]; out[3] = src[3];
+						}
+					}
+				}
+			}
+			else if (cell.advance == 0) {
+				continue;		// 그림도 폭도 없는 항목은 글자가 아니다
+			}
+			if (code >= 0x100 && (((code >> 8) < 0xA1) || ((code & 0xFF) < 0xA1))) {
+				outsideHangulArea = true;
+			}
+			cells.push_back(cell);
+		}
+		for (map<int, BmPage>::iterator it = pages.begin(); it != pages.end(); ++it) {
+			free(it->second.bgra);
+		}
+		if (cells.empty()) {
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 가져올 수 있는 글자가 없습니다 (CP949 로 표현되는 글자가 있어야 합니다)." << endl;
+			return false;
+		}
+
+		// 줄 단위로 채워 넣는다 (글자 사이 1픽셀 간격)
+		int x = 0, y = 0;
+		vector<FontAtlasGlyph> placed(cells.size());
+		for (size_t i = 0; i < cells.size(); i++) {
+			FontAtlasGlyph g;
+			memset(&g, 0, sizeof(g));
+			g.advance = (BYTE)cells[i].advance;
+			if (cells[i].width > 0) {
+				if (x + cells[i].width > atlasWidth) {
+					x = 0;
+					y += lineHeight + 1;
+				}
+				g.x = (UINT16)x;
+				g.y = (UINT16)y;
+				g.width = (BYTE)cells[i].width;
+				g.height = (BYTE)lineHeight;
+				g.offsetX = (INT8)cells[i].left;
+				x += cells[i].width + 1;
+			}
+			placed[i] = g;
+		}
+		const int atlasHeight = y + lineHeight;
+		if (atlasHeight > 4096) {
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 아틀라스 높이가 4096 을 넘습니다 (" << dec << atlasHeight << L"). atlasWidth 를 늘리세요." << endl;
+			return false;
+		}
+
+		atlas = FontAtlasData();
+		atlas.name = fromUtf8(c["name"].asString());
+		atlas.flags = outsideHangulArea ? 1 : 0;
+		atlas.lineHeight = (UINT16)lineHeight;
+		atlas.atlasWidth = (UINT16)atlasWidth;
+		atlas.atlasHeight = (UINT16)atlasHeight;
+		atlas.bgra.assign((size_t)atlasWidth * atlasHeight * 4, 0);
+		for (size_t i = 0; i < cells.size(); i++) {
+			atlas.glyphs[cells[i].code] = placed[i];
+			for (int row = 0; row < lineHeight && cells[i].width > 0; row++) {
+				for (int col = 0; col < cells[i].width; col++) {
+					memcpy(&atlas.bgra[((size_t)(placed[i].y + row) * atlasWidth + placed[i].x + col) * 4], &cells[i].bgra[((size_t)row * cells[i].width + col) * 4], 4);
+				}
+			}
+		}
+
+		map<UINT16, FontAtlasGlyph>::const_iterator space = atlas.glyphs.find(0x20);
+		int missing = c.get("missingAdvance", 0).asInt();
+		if (missing <= 0) {
+			missing = (space != atlas.glyphs.end() && space->second.advance > 0) ? space->second.advance : lineHeight / 2;
+		}
+		atlas.missingAdvance = (UINT16)(std::max)(1, missing);
+
+		if (!quiet) {
+			wcout << infoPrefix << atlas.name << L": BMFont 글자 " << dec << atlas.glyphs.size() << L"개 (페이지 " << pageFiles.size() << L"장), 줄 높이 " << lineHeight << L", 아틀라스 " << atlasWidth << L"x" << atlasHeight << endl;
+			if (skippedCode > 0) {
+				wcout << infoPrefix << L"주의: CP949 로 표현할 수 없어 뺀 글자가 " << skippedCode << L"개 있습니다." << endl;
+			}
+			if (skippedSize > 0) {
+				wcout << infoPrefix << L"주의: 폭이 255 를 넘거나 페이지가 없어 뺀 글자가 " << skippedSize << L"개 있습니다." << endl;
+			}
+			if (clampedOffset > 0) {
+				wcout << infoPrefix << L"주의: 가로 보정이 -128~127 을 넘어 잘라 낸 글자가 " << clampedOffset << L"개 있습니다." << endl;
+			}
+		}
+		return true;
+	}
+
+}
+
+
 bool CTT::Glyph::buildFontAtlasData(const Json::Value& c, const wstring& baseDir, FontAtlasData& atlas, bool quiet)
 {
+	if (c.isObject() && c["name"].isString() && c["bmfont"].isString()) {
+		return importBmFontAtlas(c, baseDir, atlas, quiet);
+	}
 	if (!c.isObject() || !c["name"].isString() || !c["font"].isString() || !c["size"].isInt()) {
-		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 설정에 fontAtlas 블록(name, font, size)이 필요합니다." << endl;
+		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 설정에 fontAtlas 블록(name, font + size 또는 bmfont)이 필요합니다." << endl;
 		return false;
 	}
 
@@ -681,7 +1039,8 @@ bool CTT::Glyph::buildFontAtlas(const wstring& configPath)
 		return false;
 	}
 	const Json::Value& c = root["fontAtlas"];
-	if (!c.isObject() || !c["name"].isString() || !c["font"].isString() || !c["size"].isInt() || !c["outputDir"].isString()) {
+	const bool fromBmFont = c.isObject() && c["bmfont"].isString();
+	if (!c.isObject() || !c["name"].isString() || (!fromBmFont && (!c["font"].isString() || !c["size"].isInt())) || !c["outputDir"].isString()) {
 		wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 설정에 fontAtlas 블록(name, font, size, outputDir)이 필요합니다." << endl;
 		return false;
 	}

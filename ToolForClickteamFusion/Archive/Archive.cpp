@@ -672,7 +672,7 @@ bool Archive::exportFromArchive(vector<wstring>& extractingDataTypes)
 						delete chunk;
 						return false;
 					}
-					if (!extractOldObjectProperties(*chunk, extractingDataTypes)) {
+					if (!extractOldObjectProperties(*chunk, extractingDataTypes, backdropList)) {
 						delete chunk;
 						return false;
 					}
@@ -1865,7 +1865,7 @@ bool Archive::readObjectHeaders(vector<ObjectHeaderEntry>& headers, vector<strin
 }
 
 
-bool Archive::extractOldObjectProperties(ObjectDataChunk& chunk, vector<wstring>& extractingDataTypes)
+bool Archive::extractOldObjectProperties(ObjectDataChunk& chunk, vector<wstring>& extractingDataTypes, Json::Value& backdropList)
 {
 	const bool useText = contains(extractingDataTypes, L"text");
 	const bool useScript = contains(extractingDataTypes, L"script");
@@ -1897,8 +1897,15 @@ bool Archive::extractOldObjectProperties(ObjectDataChunk& chunk, vector<wstring>
 			}
 			frameScriptContext.objectNames[handle] = objectName;
 		}
-		// 타입 0 ~ 1 (배경)은 ObjectCommon 이 없다
+		// 타입 0 ~ 1 (배경)은 ObjectCommon 이 없다. 크기와 그림 번호만 backdrops.json 에 모은다 (속성 구조는 2.5+ 와 같다)
 		if (type < 2) {
+			ByteBuffer backdropBlob;
+			Json::Value backdrop;
+			if (useScript && object->getCommonBlob(backdropBlob) && readBackdropProperties(backdropBlob, (INT16)type, backdrop)) {
+				backdrop["index"] = (int)handle;
+				backdrop["name"] = objectName;
+				backdropList.append(backdrop);
+			}
 			continue;
 		}
 		ByteBuffer blob;

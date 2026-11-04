@@ -21,7 +21,9 @@ CheckUiState::CheckUiState()
 	frameWidth = frameHeight = 0;
 	background[0] = background[1] = background[2] = 0;
 	selectedInstance = -1;
-	zoom = 0;
+	zoom = 0.0f;
+	panX = 0.0f;
+	panY = 0.0f;
 	showNames = false;
 	showImages = true;
 	useGlyphs = true;
@@ -354,19 +356,34 @@ void Dx9Application::renderShellStepCheck()
 		sprintf_s(label, "%d  %s###frame%d", c.frames[i].index, c.frames[i].name.c_str(), (int)i);
 		if (ImGui::Selectable(label, c.selectedFrame == (int)i)) {
 			loadFrameLayout(c, (int)i);
+			c.panX = c.panY = 0.0f;
 		}
 	}
 	ImGui::EndChild();
 	ImGui::SameLine();
 
 	// 오른쪽: 도구 줄과 배치도
-	ImGui::BeginChild("##checkcanvas", ImVec2(0.0f, 0.0f), false);
-	const char* zoomNames[5] = { u8"맞춤", "1x", "2x", "3x", "4x" };
-	ImGui::SetNextItemWidth(80.0f);
-	if (ImGui::BeginCombo(u8"배율", zoomNames[c.zoom])) {
-		for (int z = 0; z < 5; z++) {
-			if (ImGui::Selectable(zoomNames[z], c.zoom == z)) {
-				c.zoom = z;
+	ImGui::BeginChild("##checkcanvas", ImVec2(0.0f, 0.0f), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+	static const float kZoomSteps[] = { 0.25f, 0.5f, 1.0f, 2.0f, 3.0f, 4.0f, 6.0f, 8.0f };
+	static const int kZoomStepCount = sizeof(kZoomSteps) / sizeof(kZoomSteps[0]);
+	char zoomLabel[32];
+	if (c.zoom == 0.0f) {
+		strcpy_s(zoomLabel, u8"맞춤");
+	}
+	else {
+		sprintf_s(zoomLabel, "%d%%", (int)(c.zoom * 100.0f + 0.5f));
+	}
+	ImGui::SetNextItemWidth(90.0f);
+	if (ImGui::BeginCombo(u8"배율", zoomLabel)) {
+		if (ImGui::Selectable(u8"맞춤", c.zoom == 0.0f)) {
+			c.zoom = 0.0f;
+			c.panX = c.panY = 0.0f;
+		}
+		for (int z = 0; z < kZoomStepCount; z++) {
+			char label[32];
+			sprintf_s(label, "%d%%", (int)(kZoomSteps[z] * 100.0f + 0.5f));
+			if (ImGui::Selectable(label, c.zoom == kZoomSteps[z])) {
+				c.zoom = kZoomSteps[z];
 			}
 		}
 		ImGui::EndCombo();
@@ -385,8 +402,7 @@ void Dx9Application::renderShellStepCheck()
 	if (ImGui::IsItemHovered()) {
 		ImGui::SetTooltip(u8"맨 위에 그려지는 전체 화면 그림(페이드 덮개 등)을 숨깁니다.\n이벤트가 걷어내는 것이라 처음 배치도에서는 화면을 가립니다");
 	}
-	ImGui::SameLine();
-	ImGui::TextDisabled(u8"처음 배치입니다 (이벤트는 실행하지 않습니다)");
+	ImGui::TextDisabled(u8"처음 배치 (이벤트 실행 안 함)  |  휠: 확대·축소  |  끌기: 이동");
 
 	if (c.selectedFrame < 0) {
 		ImGui::Spacing();
@@ -411,17 +427,59 @@ void Dx9Application::renderShellStepCheck()
 	ImVec2 canvasPos = ImGui::GetCursorScreenPos();
 	ImGui::InvisibleButton("##canvasarea", ImVec2(max(avail.x, 1.0f), max(avail.y, 1.0f)));
 	const bool canvasHovered = ImGui::IsItemHovered();
-	const bool canvasClicked = ImGui::IsItemClicked(ImGuiMouseButton_Left);
+	const bool canvasReleased = ImGui::IsItemDeactivated();
+	const ImVec2 dragDelta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left, 4.0f);
+	const bool dragged = (dragDelta.x != 0.0f || dragDelta.y != 0.0f);
+	const bool canvasClicked = canvasReleased && canvasHovered && !dragged;
+	const ImVec2 canvasMax(canvasPos.x + max(avail.x, 1.0f), canvasPos.y + max(avail.y, 1.0f));
 
-	float scale = (float)c.zoom;
-	if (c.zoom == 0) {
+	// 끌어서 이동 (왼쪽 버튼을 4픽셀 넘게 끌거나, 가운데 버튼)
+	if (ImGui::IsItemActive() && (ImGui::IsMouseDragging(ImGuiMouseButton_Left, 4.0f) || ImGui::IsMouseDragging(ImGuiMouseButton_Middle, 0.0f))) {
+		c.panX += ImGui::GetIO().MouseDelta.x;
+		c.panY += ImGui::GetIO().MouseDelta.y;
+	}
+
+	float scale = c.zoom;
+	if (c.zoom == 0.0f) {
 		float fit = min((avail.x - 8.0f) / (float)c.frameWidth, (avail.y - 8.0f) / (float)c.frameHeight);
 		scale = (fit >= 1.0f) ? floorf(fit) : max(fit, 0.2f);
 	}
-	ImVec2 origin(canvasPos.x + 4.0f, canvasPos.y + 4.0f);
+	ImVec2 origin(canvasPos.x + 4.0f + c.panX, canvasPos.y + 4.0f + c.panY);
+
+	// 휠: 마우스가 가리키는 곳을 고정한 채 확대·축소
+	const float wheel = ImGui::GetIO().MouseWheel;
+	if (canvasHovered && wheel != 0.0f) {
+		float next = scale;
+		if (wheel > 0.0f) {
+			next = kZoomSteps[kZoomStepCount - 1];
+			for (int z = kZoomStepCount - 1; z >= 0; z--) {
+				if (kZoomSteps[z] > scale * 1.01f) {
+					next = kZoomSteps[z];
+				}
+			}
+		}
+		else {
+			next = kZoomSteps[0];
+			for (int z = 0; z < kZoomStepCount; z++) {
+				if (kZoomSteps[z] < scale * 0.99f) {
+					next = kZoomSteps[z];
+				}
+			}
+		}
+		const ImVec2 mouse = ImGui::GetMousePos();
+		const float frameX = (mouse.x - origin.x) / scale;
+		const float frameY = (mouse.y - origin.y) / scale;
+		scale = next;
+		c.zoom = next;
+		c.panX = mouse.x - frameX * scale - (canvasPos.x + 4.0f);
+		c.panY = mouse.y - frameY * scale - (canvasPos.y + 4.0f);
+		origin = ImVec2(canvasPos.x + 4.0f + c.panX, canvasPos.y + 4.0f + c.panY);
+	}
 	ImVec2 frameMax(origin.x + c.frameWidth * scale, origin.y + c.frameHeight * scale);
 	ImDrawList* drawList = ImGui::GetWindowDrawList();
+	drawList->PushClipRect(canvasPos, canvasMax, true);
 	drawList->AddRectFilled(origin, frameMax, IM_COL32(c.background[0], c.background[1], c.background[2], 255));
+	drawList->PopClipRect();
 
 	// 레이어 순서(같으면 인스턴스 순서)로 그린다
 	const Json::Value& instances = c.layout["instances"];
@@ -431,7 +489,7 @@ void Dx9Application::renderShellStepCheck()
 	}
 	stable_sort(order.begin(), order.end(), [&](int a, int b) { return instances[(Json::ArrayIndex)a].get("layer", 0).asInt() < instances[(Json::ArrayIndex)b].get("layer", 0).asInt(); });
 
-	drawList->PushClipRect(origin, frameMax, true);
+	drawList->PushClipRect(ImVec2(max(origin.x, canvasPos.x), max(origin.y, canvasPos.y)), ImVec2(min(frameMax.x, canvasMax.x), min(frameMax.y, canvasMax.y)), true);
 	vector<PlacedBox> placed;
 	ImFont* font = ImGui::GetFont();
 	for (size_t n = 0; n < order.size(); n++) {
@@ -540,7 +598,9 @@ void Dx9Application::renderShellStepCheck()
 		}
 	}
 	drawList->PopClipRect();
+	drawList->PushClipRect(canvasPos, canvasMax, true);
 	drawList->AddRect(origin, frameMax, IM_COL32(120, 140, 150, 255));
+	drawList->PopClipRect();
 
 	if (canvasClicked) {
 		c.selectedInstance = hovered;

@@ -89,7 +89,9 @@ namespace CTT {
 			map<int, CheckObjectInfo> objects;		// 오브젝트 번호 -> 정보
 			map<int, CheckObjectInfo> backdrops;	// 배경 오브젝트 번호 -> 정보 (script/backdrops.json)
 			int selectedInstance;		// layout.instances 의 위치, -1 이면 없음
-			int zoom;					// 0 = 화면에 맞춤, 1 이상 = 배율
+			float zoom;					// 0 = 화면에 맞춤, 그 밖에는 배율 (1.0 = 원래 크기)
+			float panX;					// 끌어서 옮긴 거리 (화면 픽셀)
+			float panY;
 			bool showNames;
 			bool showImages;
 			bool useGlyphs;				// 글자 오브젝트를 배정한 폰트 아틀라스 글자로 그린다

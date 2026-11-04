@@ -663,12 +663,21 @@ namespace {
 
 namespace {
 
-	// (?) 에 마우스를 올리면 설명이 나온다
+	// 동그라미 안의 i 아이콘에 마우스를 올리면 설명이 나온다
 	void helpMarker(const char* text)
 	{
 		ImGui::SameLine();
-		ImGui::TextDisabled("(?)");
-		if (ImGui::IsItemHovered()) {
+		const float size = ImGui::GetTextLineHeight();
+		const ImVec2 pos = ImGui::GetCursorScreenPos();
+		ImGui::Dummy(ImVec2(size, size));
+		const bool hovered = ImGui::IsItemHovered();
+		ImDrawList* drawList = ImGui::GetWindowDrawList();
+		const ImU32 color = hovered ? IM_COL32(120, 200, 255, 255) : IM_COL32(150, 160, 170, 255);
+		const ImVec2 center(pos.x + size * 0.5f, pos.y + size * 0.5f);
+		drawList->AddCircle(center, size * 0.46f, color, 20, 1.4f);
+		drawList->AddCircleFilled(ImVec2(center.x, center.y - size * 0.19f), size * 0.08f, color, 8);
+		drawList->AddLine(ImVec2(center.x, center.y - size * 0.04f), ImVec2(center.x, center.y + size * 0.2f), color, 1.8f);
+		if (hovered) {
 			ImGui::BeginTooltip();
 			ImGui::PushTextWrapPos(ImGui::GetFontSize() * 30.0f);
 			ImGui::TextUnformatted(text);

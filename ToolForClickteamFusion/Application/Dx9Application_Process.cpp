@@ -62,5 +62,10 @@ void Dx9Application::closeArchive()
 	hangul.blitters.clear();
 	hangul.atlases.clear();
 	hangul.releaseTextures();
+	hangul.objectSnap = DirSnapshot();
+	hangul.flowSnap = DirSnapshot();
+	hangul.atlasSnap = DirSnapshot();
+	hangul.registrySnap = DirSnapshot();
 	check.reset();
+	shell.refresh = RefreshState();
 }

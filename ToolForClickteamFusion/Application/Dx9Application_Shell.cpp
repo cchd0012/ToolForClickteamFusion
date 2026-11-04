@@ -208,6 +208,8 @@ void Dx9Application::renderShell()
 		return;
 	}
 
+	updateFileRefresh();
+
 	const float statusHeight = fontSize * 2.4f;
 	const float navWidth = fontSize * 12.5f;
 	float bottomHeight = fontSize * 2.4f;
@@ -290,7 +292,8 @@ void Dx9Application::renderShellStatus(float x, float y, float w, float h)
 			sprintf_s(diagnoseLabel, u8"진단 전");
 		}
 		const char* saveLabel = states.isDirty ? u8"저장 필요" : u8"변경 없음";
-		float pillsWidth = pillWidth(diagnoseLabel) + pillWidth(saveLabel) + ImGui::GetStyle().ItemSpacing.x;
+		const char* refreshLabel = shell.refresh.scanning ? u8"확인 중..." : u8"새로고침";
+		float pillsWidth = pillWidth(refreshLabel) + pillWidth(diagnoseLabel) + pillWidth(saveLabel) + ImGui::GetStyle().ItemSpacing.x * 2.0f;
 
 		// 줄 가운데에 맞춘다
 		float lineHeight = ImGui::GetTextLineHeight() + 6.0f;
@@ -305,6 +308,13 @@ void Dx9Application::renderShellStatus(float x, float y, float w, float h)
 		}
 		ImGui::SameLine(w - pillsWidth - 12.0f);
 		ImGui::SetCursorPosY((h - lineHeight) * 0.5f);
+		if (pillButton("refresh", refreshLabel, shell.refresh.scanning ? kAccentColor : kMutedColor)) {
+			requestFileRefresh(true);
+		}
+		if (ImGui::IsItemHovered()) {
+			ImGui::SetTooltip(u8"추출 폴더의 파일을 다시 확인해, 도구 밖에서 바뀐 것만 다시 읽습니다.\n창으로 돌아올 때도 자동으로 확인합니다");
+		}
+		ImGui::SameLine();
 		if (pillButton("diag", diagnoseLabel, (shell.diagnosed && !shell.problems.empty()) ? kWarnColor : (shell.diagnosed ? kOkColor : kMutedColor))) {
 			shell.step = SHELL_STEP_DIAGNOSE;
 		}

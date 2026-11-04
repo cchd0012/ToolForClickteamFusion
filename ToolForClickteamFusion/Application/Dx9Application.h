@@ -60,6 +60,13 @@ namespace CTT {
 			int shellStepStatus(int step);
 			void addShellLog(ShellLogLevel level, const string& text);
 			void runDiagnosis();
+			// 도구 밖에서 바뀐 파일 다시 읽기, Dx9Application_Refresh.cpp
+			void updateFileRefresh();
+			void requestFileRefresh(bool manual);
+			void scanCheckFiles(CheckChanges& changes);
+			void applyCheckFiles(CheckChanges& changes);
+			void scanHangulFiles(HangulChanges& changes);
+			void applyHangulFiles(HangulChanges& changes);
 			void renderDiagnosisSuggestModal();
 			// 한글화 도구 (글꼴·글자 단계 화면 안에서 그린다), Dx9Application_Hangul.cpp
 			void renderHangulToolContent();

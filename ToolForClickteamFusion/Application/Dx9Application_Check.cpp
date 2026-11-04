@@ -61,6 +61,9 @@ void CheckUiState::reset()
 	objects.clear();
 	selectedInstance = -1;
 	hiddenObjects.clear();
+	frameSnap = DirSnapshot();
+	objectSnap = DirSnapshot();
+	imageSnap = DirSnapshot();
 }
 
 
@@ -124,6 +127,10 @@ namespace {
 	{
 		c.reset();
 		wstring base = checkBase(archive);
+		// 도구 밖에서 파일이 바뀌었는지 알아내는 기준 (읽는 시점의 상태)
+		c.frameSnap = takeDirSnapshot(base + L"\\script\\frame", L"*.json");
+		c.objectSnap = takeDirSnapshot(base + L"\\script\\object", L"*.json");
+		c.imageSnap = takeDirSnapshot(base + L"\\image", L"*");
 		vector<wstring> files = listJsonFiles(base + L"\\script\\frame");
 		if (files.empty()) {
 			c.message = u8"추출한 프레임 스크립트가 없습니다. 추출 단계에서 '스크립트'를 추출하세요.";
@@ -277,6 +284,12 @@ namespace {
 			}
 		}
 		return result;
+	}
+
+	wstring lastPathPart(const wstring& path)
+	{
+		size_t slash = path.find_last_of(L"\\/");
+		return (slash == wstring::npos) ? path : path.substr(slash + 1);
 	}
 
 	struct PlacedBox
@@ -562,5 +575,111 @@ void Dx9Application::renderCheckInspector()
 			flags += (i > 0 ? ", " : "") + object.flagNames[i];
 		}
 		ImGui::TextWrapped("%s", flags.empty() ? u8"(정보 없음)" : flags.c_str());
+	}
+}
+
+
+// ---- 도구 밖에서 바뀐 파일 다시 읽기 (Dx9Application_Refresh.cpp 가 부른다)
+
+void Dx9Application::scanCheckFiles(CheckChanges& changes)
+{
+	if (!check.loaded) {
+		return;
+	}
+	const wstring base = checkBase(archive);
+	changes.frames = compareDir(check.frameSnap, base + L"\\script\\frame", L"*.json");
+	changes.objects = compareDir(check.objectSnap, base + L"\\script\\object", L"*.json");
+	changes.images = compareDir(check.imageSnap, base + L"\\image", L"*");
+}
+
+
+void Dx9Application::applyCheckFiles(CheckChanges& changes)
+{
+	CheckUiState& c = check;
+	const wstring base = checkBase(archive);
+
+	// 프레임 파일이 늘거나 줄었거나 그림 목록이 바뀌었으면 처음부터 다시 읽는다. 보던 프레임, 고른 인스턴스, 숨긴 오브젝트는 유지한다
+	bool imageListChanged = false;
+	for (size_t i = 0; i < changes.images.changed.size(); i++) {
+		if (changes.images.changed[i] == L"imageList.json") {
+			imageListChanged = true;
+		}
+	}
+	bool frameSetChanged = false;
+	if (changes.frames.any()) {
+		if (c.frames.size() != changes.frames.after.files.size()) {
+			frameSetChanged = true;
+		}
+		else {
+			for (size_t i = 0; i < c.frames.size(); i++) {
+				if (changes.frames.after.files.find(lastPathPart(c.frames[i].path)) == changes.frames.after.files.end()) {
+					frameSetChanged = true;
+				}
+			}
+		}
+	}
+	if (frameSetChanged || imageListChanged) {
+		int selectedNumber = (c.selectedFrame >= 0 && c.selectedFrame < (int)c.frames.size()) ? c.frames[c.selectedFrame].index : -1;
+		int selectedInstance = c.selectedInstance;
+		set<int> hidden = c.hiddenObjects;
+		loadFrameList(archive, c);
+		c.hiddenObjects = hidden;
+		for (size_t i = 0; i < c.frames.size(); i++) {
+			if (c.frames[i].index == selectedNumber) {
+				loadFrameLayout(c, (int)i);
+				if (c.layoutLoaded && selectedInstance >= 0 && selectedInstance < (int)c.layout["instances"].size()) {
+					c.selectedInstance = selectedInstance;
+				}
+				break;
+			}
+		}
+		addShellLog(ShellLogLevel::Info, frameSetChanged ? u8"프레임 파일 목록이 바뀌어 확인 화면을 다시 읽었습니다" : u8"그림 목록(imageList.json)이 바뀌어 확인 화면을 다시 읽었습니다");
+		return;
+	}
+
+	int frameCount = 0;
+	for (size_t k = 0; k < changes.frames.changed.size(); k++) {
+		for (size_t i = 0; i < c.frames.size(); i++) {
+			if (lastPathPart(c.frames[i].path) != changes.frames.changed[k]) {
+				continue;
+			}
+			c.frames[i].name = readFrameNameFromTail(c.frames[i].path);
+			if (c.selectedFrame == (int)i) {
+				int selectedInstance = c.selectedInstance;
+				loadFrameLayout(c, (int)i);
+				if (c.layoutLoaded && selectedInstance >= 0 && selectedInstance < (int)c.layout["instances"].size()) {
+					c.selectedInstance = selectedInstance;
+				}
+			}
+			frameCount++;
+		}
+	}
+
+	int objectCount = 0;
+	for (size_t i = 0; i < changes.objects.changed.size(); i++) {
+		objectCount += (int)c.objects.erase(_wtoi(changes.objects.changed[i].c_str()));
+	}
+
+	int imageCount = 0;
+	for (size_t i = 0; i < changes.images.changed.size(); i++) {
+		for (map<int, CheckImageInfo>::iterator it = c.images.begin(); it != c.images.end(); ++it) {
+			if (it->second.file != changes.images.changed[i]) {
+				continue;
+			}
+			if (it->second.texture != NULL) {
+				it->second.texture->Release();
+				it->second.texture = NULL;
+			}
+			it->second.triedLoad = false;
+			imageCount++;
+		}
+	}
+
+	c.frameSnap = changes.frames.after;
+	c.objectSnap = changes.objects.after;
+	c.imageSnap = changes.images.after;
+
+	if (frameCount + objectCount + imageCount > 0) {
+		addShellLog(ShellLogLevel::Info, string(u8"확인 화면: 바뀐 파일을 다시 읽었습니다 (프레임 ") + to_string(frameCount) + u8"개, 오브젝트 " + to_string(objectCount) + u8"개, 그림 " + to_string(imageCount) + u8"개)");
 	}
 }

@@ -6,6 +6,7 @@
 #include <vector>
 #include "../Common.h"
 #include "../Util/JsonUtil.h"
+#include "FileWatch.h"
 
 // 확인 단계(프레임 배치도)의 화면 상태
 //
@@ -55,6 +56,16 @@ namespace CTT {
 			CheckObjectInfo() : found(false), objectType(0), imageHandle(0), width(0), height(0), isBlitter(false), fontTable(0) {}
 		};
 
+		// 지켜보는 폴더들에서 달라진 파일
+		struct CheckChanges
+		{
+			WatchResult frames;
+			WatchResult objects;
+			WatchResult images;
+			bool any() const { return frames.any() || objects.any() || images.any(); }
+			wstring fingerprint() const { return fingerprintOf(frames) + L"#" + fingerprintOf(objects) + L"#" + fingerprintOf(images); }
+		};
+
 		struct CheckUiState
 		{
 			bool loaded;				// 프레임 목록을 읽었다
@@ -75,6 +86,11 @@ namespace CTT {
 			bool useGlyphs;				// 글자 오브젝트를 배정한 폰트 아틀라스 글자로 그린다
 			bool hideOverlays;			// 맨 위에 그려지는 전체 화면 그림(페이드 덮개 등)을 숨긴다
 			set<int> hiddenObjects;		// 사용자가 숨긴 오브젝트 번호
+
+			// 도구 밖에서 파일이 바뀌었는지 알아내는 기준 (읽을 때의 상태)
+			DirSnapshot frameSnap;		// script/frame
+			DirSnapshot objectSnap;		// script/object
+			DirSnapshot imageSnap;		// image
 
 			CheckUiState();
 			~CheckUiState();

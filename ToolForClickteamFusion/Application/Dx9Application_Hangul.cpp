@@ -184,6 +184,8 @@ namespace {
 			hangul.atlases.push_back(item);
 		}
 		hangul.atlasesLoaded = true;
+		hangul.atlasSnap = takeDirSnapshot(dir, L"*");
+		hangul.registrySnap = takeDirSnapshot(glyphDir(archive), L"atlases.json");
 	}
 
 	// 번호가 겹치지 않는지 확인하고 설정 파일(txtblt-font patch 의 설정과 같은 형식)로 저장한다
@@ -569,6 +571,8 @@ namespace {
 			}
 		}
 		hangul.blittersLoaded = true;
+		hangul.objectSnap = takeDirSnapshot(objectDir, L"*.json");
+		hangul.flowSnap = takeDirSnapshot(base + L"/text", L"textFlow.json");
 	}
 
 	bool saveBlitters(HangulUiState& hangul, UINT32& savedCount)
@@ -906,6 +910,7 @@ void Dx9Application::renderHangulAtlasTab()
 	if (ImGui::Button(u8"번호 저장")) {
 		string error;
 		if (saveRegistry(archive, h, error)) {
+			h.registrySnap = takeDirSnapshot(glyphDir(archive), L"atlases.json");
 			setMessage(h, u8"번호를 저장했습니다 (glyph/atlases.json). 다음은 [나. 오브젝트에 적용]입니다", false);
 		}
 		else {
@@ -1134,6 +1139,11 @@ void Dx9Application::renderHangulBlitterTab()
 	if (ImGui::Button(u8"파일에 저장")) {
 		UINT32 saved = 0;
 		if (saveBlitters(h, saved)) {
+			h.objectSnap = takeDirSnapshot(archiveBase(archive) + L"/script/object", L"*.json");
+			check.objects.clear();
+			if (check.objectSnap.valid) {
+				check.objectSnap = h.objectSnap;
+			}
 			setMessage(h, to_string(saved) + u8"개 오브젝트 파일을 저장했습니다. [3.교체 (재합성)]의 '스크립트'로 아카이브에 반영하세요", false);
 		}
 		else {
@@ -1484,4 +1494,97 @@ bool Dx9Application::drawBlitterGlyphs(INT32 fontTable, const string& text, ImVe
 	}
 	drawPreviewAt(pD3dDevice, *pa, text, max(boxWidth, 8), scale, origin, false, &outSize);
 	return true;
+}
+
+
+// ---- 도구 밖에서 바뀐 파일 다시 읽기 (Dx9Application_Refresh.cpp 가 부른다)
+
+void Dx9Application::scanHangulFiles(HangulChanges& changes)
+{
+	HangulUiState& h = hangul;
+	const wstring base = archiveBase(archive);
+	changes.objects = compareDir(h.objectSnap, base + L"\\script\\object", L"*.json");
+	changes.flow = compareDir(h.flowSnap, base + L"\\text", L"textFlow.json");
+	// 아틀라스를 만드는 중에는 파일이 반쯤 쓰여 있으므로 건드리지 않는다 (끝나면 목록을 다시 읽으며 기준이 갱신된다)
+	if (!h.buildRunning) {
+		changes.atlases = compareDir(h.atlasSnap, atlasDir(archive), L"*");
+		changes.registry = compareDir(h.registrySnap, glyphDir(archive), L"atlases.json");
+	}
+}
+
+
+void Dx9Application::applyHangulFiles(HangulChanges& changes)
+{
+	HangulUiState& h = hangul;
+
+	// ---- 글자 오브젝트 / 텍스트 흐름
+	bool reload = changes.flow.any();
+	if (!reload && changes.objects.any()) {
+		// 읽어 둔 글자 오브젝트 파일이 바뀌었거나 없어졌거나, 새 파일이 생긴 경우만 다시 읽는다 (다른 오브젝트 파일은 상관없다)
+		set<wstring> known;
+		for (size_t i = 0; i < h.blitters.size(); i++) {
+			size_t slash = h.blitters[i].jsonPath.find_last_of(L"\\/");
+			known.insert(slash == wstring::npos ? h.blitters[i].jsonPath : h.blitters[i].jsonPath.substr(slash + 1));
+		}
+		for (size_t i = 0; i < changes.objects.changed.size(); i++) {
+			const wstring& name = changes.objects.changed[i];
+			if (known.count(name) > 0 || h.objectSnap.files.find(name) == h.objectSnap.files.end()) {
+				reload = true;
+			}
+		}
+	}
+	if (reload) {
+		bool anyDirty = false;
+		for (size_t i = 0; i < h.blitters.size(); i++) {
+			anyDirty = anyDirty || h.blitters[i].dirty;
+		}
+		if (anyDirty) {
+			// 저장하지 않은 폰트 아틀라스 지정을 잃지 않도록 다시 읽지 않는다
+			addShellLog(ShellLogLevel::Warn, u8"글자 오브젝트 파일이 바뀌었지만, 저장하지 않은 폰트 아틀라스 지정이 있어 다시 읽지 않았습니다. [파일에 저장]을 하거나 [글자 오브젝트 불러오기]를 누르세요");
+			h.objectSnap = changes.objects.after;
+			h.flowSnap = changes.flow.after.valid ? changes.flow.after : h.flowSnap;
+		}
+		else {
+			INT32 keepIndex = (h.currentBlitter >= 0 && h.currentBlitter < (int)h.blitters.size()) ? h.blitters[h.currentBlitter].index : -1;
+			loadBlitters(archive, h);
+			for (size_t i = 0; i < h.blitters.size(); i++) {
+				if (h.blitters[i].index == keepIndex) {
+					h.currentBlitter = (int)i;
+				}
+			}
+			addShellLog(ShellLogLevel::Info, string(u8"글꼴·글자: 글자 오브젝트 ") + to_string(h.blitters.size()) + u8"개를 다시 읽었습니다" + (changes.flow.any() ? u8" (텍스트 흐름이 바뀌었습니다)" : ""));
+		}
+	}
+	else {
+		h.objectSnap = changes.objects.after.valid ? changes.objects.after : h.objectSnap;
+	}
+
+	// ---- 폰트 아틀라스 파일 / 번호 배정 파일
+	if (changes.atlases.any() || changes.registry.any()) {
+		// 번호 배정 파일이 그대로면, 아직 저장하지 않은 번호 고르기를 유지한다
+		map<wstring, INT32> keepIds;
+		if (!changes.registry.any()) {
+			for (size_t i = 0; i < h.atlases.size(); i++) {
+				keepIds[h.atlases[i].name] = h.atlases[i].id;
+			}
+		}
+		for (map<wstring, HangulPreviewAtlas>::iterator it = h.previewCache.begin(); it != h.previewCache.end(); ++it) {
+			if (it->second.texture != NULL) {
+				it->second.texture->Release();
+				it->second.texture = NULL;
+			}
+		}
+		h.previewCache.clear();
+		loadAtlasList(archive, h);
+		for (size_t i = 0; i < h.atlases.size(); i++) {
+			map<wstring, INT32>::iterator it = keepIds.find(h.atlases[i].name);
+			if (it != keepIds.end()) {
+				h.atlases[i].id = it->second;
+			}
+		}
+		if (h.previewAtlas >= (int)h.atlases.size()) {
+			h.previewAtlas = -1;
+		}
+		addShellLog(ShellLogLevel::Info, string(u8"글꼴·글자: 폰트 아틀라스 파일이 바뀌어 목록(") + to_string(h.atlases.size()) + u8"개)과 미리보기를 다시 읽었습니다");
+	}
 }

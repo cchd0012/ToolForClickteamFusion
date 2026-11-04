@@ -4,6 +4,7 @@
 #include "../Common.h"
 #include "../Glyph/FontAtlas.h"
 #include "../ImGUI/Headers.h"
+#include "FileWatch.h"
 
 // 한글화 도구 창(폰트 아틀라스 만들기 / 오브젝트에 적용 / 게임에 넣기 세 탭)의 화면 상태
 //
@@ -55,6 +56,17 @@ namespace CTT {
 			CTT::Glyph::FontAtlasData data;
 			LPDIRECT3DTEXTURE9 texture;
 			HangulPreviewAtlas() : texture(NULL) {}
+		};
+
+		// 지켜보는 폴더들에서 달라진 파일
+		struct HangulChanges
+		{
+			WatchResult objects;
+			WatchResult flow;
+			WatchResult atlases;
+			WatchResult registry;
+			bool any() const { return objects.any() || flow.any() || atlases.any() || registry.any(); }
+			wstring fingerprint() const { return fingerprintOf(objects) + L"#" + fingerprintOf(flow) + L"#" + fingerprintOf(atlases) + L"#" + fingerprintOf(registry); }
 		};
 
 		struct HangulUiState
@@ -114,6 +126,12 @@ namespace CTT {
 			HangulPreviewAtlas livePreview;
 			string liveKey;					// 마지막으로 만든 설정 (같으면 다시 만들지 않는다)
 			string liveError;
+
+			// 도구 밖에서 파일이 바뀌었는지 알아내는 기준 (읽을 때의 상태)
+			DirSnapshot objectSnap;			// script/object (글자 오브젝트를 읽을 때)
+			DirSnapshot flowSnap;			// text/textFlow.json
+			DirSnapshot atlasSnap;			// glyph/atlas
+			DirSnapshot registrySnap;		// glyph/atlases.json
 
 			// 메시지
 			string message;

@@ -352,6 +352,8 @@ static const char* paramKindOf(INT16 code)
 		case 49: return "globalValue";
 		case 41: case 64: return "string";
 		case 47: case 51: return "twoShorts";
+		case 68: return "multiVariables";
+		case 69: return "childEvent";
 	}
 	return "raw";
 }
@@ -508,6 +510,50 @@ static bool decodeParamFields(INT16 code, const string& kind, const ByteBuffer& 
 		else if (kind == "twoShorts") {
 			out["first"] = (JsonInt)reader.readI16();
 			out["second"] = (JsonInt)reader.readI16();
+		}
+		else if (kind == "multiVariables") {
+			// 알터러블/전역 값 여러 개를 한 번에 정하는 파라미터. 12바이트 머리(flags, flagMasks, flagValues) 뒤에 항목 4칸(각 16바이트)이 있고,
+			// flags 의 4비트씩이 항목 하나를 가리킨다: 1 = 쓰는 항목, 2 = 전역 값, 4 = 실수(double) 값
+			const INT32 flags = reader.readI32();
+			out["flags"] = (JsonInt)flags;
+			out["flagMasks"] = (JsonInt)reader.readI32();
+			out["flagValues"] = (JsonInt)reader.readI32();
+			Json::Value values(Json::arrayValue);
+			for (int i = 0; i < 4 && ((flags >> (4 * i)) & 1) != 0; i++) {
+				Json::Value item(Json::objectValue);
+				item["index"] = (JsonInt)reader.readI32();
+				item["op"] = (JsonInt)reader.readI32();
+				if (((flags >> (4 * i)) & 4) != 0) {
+					ByteBuffer bits = reader.readBytes(8);
+					double d = 0.0;
+					memcpy(&d, &bits[0], 8);
+					item["value"] = d;
+				}
+				else {
+					item["value"] = (JsonInt)reader.readI32();
+					if (reader.readI32() != 0) {
+						return false;		// 값 뒤 4바이트가 0 이 아니면 구조를 모른다
+					}
+				}
+				values.append(item);
+			}
+			out["values"] = values;
+		}
+		else if (kind == "childEvent") {
+			// 개수 + (오브젝트 정보, 값) 짝 + 끝 표지 4바이트
+			const INT32 count = reader.readI32();
+			if (count < 0 || (size_t)count * 4 + 4 > reader.remaining()) {
+				return false;
+			}
+			Json::Value list(Json::arrayValue);
+			for (INT32 i = 0; i < count; i++) {
+				Json::Value item(Json::objectValue);
+				item["objectInfo"] = (JsonInt)reader.readI16();
+				item["extra"] = (JsonInt)reader.readI16();
+				list.append(item);
+			}
+			out["list"] = list;
+			out["terminator"] = (JsonInt)reader.readI32();
 		}
 		else {
 			return false;
@@ -684,6 +730,47 @@ static ByteBuffer encodeParamFields(const string& kind, const Json::Value& field
 	else if (kind == "twoShorts") {
 		writer.writeI16((INT16)getInt(fields, "first", -32768, 32767));
 		writer.writeI16((INT16)getInt(fields, "second", -32768, 32767));
+	}
+	else if (kind == "multiVariables") {
+		const INT32 flags = (INT32)getInt(fields, "flags", -2147483647 - 1, 2147483647);
+		writer.writeI32(flags);
+		writer.writeI32((INT32)getInt(fields, "flagMasks", -2147483647 - 1, 2147483647));
+		writer.writeI32((INT32)getInt(fields, "flagValues", -2147483647 - 1, 2147483647));
+		const Json::Value& values = getArray(fields, "values");
+		int used = 0;
+		while (used < 4 && ((flags >> (4 * used)) & 1) != 0) {
+			used++;
+		}
+		if ((int)values.size() != used) {
+			throw ByteBufferError("multiVariables values count does not match flags");
+		}
+		for (int i = 0; i < used; i++) {
+			const Json::Value& item = values[(Json::ArrayIndex)i];
+			writer.writeI32((INT32)getInt(item, "index", -2147483647 - 1, 2147483647));
+			writer.writeI32((INT32)getInt(item, "op", -2147483647 - 1, 2147483647));
+			if (((flags >> (4 * i)) & 4) != 0) {
+				if (!item["value"].isNumeric()) {
+					throw ByteBufferError("multiVariables value must be a number");
+				}
+				double d = item["value"].asDouble();
+				ByteBuffer bits(8);
+				memcpy(&bits[0], &d, 8);
+				writer.writeBytes(bits);
+			}
+			else {
+				writer.writeI32((INT32)getInt(item, "value", -2147483647 - 1, 2147483647));
+				writer.writeI32(0);
+			}
+		}
+	}
+	else if (kind == "childEvent") {
+		const Json::Value& list = getArray(fields, "list");
+		writer.writeI32((INT32)list.size());
+		for (Json::ArrayIndex i = 0; i < list.size(); i++) {
+			writer.writeI16((INT16)getInt(list[i], "objectInfo", -32768, 32767));
+			writer.writeI16((INT16)getInt(list[i], "extra", -32768, 32767));
+		}
+		writer.writeI32((INT32)getInt(fields, "terminator", -2147483647 - 1, 2147483647));
 	}
 	else {
 		throw ByteBufferError("unknown parameter kind: " + kind);

@@ -9,7 +9,46 @@ using namespace CTT::ZlibUtil;
 using namespace CTT::CommonUtil;
 
 
-Sound::Sound() 
+namespace {
+
+	// MPEG 오디오 프레임 머리인지 확인한다 (동기 비트 11개, 버전/레이어/비트레이트/샘플레이트 값이 유효한지)
+	bool isMpegFrameHeader(const BYTE* data, UINT32 size)
+	{
+		if (size < 4) {
+			return false;
+		}
+		if (data[0] != 0xFF || (data[1] & 0xE0) != 0xE0) {
+			return false;
+		}
+		BYTE version = (data[1] >> 3) & 0x3;		// 1 은 예약
+		BYTE layer = (data[1] >> 1) & 0x3;			// 0 은 예약
+		BYTE bitrateIndex = (data[2] >> 4) & 0xF;	// 15 는 사용하지 않음
+		BYTE sampleRateIndex = (data[2] >> 2) & 0x3;	// 3 은 예약
+		return version != 1 && layer != 0 && bitrateIndex != 0xF && sampleRateIndex != 0x3;
+	}
+
+	// 사운드 데이터 앞부분을 보고 확장자를 정한다. 알아보지 못하면 unk
+	wstring detectSoundExtention(const BYTE* data, UINT32 size)
+	{
+		if (data == NULL || size < 4) {
+			return L"unk";
+		}
+		if (memcmp(data, "OggS", 4) == 0) {
+			return L"ogg";
+		}
+		if (memcmp(data, "RIFF", 4) == 0) {
+			return L"wav";
+		}
+		if (memcmp(data, "ID3", 3) == 0 || isMpegFrameHeader(data, size)) {
+			return L"mp3";
+		}
+		return L"unk";
+	}
+
+}
+
+
+Sound::Sound()
 {
 	memset(&info, 0, sizeof(CommonSoundInfo));
 	compressedData = NULL;
@@ -41,24 +80,7 @@ bool Sound::exportData(wstring& dirPath, UINT32 index, bool isFullyExport)
 	}
 
 	// 확장자는 내부 데이터를 가지고 판단한다
-	string oggMagic = "OggS";
-	string wavMagic = "RIFF";
-	string mp3Magic = "ID3";
-	string mp3Magic2 = { (char)0xFF, (char)0xFB, (char)0x50, (char)0xC4 };
-	wstring extention;
-	if (memcmp(soundData, oggMagic.c_str(), oggMagic.size()) == 0) {
-		extention = L"ogg";
-	}
-	else if (memcmp(soundData, wavMagic.c_str(), wavMagic.size()) == 0) {
-		extention = L"wav";
-	}
-	else if ((memcmp(soundData, mp3Magic.c_str(), mp3Magic.size()) == 0)
-		|| (memcmp(soundData, mp3Magic2.c_str(), mp3Magic2.size()) == 0)) {
-		extention = L"mp3";
-	}
-	else {
-		extention = L"unk";
-	}
+	wstring extention = detectSoundExtention(soundData, soundSize);
 
 	// 추출 파일 경로 생성, 내부 데이터를 가지고 판단한다
 	wostringstream woss;
@@ -96,29 +118,20 @@ bool Sound::importData(wstring& dirPath, UINT32 index)
 	}
 
 	// 확장자는 내부 데이터를 가지고 판단한다
-	string oggMagic = "OggS";
-	string wavMagic = "RIFF";
-	string mp3Magic = "ID3";
-	string mp3Magic2 = { (char)0xFF, (char)0xFB, (char)0x50, (char)0xC4 };
-	wstring extention;
-	if (memcmp(soundData, oggMagic.c_str(), oggMagic.size()) == 0) {
-		extention = L"ogg";
-	}
-	else if (memcmp(soundData, wavMagic.c_str(), wavMagic.size()) == 0) {
-		extention = L"wav";
-	}
-	else if ((memcmp(soundData, mp3Magic.c_str(), mp3Magic.size()) == 0)
-		|| (memcmp(soundData, mp3Magic2.c_str(), mp3Magic2.size()) == 0)) {
-		extention = L"mp3";
-	}
-	else {
-		extention = L"unk";
-	}
+	wstring extention = detectSoundExtention(soundData, soundSize);
 
 	// import 파일 경로 생성
 	wostringstream woss;
 	woss << setw(6) << setfill(L'0') << index;
 	wstring importFilePath = dirPath + L"/" + woss.str() + L"_" + name + L"." + extention;
+
+	// 예전 도구가 MP3 를 알아보지 못하고 .unk 로 추출해 둔 폴더도 교체할 수 있게 한다
+	if (isFileOrDir(importFilePath) != FSOType::FSO_FILE && extention != L"unk") {
+		wstring legacyFilePath = dirPath + L"/" + woss.str() + L"_" + name + L".unk";
+		if (isFileOrDir(legacyFilePath) == FSOType::FSO_FILE) {
+			importFilePath = legacyFilePath;
+		}
+	}
 
 	// 존재 확인, 있다면 실제로 import하고, 없다면 그대로 유지한다
 	// 다른 것들과 다른 이유는 이 상태에서 압축된 데이터가 없고 원래 데이터만 있기 때문이다

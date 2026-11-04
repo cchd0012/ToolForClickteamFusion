@@ -116,6 +116,36 @@ def notice(handle, line1, line2, color1):
     save(handle, img)
 
 
+# ---- 홍보 배너 (640x480): 그림은 그대로 두고 아래 글자 영역(바탕이 검정)만 다시 그린다
+PURPLE_BANNER = (168, 0, 255, 255)
+GREY_BANNER = (115, 115, 115, 255)
+
+
+def measure(text, ko_size, ascii_size, head=False):
+    return draw_line(Image.new('RGBA', (2000, 100)), text, 0, WHITE, ko_size, ascii_size, head=head, center=False, x0=0)
+
+
+def draw_runs(img, runs, y, ko_size, ascii_size):
+    """색이 다른 조각을 이어서 가운데 정렬로 그린다. runs = [(글자, 색), ...]"""
+    widths = [measure(t, ko_size, ascii_size) for t, _ in runs]
+    x = (img.size[0] - sum(widths)) // 2
+    for (t, color), w in zip(runs, widths):
+        draw_line(img, t, y, color, ko_size, ascii_size, center=False, x0=x)
+        x += w
+
+
+def banner():
+    img = Image.open(os.path.join(root, 'image', by_handle[1498]['file'])).convert('RGBA')
+    ImageDraw.Draw(img).rectangle([0, 335, img.size[0] - 1, img.size[1] - 1], fill=(0, 0, 0, 255))
+    draw_line(img, '이야기는 하드모드에서 계속됩니다!', 336, YELLOW, 26, 26, head=True)
+    draw_runs(img, [("DUSTTALE: THE GENOCIDE'S END", PURPLE_BANNER), ('를 확인하고', WHITE)], 372, 22, 24)
+    draw_line(img, '이 시간선에서 무엇이 기다리는지 알아보세요!', 402, WHITE, 22, 24)
+    draw_line(img, '[Z] - GameJolt 방문', 448, GREY_BANNER, 22, 24, center=False, x0=62)
+    w = measure('[X] - 닫기', 22, 24)
+    draw_line(img, '[X] - 닫기', 448, GREY_BANNER, 22, 24, center=False, x0=578 - w)
+    save(1498, img)
+
+
 def main():
     controls_small()
     controls_big()
@@ -123,6 +153,7 @@ def main():
     notice(1518, '일기 해금!', '엑스트라: 일기 확인', YELLOW)
     notice(1519, '새 성과 해금!', '엑스트라: 성과 확인', YELLOW)
     notice(1525, '모든 성과 해금!', '엑스트라: 성과 확인', LILAC)
+    banner()
 
 
 if __name__ == '__main__':

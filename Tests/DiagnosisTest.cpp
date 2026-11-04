@@ -221,6 +221,20 @@ int main()
 		check(findItem(result, "related")->get("detail", "").asString().find("part2.ccn, Data/extra.dat") != string::npos, "related archive names are listed");
 		check(guideHas(result, "각각 열어서 추출"), "guide mentions the other archives");
 
+		// 번호만 다른 이름은 한 덩어리로 줄여 보인다
+		in.relatedArchives.clear();
+		for (int n = 1; n <= 7; n++) {
+			char name[32];
+			sprintf_s(name, "ybn%03d.ccn", n);
+			in.relatedArchives.push_back(name);
+		}
+		in.relatedArchives.push_back("Data/readme.dat");
+		buildDiagnosis(in, result);
+		check(findItem(result, "related")->get("detail", "").asString().find("ybn001.ccn ~ ybn007.ccn (7개), Data/readme.dat") != string::npos, "numbered series is summarized as a range");
+		in.relatedArchives.erase(in.relatedArchives.begin() + 3);
+		buildDiagnosis(in, result);
+		check(findItem(result, "related")->get("detail", "").asString().find("6개, 번호가 이어지지 않음") != string::npos, "a gap in the numbers is reported");
+
 		in.relatedArchives.clear();
 		in.subApplicationCount = 2;
 		buildDiagnosis(in, result);

@@ -1,5 +1,6 @@
 ﻿#include "Diagnosis.h"
 
+#include <cstdlib>
 #include <set>
 
 using namespace CTT::Diagnosis;
@@ -36,6 +37,64 @@ namespace {
 				result += separator;
 			}
 			result += list[i];
+		}
+		return result;
+	}
+
+	// ybn001.ccn ~ ybn007.ccn 처럼 번호만 다른 이름이 3개 이상이면 한 덩어리로 줄여 보인다
+	vector<string> summarizeNumberedNames(const vector<string>& names)
+	{
+		struct Parsed { string key; string text; long long number; bool numbered; };
+		vector<Parsed> parsed;
+		for (size_t i = 0; i < names.size(); i++) {
+			Parsed p;
+			p.text = names[i];
+			p.number = 0;
+			p.numbered = false;
+			size_t dot = names[i].find_last_of('.');
+			string stem = (dot == string::npos) ? names[i] : names[i].substr(0, dot);
+			string ext = (dot == string::npos) ? string() : names[i].substr(dot);
+			size_t digits = 0;
+			while (digits < stem.size() && stem[stem.size() - 1 - digits] >= '0' && stem[stem.size() - 1 - digits] <= '9') {
+				digits++;
+			}
+			if (digits > 0 && digits <= 9) {
+				p.numbered = true;
+				p.number = atoll(stem.substr(stem.size() - digits).c_str());
+				p.key = stem.substr(0, stem.size() - digits) + "#" + to_string(digits) + ext;
+			}
+			parsed.push_back(p);
+		}
+		vector<string> result;
+		set<string> done;
+		for (size_t i = 0; i < parsed.size(); i++) {
+			if (!parsed[i].numbered) {
+				result.push_back(parsed[i].text);
+				continue;
+			}
+			if (done.count(parsed[i].key) > 0) {
+				continue;
+			}
+			vector<size_t> group;
+			for (size_t k = 0; k < parsed.size(); k++) {
+				if (parsed[k].numbered && parsed[k].key == parsed[i].key) {
+					group.push_back(k);
+				}
+			}
+			done.insert(parsed[i].key);
+			if (group.size() < 3) {
+				for (size_t k = 0; k < group.size(); k++) {
+					result.push_back(parsed[group[k]].text);
+				}
+				continue;
+			}
+			size_t first = group[0], last = group[0];
+			for (size_t k = 0; k < group.size(); k++) {
+				if (parsed[group[k]].number < parsed[first].number) { first = group[k]; }
+				if (parsed[group[k]].number > parsed[last].number) { last = group[k]; }
+			}
+			bool consecutive = (parsed[last].number - parsed[first].number + 1 == (long long)group.size());
+			result.push_back(parsed[first].text + " ~ " + parsed[last].text + " (" + to_string(group.size()) + u8"개" + (consecutive ? "" : u8", 번호가 이어지지 않음") + ")");
 		}
 		return result;
 	}
@@ -111,7 +170,7 @@ void CTT::Diagnosis::buildDiagnosis(const DiagnosisInput& in, Json::Value& out)
 	// 이 게임이 여러 아카이브 파일로 나뉘어 있는가
 	const int relatedCount = (int)in.relatedArchives.size();
 	if (relatedCount > 0) {
-		string names = join(in.relatedArchives, ", ");
+		string names = join(summarizeNumberedNames(in.relatedArchives), ", ");
 		addItem(items, "related", "warn", u8"관련 아카이브", u8"같은 폴더에 아카이브로 보이는 파일이 " + to_string(relatedCount) + u8"개 더 있습니다: " + names + u8". 데이터가 여러 파일로 나뉜 게임이면 파일마다 따로 열어서 추출하고 교체해야 합니다. 이 진단은 지금 연 파일만 본 결과입니다.", DIAG_STEP_NONE);
 	}
 	else if (in.hasScript && in.subApplicationCount > 0) {
@@ -268,7 +327,7 @@ void CTT::Diagnosis::buildDiagnosis(const DiagnosisInput& in, Json::Value& out)
 	addGuide(guide, u8"이벤트 문자열과 오브젝트 문자열을 번역합니다", DIAG_STEP_TEXT);
 	addGuide(guide, codepageOk ? u8"재합성합니다" : u8"코드페이지 949, 로케일 1042로 바꾸고 재합성합니다", DIAG_STEP_REBUILD);
 	if (relatedCount > 0) {
-		addGuide(guide, u8"같은 폴더의 다른 아카이브(" + join(in.relatedArchives, ", ") + u8")도 각각 열어서 추출, 진단, 교체합니다", DIAG_STEP_NONE);
+		addGuide(guide, u8"같은 폴더의 다른 아카이브(" + join(summarizeNumberedNames(in.relatedArchives), ", ") + u8")도 각각 열어서 추출, 진단, 교체합니다", DIAG_STEP_NONE);
 	}
 	addGuide(guide, u8"게임 화면에서 확인합니다", DIAG_STEP_CHECK);
 

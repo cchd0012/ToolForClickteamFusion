@@ -34,6 +34,19 @@ namespace CTT {
 			EventSearchResult() : frame(0), line(0), uid(0), hiddenLines(0) {}
 		};
 
+		// "이 게임에 쓰인 동작/조건" 목록의 한 줄: (조건/동작, 오브젝트 종류, 번호) 마다 한 줄
+		struct EventKindRow
+		{
+			bool isCondition;
+			int objectType;
+			int num;
+			int count;
+			vector<string> objectNames;		// 이 번호를 쓴 오브젝트 이름 예 (최대 4개)
+			string sample;					// 처음 나온 이벤트의 파라미터 예
+			int firstFrame;
+			EventKindRow() : isCondition(false), objectType(0), num(0), count(0), firstFrame(0) {}
+		};
+
 		// 찾는 조건
 		struct EventSearchCriteria
 		{
@@ -43,7 +56,9 @@ namespace CTT {
 			int scope;					// 0 = 조건과 동작, 1 = 조건만, 2 = 동작만
 			string paramText;			// 파라미터의 식이나 값에 이 글자가 있는 것
 			int frame;					// -1 이면 모든 프레임
-			EventSearchCriteria() : hasNum(false), num(0), scope(0), frame(-1) {}
+			bool hasType;				// 오브젝트 종류(카운터 7, 액티브 2 ...)를 고정한다
+			int objectType;
+			EventSearchCriteria() : hasNum(false), num(0), scope(0), frame(-1), hasType(false), objectType(0) {}
 		};
 
 		struct EventSearchUiState
@@ -53,6 +68,9 @@ namespace CTT {
 			char paramText[128];
 			char frameText[16];
 			int scope;
+			bool hasType;				// 목록에서 고른 오브젝트 종류로 고정
+			int objectType;
+			char kindFilter[64];		// 목록 거르기
 
 			// 찾는 중이면 스레드가 끝날 때 done 이 1 이 된다. 스레드는 buffer* 만 쓰고, 화면은 끝난 뒤에 results 로 옮겨 받는다
 			volatile LONG running;
@@ -63,6 +81,11 @@ namespace CTT {
 			int bufferFrames;
 			bool bufferTruncated;
 			string bufferMessage;
+			bool aggregateMode;			// 이번 스레드가 목록을 만드는 일이다
+			vector<EventKindRow> bufferKinds;
+			vector<EventKindRow> kinds;
+			bool kindsLoaded;
+			bool pendingSearch;			// 목록에서 고르면 다음 프레임에 바로 찾는다
 
 			vector<EventSearchResult> results;
 			vector<string> hints;

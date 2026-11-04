@@ -3,6 +3,7 @@
 #include "../Util/CommonUtil.h"
 
 #include <algorithm>
+#include <map>
 #include <set>
 
 using namespace CTT::App;
@@ -19,6 +20,12 @@ EventSearchUiState::EventSearchUiState()
 	memset(paramText, 0, sizeof(paramText));
 	memset(frameText, 0, sizeof(frameText));
 	scope = 0;
+	hasType = false;
+	objectType = 0;
+	memset(kindFilter, 0, sizeof(kindFilter));
+	aggregateMode = false;
+	kindsLoaded = false;
+	pendingSearch = false;
 	running = 0;
 	done = 0;
 	bufferGroups = bufferFrames = 0;
@@ -35,6 +42,10 @@ void EventSearchUiState::reset()
 		return;
 	}
 	results.clear();
+	kinds.clear();
+	bufferKinds.clear();
+	kindsLoaded = false;
+	hasType = false;
 	hints.clear();
 	bufferResults.clear();
 	bufferHints.clear();
@@ -203,6 +214,9 @@ namespace {
 		if ((c.scope == 1 && !isCondition) || (c.scope == 2 && isCondition)) {
 			return false;
 		}
+		if (c.hasType && e.get("objectType", 0).asInt() != c.objectType) {
+			return false;
+		}
 		if (!c.objectName.empty() && !containsIgnoreCase(e.get("objectName", "").asString(), c.objectName)) {
 			return false;
 		}
@@ -250,11 +264,79 @@ namespace {
 		return "";
 	}
 
+	// 이 게임에 쓰인 (조건/동작, 오브젝트 종류, 번호) 마다 한 줄로 센다
+	void addKind(map<string, EventKindRow>& rows, const Json::Value& e, bool isCondition, int frame)
+	{
+		const int type = e.get("objectType", 0).asInt();
+		const int num = e.get("num", 0).asInt();
+		const string key = string(isCondition ? "C" : "A") + "|" + to_string(type) + "|" + to_string(num);
+		map<string, EventKindRow>::iterator it = rows.find(key);
+		if (it == rows.end()) {
+			EventKindRow row;
+			row.isCondition = isCondition;
+			row.objectType = type;
+			row.num = num;
+			row.firstFrame = frame;
+			const Json::Value& params = e["params"];
+			for (Json::ArrayIndex i = 0; i < params.size() && i < 3; i++) {
+				if (i > 0) {
+					row.sample += " | ";
+				}
+				row.sample += paramSummary(params[i]);
+			}
+			if (row.sample.size() > 110) {
+				row.sample.resize(110);
+				row.sample += "...";
+			}
+			it = rows.insert(make_pair(key, row)).first;
+		}
+		EventKindRow& row = it->second;
+		row.count++;
+		const string name = e.get("objectName", "").asString();
+		if (!name.empty() && row.objectNames.size() < 4 && find(row.objectNames.begin(), row.objectNames.end(), name) == row.objectNames.end()) {
+			row.objectNames.push_back(name);
+		}
+	}
+
+	// 이름을 아는 번호의 설명. 모르는 번호는 NULL (이름을 지어내지 않는다)
+	const char* kindDescription(int objectType, int num, bool isCondition)
+	{
+		if (!isCondition) {
+			if (objectType == 7) {
+				switch (num) {
+					case 80: return u8"카운터의 값을 식의 결과로 바꿉니다. 체력 카운터를 0 으로 정하는 식이라면 게임 오버 처리일 수 있습니다.";
+					case 81: return u8"카운터에 식의 결과를 더합니다 (회복, 점수 등).";
+					case 82: return hintText(1);
+					case 83: return u8"카운터가 내려갈 수 있는 최소값을 정합니다.";
+					case 84: return u8"카운터가 올라갈 수 있는 최대값을 정합니다 (최대 체력 등).";
+					case 85: return u8"카운터를 그릴 때 쓰는 색을 정합니다.";
+				}
+			}
+			if (objectType == -3 && num == 2) {
+				return hintText(2);
+			}
+			if (objectType == 2 && num == 31) {
+				return hintText(4);
+			}
+		}
+		else {
+			if (objectType == 7 && num == -81) {
+				return u8"카운터의 값을 비교하는 조건입니다 (예: 체력이 어떤 값 이하일 때). 같은 오브젝트에 값을 빼는 동작(#82)이나 정하는 동작(#80)이 있는지 같이 보세요.";
+			}
+			if (objectType == 2 && num == -42) {
+				return hintText(3);
+			}
+		}
+		return NULL;
+	}
+
 	struct EventSearchJob
 	{
 		EventSearchUiState* ui;
 		EventSearchCriteria criteria;
 		wstring frameDir;
+		bool aggregate;
+		EventSearchJob() : ui(NULL), aggregate(false) {}
 	};
 
 	DWORD WINAPI eventSearchThread(LPVOID param)
@@ -265,6 +347,8 @@ namespace {
 
 		vector<EventSearchResult> results;
 		set<int> hintKeys;
+		map<string, EventKindRow> kindRows;
+		const bool aggregate = job->aggregate;
 		int groupCount = 0, frameCount = 0;
 		bool truncated = false;
 
@@ -299,6 +383,15 @@ namespace {
 				const Json::Value& group = *groups[g];
 				const Json::Value& conditions = group["conditions"];
 				const Json::Value& actions = group["actions"];
+				if (aggregate) {
+					for (Json::ArrayIndex i = 0; i < conditions.size(); i++) {
+						addKind(kindRows, conditions[i], true, frameNumber);
+					}
+					for (Json::ArrayIndex i = 0; i < actions.size(); i++) {
+						addKind(kindRows, actions[i], false, frameNumber);
+					}
+					continue;
+				}
 				vector<char> condMatched(conditions.size(), 0), actMatched(actions.size(), 0);
 				bool any = false;
 				for (Json::ArrayIndex i = 0; i < conditions.size(); i++) {
@@ -374,6 +467,19 @@ namespace {
 			}
 		}
 
+		ui->bufferKinds.clear();
+		for (map<string, EventKindRow>::const_iterator it = kindRows.begin(); it != kindRows.end(); ++it) {
+			ui->bufferKinds.push_back(it->second);
+		}
+		sort(ui->bufferKinds.begin(), ui->bufferKinds.end(), [](const EventKindRow& a, const EventKindRow& b) {
+			if (a.objectType != b.objectType) {
+				return a.objectType < b.objectType;
+			}
+			if (a.isCondition != b.isCondition) {
+				return a.isCondition;
+			}
+			return a.num < b.num;
+		});
 		ui->bufferResults.swap(results);
 		ui->bufferHints.clear();
 		for (set<int>::const_iterator it = hintKeys.begin(); it != hintKeys.end(); ++it) {
@@ -397,20 +503,32 @@ void Dx9Application::renderShellStepEventSearch()
 
 	// 끝난 찾기 결과를 받는다
 	if (InterlockedCompareExchange(&s.done, 0, 1) == 1) {
-		s.results.swap(s.bufferResults);
-		s.hints.swap(s.bufferHints);
-		s.totalGroups = s.bufferGroups;
-		s.totalFrames = s.bufferFrames;
-		s.truncated = s.bufferTruncated;
-		s.message = s.bufferMessage;
-		s.searched = true;
+		if (s.aggregateMode) {
+			s.kinds.swap(s.bufferKinds);
+			s.kindsLoaded = true;
+			s.aggregateMode = false;
+			if (!s.bufferMessage.empty()) {
+				s.message = s.bufferMessage;
+				s.searched = true;
+			}
+		}
+		else {
+			s.results.swap(s.bufferResults);
+			s.hints.swap(s.bufferHints);
+			s.totalGroups = s.bufferGroups;
+			s.totalFrames = s.bufferFrames;
+			s.truncated = s.bufferTruncated;
+			s.message = s.bufferMessage;
+			s.searched = true;
+		}
 		InterlockedExchange(&s.running, 0);
 	}
 
 	ImGui::TextWrapped(u8"디컴파일한 이벤트(script/frame/*.json)에서 이벤트 그룹을 찾습니다. 오브젝트 이름, 동작/조건 번호, 파라미터에 든 글자 중 아는 것만 적으세요. 비워 둔 것은 따지지 않습니다.");
 	ImGui::Spacing();
 
-	bool startSearch = false;
+	bool startSearch = (s.pendingSearch && !s.running);
+	s.pendingSearch = false;
 	const float fieldWidth = ImGui::GetFontSize() * 14.0f;
 	ImGui::SetNextItemWidth(fieldWidth);
 	startSearch |= ImGui::InputText(u8"오브젝트 이름", s.objectName, IM_ARRAYSIZE(s.objectName), ImGuiInputTextFlags_EnterReturnsTrue);
@@ -432,6 +550,13 @@ void Dx9Application::renderShellStepEventSearch()
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ImGui::GetFontSize() * 5.0f);
 	startSearch |= ImGui::InputText(u8"프레임", s.frameText, IM_ARRAYSIZE(s.frameText), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsDecimal);
+	if (s.hasType) {
+		ImGui::TextColored(kMatchColor, u8"오브젝트 종류 고정: %s (%d)", objectTypeName(s.objectType).c_str(), s.objectType);
+		ImGui::SameLine();
+		if (ImGui::SmallButton(u8"해제")) {
+			s.hasType = false;
+		}
+	}
 
 	const bool searchingNow = (s.running != 0);		// 누르는 프레임에 바뀌어도 BeginDisabled/EndDisabled 의 짝이 맞도록 한 번만 읽는다
 	if (searchingNow) {
@@ -447,6 +572,8 @@ void Dx9Application::renderShellStepEventSearch()
 			job->criteria.scope = s.scope;
 			job->criteria.paramText = s.paramText;
 			job->criteria.frame = strlen(s.frameText) > 0 ? atoi(s.frameText) : -1;
+			job->criteria.hasType = s.hasType;
+			job->criteria.objectType = s.objectType;
 			wstring archivePath = archive->getArchivePath();
 			job->frameDir = getExtentionRemovedPath(archivePath) + L"\\script\\frame";
 			InterlockedExchange(&s.done, 0);
@@ -460,6 +587,111 @@ void Dx9Application::renderShellStepEventSearch()
 	if (s.running) {
 		ImGui::SameLine();
 		ImGui::TextDisabled(u8"찾는 중...");
+	}
+
+	// 이 게임에 쓰인 동작과 조건의 목록: 번호를 몰라도 여기서 골라서 찾을 수 있다
+	ImGui::Spacing();
+	if (ImGui::CollapsingHeader(u8"이 게임에 쓰인 동작과 조건 (번호를 몰라도 여기서 고르기)")) {
+		const bool busy = (s.running != 0);
+		if (busy) {
+			ImGui::BeginDisabled(true);
+		}
+		if (ImGui::Button(s.kindsLoaded ? u8"목록 다시 만들기" : u8"목록 만들기")) {
+			if (!s.running) {
+				EventSearchJob* job = new EventSearchJob();
+				job->ui = &s;
+				job->aggregate = true;
+				wstring archivePath = archive->getArchivePath();
+				job->frameDir = getExtentionRemovedPath(archivePath) + L"\\script\\frame";
+				s.aggregateMode = true;
+				InterlockedExchange(&s.done, 0);
+				InterlockedExchange(&s.running, 1);
+				CreateThread(NULL, 0, eventSearchThread, job, 0, NULL);
+			}
+		}
+		if (busy) {
+			ImGui::EndDisabled();
+		}
+		if (!s.kindsLoaded) {
+			ImGui::TextDisabled(u8"모든 프레임의 이벤트를 훑어서 (조건/동작, 오브젝트 종류, 번호)마다 몇 번 쓰였는지 모읍니다. 이름은 이 도구가 확인한 것만 붙고, 나머지는 번호와 쓰인 예(오브젝트 이름, 파라미터)로 알아봅니다.");
+		}
+		else {
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(ImGui::GetFontSize() * 14.0f);
+			ImGui::InputText(u8"목록 거르기", s.kindFilter, IM_ARRAYSIZE(s.kindFilter));
+			ImGui::SameLine();
+			ImGui::TextDisabled(u8"%d종", (int)s.kinds.size());
+			if (ImGui::BeginTable("##kindtable", 7, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY | ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp, ImVec2(0.0f, ImGui::GetFontSize() * 16.0f))) {
+				ImGui::TableSetupScrollFreeze(0, 1);
+				ImGui::TableSetupColumn(u8"구분", ImGuiTableColumnFlags_WidthFixed, 44.0f);
+				ImGui::TableSetupColumn(u8"오브젝트 종류", ImGuiTableColumnFlags_WidthFixed, 96.0f);
+				ImGui::TableSetupColumn(u8"번호와 이름", ImGuiTableColumnFlags_WidthStretch, 1.6f);
+				ImGui::TableSetupColumn(u8"횟수", ImGuiTableColumnFlags_WidthFixed, 48.0f);
+				ImGui::TableSetupColumn(u8"쓴 오브젝트 예", ImGuiTableColumnFlags_WidthStretch, 2.0f);
+				ImGui::TableSetupColumn(u8"파라미터 예", ImGuiTableColumnFlags_WidthStretch, 3.0f);
+				ImGui::TableSetupColumn("##find", ImGuiTableColumnFlags_WidthFixed, 56.0f);
+				ImGui::TableHeadersRow();
+				for (size_t i = 0; i < s.kinds.size(); i++) {
+					const EventKindRow& k = s.kinds[i];
+					const char* meaning = eventNumName(k.objectType, k.num, k.isCondition);
+					string names;
+					for (size_t n = 0; n < k.objectNames.size(); n++) {
+						names += (n > 0 ? ", " : "") + k.objectNames[n];
+					}
+					if (strlen(s.kindFilter) > 0) {
+						string hay = objectTypeName(k.objectType) + " " + to_string(k.num) + " " + (meaning ? meaning : "") + " " + names + " " + k.sample;
+						if (!containsIgnoreCase(hay, s.kindFilter)) {
+							continue;
+						}
+					}
+					ImGui::TableNextRow();
+					ImGui::TableSetColumnIndex(0);
+					ImGui::TextColored(k.isCondition ? kConditionColor : ImGui::GetStyleColorVec4(ImGuiCol_Text), "%s", k.isCondition ? u8"조건" : u8"동작");
+					ImGui::TableSetColumnIndex(1);
+					ImGui::Text("%s (%d)", objectTypeName(k.objectType).c_str(), k.objectType);
+					ImGui::TableSetColumnIndex(2);
+					if (meaning != NULL) {
+						ImGui::Text("#%d  %s", k.num, meaning);
+					}
+					else {
+						ImGui::Text("#%d", k.num);
+					}
+					if (ImGui::IsItemHovered()) {
+						const char* description = kindDescription(k.objectType, k.num, k.isCondition);
+						ImGui::BeginTooltip();
+						ImGui::PushTextWrapPos(ImGui::GetFontSize() * 30.0f);
+						if (description != NULL) {
+							ImGui::TextUnformatted(description);
+						}
+						else {
+							ImGui::TextUnformatted(u8"이 도구가 아직 뜻을 확인하지 못한 번호입니다. 오른쪽의 쓴 오브젝트와 파라미터 예, 같은 번호가 나오는 이벤트(찾기)로 짐작해 보세요.");
+						}
+						ImGui::PopTextWrapPos();
+						ImGui::EndTooltip();
+					}
+					ImGui::TableSetColumnIndex(3);
+					ImGui::Text("%d", k.count);
+					ImGui::TableSetColumnIndex(4);
+					ImGui::TextUnformatted(names.c_str());
+					ImGui::TableSetColumnIndex(5);
+					ImGui::TextUnformatted(k.sample.c_str());
+					ImGui::TableSetColumnIndex(6);
+					ImGui::PushID((int)i);
+					if (ImGui::SmallButton(u8"찾기")) {
+						snprintf(s.numText, sizeof(s.numText), "%d", k.num);
+						s.scope = k.isCondition ? 1 : 2;
+						s.hasType = true;
+						s.objectType = k.objectType;
+						s.objectName[0] = 0;
+						s.paramText[0] = 0;
+						s.frameText[0] = 0;
+						s.pendingSearch = true;
+					}
+					ImGui::PopID();
+				}
+				ImGui::EndTable();
+			}
+		}
 	}
 
 	if (!s.searched) {

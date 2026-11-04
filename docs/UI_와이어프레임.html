@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>툴 화면 와이어프레임</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* 레이아웃 개념: 왼쪽 단계 목록, 가운데 작업 영역, 오른쪽 인스펙터와 미리보기, 아래 문제/로그. 디버거의 배치를 빌려 온다 */
+:root {
+  --bg: #eef2f3;
+  --panel: #ffffff;
+  --panel-2: #e6ecee;
+  --line: #c8d3d7;
+  --fg: #19262b;
+  --muted: #566871;
+  --accent: #0b7a87;
+  --accent-soft: #d3ecef;
+  --ok: #2a7d4f;
+  --warn: #a8661a;
+  --bad: #b83a2e;
+  --game-bg: #0c1224;
+  --game-fg: #eef3ff;
+  --game-line: #2a3a6a;
+  --font-body: "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", Consolas, "D2Coding", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1518;
+    --panel: #172025;
+    --panel-2: #202b31;
+    --line: #2f3d44;
+    --fg: #dce6ea;
+    --muted: #92a5ae;
+    --accent: #52c4d2;
+    --accent-soft: #19363c;
+    --ok: #62cf8f;
+    --warn: #efb454;
+    --bad: #ff8576;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1518;
+  --panel: #172025;
+  --panel-2: #202b31;
+  --line: #2f3d44;
+  --fg: #dce6ea;
+  --muted: #92a5ae;
+  --accent: #52c4d2;
+  --accent-soft: #19363c;
+  --ok: #62cf8f;
+  --warn: #efb454;
+  --bad: #ff8576;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  padding-block: 28px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
+h1 { font-size: 26px; line-height: 1.3; margin: 0 0 6px; text-wrap: balance; }
+h2 { font-size: 19px; margin: 0 0 12px; text-wrap: balance; }
+h3 { font-size: 15px; margin: 0 0 6px; }
+p { margin: 0 0 8px; }
+.lead { color: var(--muted); max-width: 70ch; }
+code, .mono { font-family: var(--font-mono); font-size: 12.5px; }
+.intro { display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: flex-end; justify-content: space-between; }
+.intro > div { min-width: 0; }
+.seg { display: inline-flex; flex-wrap: wrap; max-width: 100%; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--panel); }
+.seg button { white-space: nowrap; font: inherit; border: 0; background: transparent; color: var(--fg); padding: 6px 12px; cursor: pointer; border-right: 1px solid var(--line); }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.seg-label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* 앱 틀 */
+.app { border: 1px solid var(--line); border-radius: 8px; background: var(--panel); overflow: hidden; display: grid; grid-template-columns: 196px minmax(0, 1fr) 288px; grid-template-rows: auto auto minmax(430px, auto) auto; grid-template-areas: "menu menu menu" "status status status" "nav work side" "bottom bottom bottom"; position: relative; }
+.menu { grid-area: menu; display: flex; gap: 4px; padding: 6px 10px; border-bottom: 1px solid var(--line); background: var(--panel-2); font-size: 13px; align-items: center; }
+.menu span { padding: 2px 8px; border-radius: 4px; white-space: nowrap; }
+.menu .spacer { flex: 1; }
+.menu .title { color: var(--muted); font-size: 12px; }
+.status { grid-area: status; display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+.status .path { color: var(--muted); font-family: var(--font-mono); font-size: 12px; min-width: 0; overflow-wrap: anywhere; }
+.status .grow { flex: 1; }
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); font-size: 12.5px; cursor: pointer; font-family: inherit; color: var(--fg); }
+.pill.warn { border-color: var(--warn); color: var(--warn); }
+.pill.ok { border-color: var(--ok); color: var(--ok); }
+.pill.chg { border-color: var(--accent); color: var(--accent); }
+.nav { grid-area: nav; border-right: 1px solid var(--line); padding: 10px 8px; display: flex; flex-direction: column; gap: 2px; background: var(--panel); }
+.nav .grp { font-size: 11.5px; color: var(--muted); padding: 8px 8px 2px; letter-spacing: .04em; }
+.step { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; border: 0; background: transparent; color: var(--fg); font: inherit; padding: 7px 8px; border-radius: 6px; cursor: pointer; }
+.step:hover { background: var(--panel-2); }
+.step[aria-current="step"] { background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
+.step .n { width: 18px; text-align: right; color: var(--muted); font-family: var(--font-mono); font-size: 12px; }
+.step .lbl { flex: 1; min-width: 0; }
+.dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--line); flex: none; }
+.dot.ok { background: var(--ok); border-color: var(--ok); }
+.dot.warn { background: var(--warn); border-color: var(--warn); }
+.dot.chg { background: var(--accent); border-color: var(--accent); }
+.dot.todo { background: transparent; }
+.work { grid-area: work; padding: 14px 16px; min-width: 0; overflow: auto; max-height: 560px; }
+.side { grid-area: side; border-left: 1px solid var(--line); display: flex; flex-direction: column; min-width: 0; }
+.side section { padding: 10px 12px; border-bottom: 1px solid var(--line); min-width: 0; }
+.side h4 { margin: 0 0 6px; font-size: 12px; color: var(--muted); letter-spacing: .04em; font-weight: 500; }
+.bottom { grid-area: bottom; border-top: 1px solid var(--line); background: var(--panel); }
+.tabs { display: flex; gap: 2px; padding: 4px 8px 0; border-bottom: 1px solid var(--line); background: var(--panel-2); }
+.tabs button { font: inherit; border: 1px solid transparent; border-bottom: 0; border-radius: 6px 6px 0 0; background: transparent; color: var(--muted); padding: 5px 12px; cursor: pointer; }
+.tabs button[aria-selected="true"] { background: var(--panel); border-color: var(--line); color: var(--fg); margin-bottom: -1px; }
+.tabpanel { padding: 8px 12px; max-height: 150px; overflow: auto; font-size: 13px; }
+.prob { display: flex; gap: 8px; align-items: baseline; padding: 3px 0; flex-wrap: wrap; }
+.prob .go { margin-left: auto; }
+.log { font-family: var(--font-mono); font-size: 12px; color: var(--muted); line-height: 1.5; }
+.btn { font: inherit; border: 1px solid var(--line); background: var(--panel); color: var(--fg); border-radius: 6px; padding: 5px 12px; cursor: pointer; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.small { padding: 2px 8px; font-size: 12.5px; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.muted { color: var(--muted); }
+.tag { display: inline-block; font-size: 11.5px; padding: 0 7px; border-radius: 4px; border: 1px solid var(--line); background: var(--panel-2); color: var(--muted); }
+.tag.ok { color: var(--ok); border-color: var(--ok); background: transparent; }
+.tag.warn { color: var(--warn); border-color: var(--warn); background: transparent; }
+.tag.unk { color: var(--muted); border-style: dashed; background: transparent; }
+.check { display: grid; grid-template-columns: 74px minmax(0, 1fr) auto; gap: 4px 12px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.check:last-child { border-bottom: 0; }
+.check .what { font-weight: 500; }
+.check .why { grid-column: 2; color: var(--muted); font-size: 13px; }
+.guide { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; counter-reset: g; }
+.guide li { counter-increment: g; display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; gap: 8px; align-items: baseline; }
+.guide li::before { content: counter(g); font-family: var(--font-mono); color: var(--accent); text-align: right; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 500; color: var(--muted); font-size: 12px; }
+tr.sel td { background: var(--accent-soft); }
+tr[data-i] { cursor: pointer; }
+.tablewrap { overflow-x: auto; }
+.field { display: grid; grid-template-columns: 92px minmax(0, 1fr) 40px; gap: 8px; align-items: center; margin-bottom: 6px; font-size: 13px; }
+.field input[type=range] { width: 100%; accent-color: var(--accent); }
+.field output { font-family: var(--font-mono); font-size: 12px; text-align: right; }
+.game { background: var(--game-bg); color: var(--game-fg); border: 1px solid var(--game-line); border-radius: 4px; padding: 10px 12px; image-rendering: pixelated; }
+.game.grid { background-image: repeating-linear-gradient(90deg, transparent 0 7px, rgba(120,150,255,.22) 7px 8px); }
+.game .ln { font-family: var(--font-body); font-weight: 700; white-space: nowrap; overflow: hidden; margin: 2px 0; }
+.game .y { color: #ffd24a; }
+.frame { position: relative; background: var(--game-bg); border: 1px solid var(--game-line); border-radius: 3px; width: 100%; aspect-ratio: 384 / 320; overflow: hidden; }
+.box { position: absolute; border: 1px solid #ffc857; color: #cfe3ff; font-size: 9.5px; line-height: 1.2; padding: 0 2px; white-space: nowrap; background: rgba(255,200,87,.08); cursor: pointer; font-family: var(--font-body); }
+.box.hit { background: rgba(82,196,210,.35); border-color: #52c4d2; color: #fff; }
+.thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 8px; }
+.thumb { aspect-ratio: 1; border: 1px solid var(--line); border-radius: 4px; background: repeating-conic-gradient(var(--panel-2) 0 25%, var(--panel) 0 50%) 0 0 / 12px 12px; position: relative; font-size: 10.5px; color: var(--muted); display: flex; align-items: flex-end; padding: 2px 4px; }
+.thumb.edit { border-color: var(--accent); }
+.thumb.edit::after { content: "수정"; position: absolute; top: 3px; right: 3px; color: var(--accent); font-size: 10px; }
+.modal { position: absolute; inset: 0; background: rgba(8,14,18,.55); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 5; }
+.modal > div { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; max-width: 420px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+.note { border-left: 3px solid var(--accent); padding: 6px 10px; background: var(--accent-soft); border-radius: 0 6px 6px 0; font-size: 13px; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
+.card { border: 1px solid var(--line); border-radius: 8px; background: var(--panel); padding: 14px 16px; min-width: 0; }
+.map td:first-child { white-space: nowrap; font-weight: 500; }
+.phases { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; counter-reset: p; }
+.phases li { counter-increment: p; display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; }
+.phases li::before { content: counter(p); font-family: var(--font-mono); font-weight: 600; color: var(--accent); }
+@media (max-width: 1020px) {
+  .app { grid-template-columns: minmax(0, 1fr); grid-template-areas: "menu" "status" "nav" "work" "side" "bottom"; grid-template-rows: auto; }
+  .nav { flex-direction: row; overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--line); gap: 4px; }
+  .nav .grp { display: none; }
+  .step { width: auto; white-space: nowrap; }
+  .side { border-left: 0; border-top: 1px solid var(--line); }
+  .work { max-height: none; }
+}
+@media (max-width: 520px) {
+  .check { grid-template-columns: 62px minmax(0, 1fr); }
+  .check .act { grid-column: 2; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="intro">
+    <div>
+      <h1>툴 화면 와이어프레임</h1>
+      <p class="lead">ToolForClickteamFusion을 디버거처럼 쓰는 화면 구조 제안입니다. 아래 화면은 눌러 볼 수 있고, 데이터는 예시입니다. 실제 값이 아니라 이 도구가 지금까지 읽어 낸 정보의 모양을 보여 줍니다.</p>
+    </div>
+    <div>
+      <span class="seg-label" id="scn-label">예시 게임</span>
+      <div class="seg" role="group" aria-labelledby="scn-label" id="scn">
+        <button type="button" data-s="nc" aria-pressed="true">NCSAGE</button>
+        <button type="button" data-s="s3d" aria-pressed="false">Sonic 3D 2D</button>
+        <button type="button" data-s="dtge" aria-pressed="false">dtge</button>
+      </div>
+    </div>
+  </header>
+
+  <section aria-label="화면 시안">
+    <div class="app" id="app">
+      <div class="menu"><span>프로젝트</span><span>보기</span><span>도움말</span><span class="spacer"></span><span class="title">ToolForClickteamFusion</span></div>
+      <div class="status" id="status"></div>
+      <nav class="nav" id="nav" aria-label="작업 단계"></nav>
+      <main class="work" id="work"></main>
+      <aside class="side" id="side"></aside>
+      <div class="bottom">
+        <div class="tabs" role="tablist" id="btabs"></div>
+        <div class="tabpanel" id="bpanel" role="tabpanel"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>설계 원칙</h2>
+    <div class="cols">
+      <div class="card"><h3>단계가 항상 보입니다</h3><p>왼쪽 목록에 지금 단계, 끝난 단계, 문제가 있는 단계를 색으로 표시합니다. 처음 쓰는 사람은 위에서 아래로 따라가면 됩니다.</p></div>
+      <div class="card"><h3>상태를 알려 줍니다</h3><p>위쪽 줄에 진단 결과와 "재합성이 필요한 변경 수"를 배지로 둡니다. 편집기에서 저장하고 돌아오면 창이 포커스를 받는 순간 바뀐 파일을 다시 읽고 배지를 갱신합니다.</p></div>
+      <div class="card"><h3>문제는 한곳에 모읍니다</h3><p>경고와 진단은 아래 "문제" 탭에 모읍니다. 항목을 누르면 해결하는 화면으로 이동합니다.</p></div>
+      <div class="card"><h3>길을 안내하되 막지 않습니다</h3><p>기본은 안내 순서입니다. 아는 사람은 단계를 직접 눌러 이동합니다. 청크 트리와 JSON 도구는 "고급"에 그대로 남깁니다.</p></div>
+      <div class="card"><h3>모르는 것은 모른다고 씁니다</h3><p>그림 속 글자, 계산식으로 만든 문자열은 판단하지 않고 "확인할 수 없음"으로 표시합니다. 틀린 분류보다 빈칸이 낫습니다.</p></div>
+      <div class="card"><h3>원본은 건드리지 않습니다</h3><p>재합성은 항상 새 파일로 만들고, 작업 폴더를 원본과 분리합니다.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>지금 기능을 어디에 두나</h2>
+    <div class="card tablewrap">
+      <table class="map">
+        <thead><tr><th>단계</th><th>들어가는 기능</th><th>지금 위치</th></tr></thead>
+        <tbody>
+          <tr><td>1. 진단</td><td>구조 분석, 진행 방향 안내, 문제 목록</td><td>새 기능</td></tr>
+          <tr><td>2. 추출</td><td>전체 추출, 종류별 추출, 끝난 뒤 진단 권유</td><td>메뉴 "1.추출"</td></tr>
+          <tr><td>3. 문구</td><td>이벤트, 오브젝트, 블리터 처음 문자열 편집, 번역 반영 상태</td><td>JSON 파일을 직접 열어 편집</td></tr>
+          <tr><td>4. 글꼴과 글자</td><td>폰트 아틀라스, 글자 오브젝트 배정, 게임 모듈 패치</td><td>"한글화 도구" 창의 가/나/다 탭</td></tr>
+          <tr><td>5. 이미지</td><td>이미지 목록, 교체, 추가</td><td>메뉴 "2.수정"</td></tr>
+          <tr><td>6. 재합성</td><td>종류 선택, 필요한 항목 미리 체크, 새 파일 만들기</td><td>메뉴 "3.교체(재합성)"</td></tr>
+          <tr><td>7. 확인</td><td>프레임 배치도, 번역 글자 미리보기</td><td>새 기능</td></tr>
+          <tr><td>고급</td><td>청크 트리, 스크립트 디컴파일과 리컴파일, 텍스트 흐름 원본</td><td>기존 화면 그대로</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>만드는 순서</h2>
+    <ol class="phases card">
+      <li><div><strong>껍데기</strong><br><span class="muted">왼쪽 단계 목록, 위쪽 상태 줄, 아래 문제/로그 패널. 기존 창은 그 안에서 그대로 열리고, 메뉴는 프로젝트/보기/도움말로 줄입니다. 옛 메뉴는 고급에 보존합니다.</span></div></li>
+      <li><div><strong>진단</strong><br><span class="muted">구조 분석과 안내, <code>text/diagnosis.json</code>, 추출이 끝난 뒤의 권유 창.</span></div></li>
+      <li><div><strong>"한글화 도구"를 4단계로 이전</strong><br><span class="muted">별도 창을 없애고 하위 탭으로 옮깁니다.</span></div></li>
+      <li><div><strong>인스펙터와 미리보기</strong><br><span class="muted">오른쪽 패널을 채웁니다. 선택한 오브젝트의 옵션 이름과 글자 미리보기가 들어갑니다.</span></div></li>
+      <li><div><strong>프레임 배치도와 아틀라스 미리보기</strong><br><span class="muted">7단계와 4단계에 얹습니다. 배치도가 생기면 아틀라스 미리보기에 실제 배경을 붙입니다.</span></div></li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>ImGui로 만들 때</h2>
+    <div class="cols">
+      <div class="card"><h3>고정 영역 배치로 시작</h3><p>도킹 대신 <code>BeginChild</code> 네 개로 영역을 나눕니다. 구분선을 끌어 폭을 바꾸는 간단한 스플리터만 직접 만들면 됩니다.</p></div>
+      <div class="card"><h3>아이콘은 직접 그립니다</h3><p>지금 쓰는 <code>GUI_Font.ttf</code>에는 원 숫자와 화살표가 없습니다. 상태 점, 체크, 경고는 글자 대신 <code>ImDrawList</code>의 원과 선으로 그립니다.</p></div>
+      <div class="card"><h3>만들어 둘 공용 부품</h3><p>단계 목록 항목, 배지, 배지 달린 탭, 문제 줄. 전부 <code>Selectable</code>과 <code>ImDrawList</code> 위에 얇게 얹는 정도입니다.</p></div>
+      <div class="card"><h3>교체하지 않는 이유</h3><p>필요한 것은 위젯 몇 개뿐이라 라이브러리를 바꾸는 비용이 이득보다 큽니다. 개조로 충분합니다.</p></div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  var D = {
+    nc: {
+      file: 'PrototypeNCSAGE.dat', dir: 'C:\\work\\NCSAGE\\',
+      kind: '2.5+ 형식 · 글자 오브젝트 165개',
+      diag: [
+        { st: 'ok', what: '아카이브', why: 'dat와 exe 한 쌍. 오브젝트는 2.5+ 형식이라 모두 읽혔습니다.' },
+        { st: 'ok', what: '글자 방식', why: '텍스트 블리터 165개. 모듈이 37376바이트판이라 글자표 방식으로 한글화할 수 있습니다.' },
+        { st: 'warn', what: '글꼴 불러오기', why: '실행 중 /Data/Fonts/ 이미지를 다시 불러옵니다 (25곳). 아틀라스를 이미지 뱅크에 넣는 방식을 권합니다.', go: 4, act: '글꼴·글자로 이동' },
+        { st: 'ok', what: '글자별 이벤트', why: 'SONG NAME 2 한 개가 켜져 있고 받는 이벤트는 0개입니다. 한글화해도 잃는 것이 없습니다.' },
+        { st: 'warn', what: '문구', why: '이벤트 문자열 493개. 화면 문구로 확인된 것은 142개이고, 계산식 32곳과 INI 3곳은 내용을 알 수 없습니다.', go: 3, act: '문구로 이동' },
+        { st: 'unk', what: '그림 속 글자', why: '확인할 수 없습니다. 로고와 메뉴 그림은 이미지 수정 영역입니다.', go: 5, act: '이미지로 이동' },
+        { st: 'ok', what: '코드페이지', why: '재합성할 때 949 / 1042가 필요합니다. 6단계에서 미리 지정됩니다.' }
+      ],
+      guide: [
+        ['폰트 아틀라스를 만들고 번호를 붙입니다', 4], ['글자 오브젝트에 아틀라스를 배정합니다 (165개)', 4],
+        ['아틀라스를 이미지 뱅크에 넣습니다 (글꼴 다시 불러오기 대응)', 4], ['이벤트 문자열을 번역합니다', 3],
+        ['재합성합니다 (코드페이지 949)', 6], ['게임 화면에서 확인합니다', 7]
+      ],
+      steps: ['warn', 'ok', 'todo', 'warn', 'todo', 'chg', 'todo'], changes: 3,
+      problems: [['warn', '글꼴 이미지를 실행 중에 다시 불러옵니다 (25곳)', 4], ['warn', '내용을 알 수 없는 계산식 32곳, INI 3곳', 3], ['unk', '그림 속 글자는 확인할 수 없습니다', 5]],
+      counts: { 'frame': 493, 'obj': 94, 'blit': 165 }
+    },
+    s3d: {
+      file: 'sonic3d.exe', dir: 'C:\\work\\Sonic3D\\',
+      kind: '옛 형식(0x2229) · 글자 오브젝트 85개',
+      diag: [
+        { st: 'ok', what: '아카이브', why: '옛 형식(0x2229). 오브젝트 2702개 중 배경을 뺀 2030개를 해석했습니다. 번호는 오브젝트 핸들입니다.' },
+        { st: 'ok', what: '글자 방식', why: '텍스트 블리터 85개(이름 63종). 글자표 방식으로 한글화할 수 있습니다.' },
+        { st: 'ok', what: '글꼴 불러오기', why: '실행 중 글꼴 이미지를 다시 불러오지 않습니다. 이미지 뱅크의 아틀라스가 그대로 쓰입니다.' },
+        { st: 'ok', what: '글자별 이벤트', why: '쓰는 오브젝트가 없습니다.' },
+        { st: 'warn', what: '문구', why: '텍스트 설정 355곳 (상수 275, 참조 41, 계산식 39). 계산식은 내용을 알 수 없습니다.', go: 3, act: '문구로 이동' },
+        { st: 'unk', what: '그림 속 글자', why: '확인할 수 없습니다.', go: 5, act: '이미지로 이동' },
+        { st: 'ok', what: '코드페이지', why: '재합성할 때 949 / 1042가 필요합니다.' }
+      ],
+      guide: [
+        ['폰트 아틀라스를 만들고 번호를 붙입니다', 4], ['글자 오브젝트 85개에 아틀라스를 배정하고 이미지 뱅크에 넣습니다', 4],
+        ['이벤트 문자열을 번역합니다', 3], ['재합성합니다 (코드페이지 949)', 6], ['게임 화면에서 확인합니다', 7]
+      ],
+      steps: ['warn', 'ok', 'todo', 'todo', 'todo', 'todo', 'todo'], changes: 0,
+      problems: [['warn', '내용을 알 수 없는 계산식 39곳', 3], ['unk', '그림 속 글자는 확인할 수 없습니다', 5]],
+      counts: { 'frame': 0, 'obj': 0, 'blit': 85 }
+    },
+    dtge: {
+      file: 'dtge-v0.1.2.exe', dir: 'C:\\work\\dtge\\',
+      kind: '2.5+ 형식 · 119KB판 txtblt',
+      diag: [
+        { st: 'ok', what: '아카이브', why: 'exe. 오브젝트는 2.5+ 형식입니다.' },
+        { st: 'warn', what: '글자 방식', why: '119KB판 txtblt입니다. 글자표 방식은 쓸 수 없고 접기 방식(한 문자열에 음절 약 51개, KS X 1001 2350자까지)으로 처리합니다.', go: 4, act: '게임 모듈로 이동' },
+        { st: 'unk', what: '글꼴 불러오기', why: '이 모듈판은 동작 번호가 달라 판단하지 못했습니다.' },
+        { st: 'warn', what: '대사 길이', why: '번역 뒤 대사 길이와 타이머를 직접 확인해야 합니다.', go: 7, act: '확인으로 이동' },
+        { st: 'unk', what: '그림 속 글자', why: '확인할 수 없습니다.', go: 5, act: '이미지로 이동' },
+        { st: 'ok', what: '코드페이지', why: '재합성할 때 949 / 1042가 필요합니다.' }
+      ],
+      guide: [
+        ['대사 글자 아틀라스를 만듭니다 (한글 2350자)', 4], ['게임 모듈을 접기 방식으로 패치합니다', 4],
+        ['이벤트 문자열을 번역합니다', 3], ['재합성합니다 (코드페이지 949)', 6], ['대사 길이와 타이머를 확인합니다', 7]
+      ],
+      steps: ['warn', 'ok', 'todo', 'warn', 'todo', 'todo', 'todo'], changes: 0,
+      problems: [['warn', '접기 방식 제한: 음절 약 51개, KS X 1001 2350자', 4], ['warn', '번역 뒤 대사 길이와 타이머 확인 필요', 7], ['unk', '글꼴 불러오기 여부를 판단하지 못했습니다', 1]],
+      counts: { 'frame': 0, 'obj': 0, 'blit': 0 }
+    }
+  };
+  var STEPS = [['진단', 1], ['추출', 2], ['문구', 3], ['글꼴·글자', 4], ['이미지', 5], ['재합성', 6], ['확인', 7]];
+  var STR = [
+    ['COMPOSER: ', '작곡: ', '이벤트', 'Sound Test'],
+    ['Select a Save File.', '저장 파일을 고르세요.', '이벤트', 'Data Select'],
+    ['SAVE 1', '저장 1', '이벤트', 'Data Select'],
+    ['ABANDONED MINES', '버려진 광산', '이벤트', 'Stage Select'],
+    ['START DEMO', '체험판 시작', '처음 문자열', 'Menu (오브젝트 1)'],
+    ['...', '', '처음 문자열', 'SONG NAME 2 (오브젝트 173)']
+  ];
+  var FR = [
+    ['DEMO STAGE SELECT', 118, 4, 150, 10], ['Hightop1', 30, 30, 50, 10], ['Level Icon 2', 38, 36, 56, 10], ['Stage ID Slot 1', 96, 36, 70, 10], ['STAGENAME', 96, 48, 60, 10],
+    ['DataChip Count', 132, 62, 64, 10], ['SaveGemIcon', 288, 60, 58, 10], ['GemCount_File', 330, 70, 52, 10],
+    ['Hightop 2', 30, 78, 50, 10], ['Stage ID Slot 2', 96, 84, 70, 10], ['STAGENAME', 96, 96, 60, 10], ['DataChip Count', 132, 110, 64, 10], ['SaveGemIcon', 288, 108, 58, 10]
+  ];
+  var state = { s: 'nc', step: 1, bt: 'prob', sel: 2, modal: false, ls: 0, sz: 10, ol: 1, grid: true, fsel: 4 };
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  var stName = { ok: '확인됨', warn: '확인 필요', unk: '알 수 없음' };
+
+  function dotCls(k) { return k === 'ok' ? 'ok' : k === 'warn' ? 'warn' : k === 'chg' ? 'chg' : 'todo'; }
+
+  function renderStatus() {
+    var d = D[state.s], warns = d.problems.length;
+    $('status').innerHTML =
+      '<span class="mono">' + esc(d.file) + '</span><span class="path">' + esc(d.dir) + '</span><span class="grow"></span>' +
+      '<button type="button" class="pill warn" data-go="1">진단 · 문제 ' + warns + '</button>' +
+      (d.changes ? '<button type="button" class="pill chg" data-go="6">재합성 필요 · 변경 ' + d.changes + '</button>' : '<span class="pill ok">변경 없음</span>') +
+      '<button type="button" class="pill" id="refresh">새로고침</button>';
+    $('refresh').onclick = function () { toast('작업 폴더의 바뀐 파일을 다시 읽었습니다'); };
+  }
+  var toastT;
+  function toast(msg) {
+    var l = $('log'); if (l) { l.insertAdjacentHTML('beforeend', '<div>[방금] ' + esc(msg) + '</div>'); }
+    state.lastLog = msg; renderBottom();
+  }
+
+  function renderNav() {
+    var d = D[state.s], h = '<div class="grp">작업 단계</div>';
+    STEPS.forEach(function (s, i) {
+      h += '<button type="button" class="step" data-step="' + s[1] + '"' + (state.step === s[1] ? ' aria-current="step"' : '') + '><span class="n">' + s[1] + '</span><span class="lbl">' + s[0] + '</span><span class="dot ' + dotCls(d.steps[i]) + '" title="' + (d.steps[i] === 'ok' ? '끝남' : d.steps[i] === 'warn' ? '확인 필요' : d.steps[i] === 'chg' ? '변경 있음' : '아직') + '"></span></button>';
+    });
+    h += '<div class="grp">고급</div><button type="button" class="step" data-step="8"' + (state.step === 8 ? ' aria-current="step"' : '') + '><span class="n"></span><span class="lbl">청크 트리</span></button>';
+    h += '<button type="button" class="step" data-step="9"' + (state.step === 9 ? ' aria-current="step"' : '') + '><span class="n"></span><span class="lbl">스크립트 JSON</span></button>';
+    $('nav').innerHTML = h;
+  }
+
+  function viewDiag() {
+    var d = D[state.s], h = '<h3>진단</h3><p class="muted">' + esc(d.kind) + '</p>';
+    d.diag.forEach(function (c) {
+      h += '<div class="check"><span class="tag ' + (c.st === 'unk' ? 'unk' : c.st) + '">' + stName[c.st] + '</span><span class="what">' + esc(c.what) + '</span><span class="act">' + (c.go ? '<button type="button" class="btn small" data-go="' + c.go + '">' + esc(c.act) + '</button>' : '') + '</span><span class="why">' + esc(c.why) + '</span></div>';
+    });
+    h += '<h3 style="margin-top:16px">진행 방향</h3><ol class="guide">';
+    d.guide.forEach(function (g) { h += '<li><span>' + esc(g[0]) + '</span><button type="button" class="btn small" data-go="' + g[1] + '">' + STEPS[g[1] - 1][0] + '</button></li>'; });
+    return h + '</ol>';
+  }
+
+  function viewExtract() {
+    var d = D[state.s];
+    return '<h3>추출</h3><p class="muted">원본에서 작업 폴더로 데이터를 풀어냅니다. 처음에는 전체 추출을 권합니다.</p>' +
+      '<div class="row" style="margin-bottom:10px"><button type="button" class="btn primary" id="extractAll">전체 추출</button><button type="button" class="btn" id="showDlg">끝난 직후 화면 보기</button></div>' +
+      '<div class="note">전체 추출이 끝나면 "진단을 실행해 보시겠습니까?" 창이 뜹니다. 다시 묻지 않기를 고를 수 있습니다.</div>' +
+      '<details style="margin-top:12px"><summary>종류별로 추출하기</summary><div class="row" style="margin-top:8px">' +
+      ['이미지', '사운드', '글꼴', '스크립트', '텍스트', '텍스트 흐름', '모듈'].map(function (t) { return '<label><input type="checkbox" checked> ' + t + '</label>'; }).join('') + '</div></details>' +
+      '<h3 style="margin-top:16px">작업 폴더</h3><p class="mono">' + esc(d.dir) + '</p>';
+  }
+
+  function viewText() {
+    var h = '<h3>문구</h3><p class="muted">번역할 문자열을 한곳에서 봅니다. 분류는 하지 않고, 어디에 쓰이는지만 알려 줍니다.</p>' +
+      '<div class="row" style="margin-bottom:8px"><span class="tag">이벤트 493</span><span class="tag">오브젝트 94</span><span class="tag ok">번역 3</span><button type="button" class="btn small" id="openJson">JSON 파일 열기</button></div>' +
+      '<div class="tablewrap"><table><thead><tr><th>원문</th><th>번역</th><th>종류</th><th>쓰이는 곳</th></tr></thead><tbody>';
+    STR.forEach(function (r, i) {
+      h += '<tr data-i="' + i + '"' + (state.sel === i ? ' class="sel"' : '') + '><td>' + esc(r[0]) + '</td><td>' + (r[1] ? esc(r[1]) : '<span class="muted">비어 있음</span>') + '</td><td>' + r[2] + '</td><td>' + esc(r[3]) + '</td></tr>';
+    });
+    return h + '</tbody></table></div><p class="muted" style="margin-top:8px">계산식이나 INI로 만든 문구는 이 목록에 나오지 않습니다. 이 사실은 진단에 표시됩니다.</p>';
+  }
+
+  function viewFont() {
+    var s = state, ls = s.ls, ol = s.ol, shadow = [];
+    if (ol > 0) { for (var x = -ol; x <= ol; x++) { for (var y = -ol; y <= ol; y++) { if (x || y) { shadow.push(x + 'px ' + y + 'px 0 #000'); } } } }
+    var st = 'font-size:' + s.sz + 'px;letter-spacing:' + ls + 'px;text-shadow:' + (shadow.join(',') || 'none');
+    return '<h3>글꼴과 글자</h3>' +
+      '<div class="seg" role="group" aria-label="하위 탭" style="margin-bottom:10px"><button type="button" aria-pressed="true">폰트 아틀라스</button><button type="button" aria-pressed="false">글자 오브젝트</button><button type="button" aria-pressed="false">게임 모듈</button></div>' +
+      '<div class="cols"><div>' +
+      '<div class="field"><label for="sz">글자 크기</label><input id="sz" type="range" min="8" max="18" value="' + s.sz + '"><output>' + s.sz + 'px</output></div>' +
+      '<div class="field"><label for="ls">자간</label><input id="ls" type="range" min="-2" max="4" value="' + ls + '"><output>' + ls + 'px</output></div>' +
+      '<div class="field"><label for="ol">외곽선</label><input id="ol" type="range" min="0" max="2" value="' + ol + '"><output>' + ol + 'px</output></div>' +
+      '<label><input type="checkbox" id="gridT"' + (s.grid ? ' checked' : '') + '> 칸 눈금 (칸 폭 8px)</label>' +
+      '<div class="row" style="margin-top:10px"><button type="button" class="btn primary">아틀라스 만들기</button></div>' +
+      '<p class="muted" style="margin-top:8px">값을 바꾸면 오른쪽 미리보기가 바로 바뀝니다. 만들기 전에 간격을 확인합니다.</p></div>' +
+      '<div><span class="seg-label">미리보기 (게임에 실제로 나오는 문구)</span><div class="game' + (s.grid ? ' grid' : '') + '" style="' + st + '"><div class="ln">저장 1</div><div class="ln y">하이톱 마운틴</div><div class="ln">작곡: Leilani \'Woofle\' Wilson</div><div class="ln">체험판 시작 · 옵션 · 종료</div></div>' +
+      '<p class="muted" style="margin-top:6px">프레임 배치도가 들어오면 이 자리에 실제 배경이 깔립니다.</p></div></div>';
+  }
+
+  function viewImage() {
+    var h = '<h3>이미지</h3><p class="muted">이미지 뱅크의 그림을 보고 바꿉니다. 로고나 메뉴 그림 속의 글자는 여기서 고칩니다.</p><div class="row" style="margin-bottom:8px"><span class="tag">4,067개</span><span class="tag ok">수정 3</span><span class="tag">아틀라스 추가 3</span></div><div class="thumbs">';
+    for (var i = 0; i < 14; i++) { h += '<div class="thumb' + (i === 3 || i === 6 || i === 11 ? ' edit' : '') + '">' + (i < 10 ? '00000' + i : '0000' + i) + '</div>'; }
+    return h + '</div>';
+  }
+
+  function viewBuild() {
+    var d = D[state.s], chg = d.changes;
+    var items = [['텍스트', 'checked', '이벤트 문자열, 오브젝트 문자열'], ['스크립트', 'checked', '오브젝트 JSON (글자표 배정, 옵션)'], ['이미지', 'checked', '아틀라스 추가 3개'], ['모듈', 'checked', '글자표를 심은 txtblt'], ['글꼴', '', '바뀐 것 없음']];
+    return '<h3>재합성</h3><p class="muted">고친 것만 골라 새 파일로 만듭니다. 진단 결과에 따라 필요한 항목을 미리 체크했습니다.</p>' +
+      items.map(function (it) { return '<label style="display:block;margin:4px 0"><input type="checkbox" ' + it[1] + '> ' + it[0] + ' <span class="muted">· ' + it[2] + '</span></label>'; }).join('') +
+      '<div class="row" style="margin:12px 0"><label>코드페이지 <input class="mono" value="949" size="4"></label><label>로케일 <input class="mono" value="1042" size="5"></label></div>' +
+      '<p class="mono">출력: ' + esc(d.file.replace('.', '_new.')) + '</p>' +
+      '<div class="row"><button type="button" class="btn primary" id="rebuild">재합성</button><span class="muted">' + (chg ? '변경 ' + chg + '건이 반영됩니다' : '반영할 변경이 없습니다') + '</span></div>';
+  }
+
+  function viewCheck() {
+    var h = '<h3>확인</h3><p class="muted">프레임을 고르면 오브젝트가 놓인 모습을 보여 줍니다. 이벤트는 실행하지 않으므로 처음 배치입니다.</p><div class="row" style="margin-bottom:8px"><span class="tag">프레임 1 · Data Select · 384x320</span><label><input type="checkbox" id="trT" checked> 번역 문구로 보기</label></div><div class="frame" id="frame">';
+    FR.forEach(function (b, i) {
+      var sx = 100 / 384, sy = 100 / 320;
+      h += '<div class="box' + (state.fsel === i ? ' hit' : '') + '" data-f="' + i + '" style="left:' + (b[1] * sx) + '%;top:' + (b[2] * sy) + '%;width:' + (b[3] * sx) + '%;height:' + (b[4] * sy * 1.1) + '%">' + esc(b[0]) + '</div>';
+    });
+    return h + '</div><p class="muted" style="margin-top:6px">예시 배치입니다. 실제로는 오브젝트의 이미지와 번역한 글자가 위치에 그려집니다.</p>';
+  }
+
+  function viewAdv(n) {
+    return '<h3>' + (n === 8 ? '청크 트리' : '스크립트 JSON') + '</h3><p class="muted">지금 있는 화면 그대로입니다. 단계 화면이 해결하지 못하는 일을 위해 남겨 둡니다.</p><div class="note">' + (n === 8 ? '청크 목록, 압축 여부, 크기를 봅니다.' : '디컴파일한 이벤트와 오브젝트 JSON을 열고, 고친 뒤 리컴파일합니다.') + '</div>';
+  }
+
+  function renderWork() {
+    var v = state.step, h;
+    h = v === 1 ? viewDiag() : v === 2 ? viewExtract() : v === 3 ? viewText() : v === 4 ? viewFont() : v === 5 ? viewImage() : v === 6 ? viewBuild() : v === 7 ? viewCheck() : viewAdv(v);
+    $('work').innerHTML = h;
+    if (state.modal) { $('app').insertAdjacentHTML('beforeend', '<div class="modal" id="modal"><div><h3>추출이 끝났습니다</h3><p>구조를 분석해서 한글화 진행 방향을 안내하는 진단을 실행해 보시겠습니까?</p><div class="row" style="margin:10px 0"><label><input type="checkbox"> 다시 묻지 않기</label></div><div class="row"><button type="button" class="btn primary" id="mYes">진단 실행</button><button type="button" class="btn" id="mNo">나중에</button></div></div></div>'); }
+  }
+
+  function renderSide() {
+    var d = D[state.s], r = STR[state.sel] || STR[0], insp;
+    if (state.step === 7) {
+      var f = FR[state.fsel];
+      insp = '<div class="mono">' + esc(f[0]) + '</div><p class="muted" style="margin:4px 0">위치 ' + f[1] + ', ' + f[2] + ' · 글자 오브젝트</p><div class="row"><span class="tag">글자표 1</span><span class="tag">pixel</span><span class="tag">ESCAPE</span><span class="tag">CRLF</span></div>';
+    } else if (state.step === 3) {
+      insp = '<div class="mono">' + esc(r[0]) + '</div><p class="muted" style="margin:4px 0">' + esc(r[2]) + ' · ' + esc(r[3]) + '</p><p style="margin:0">번역: ' + (r[1] ? esc(r[1]) : '<span class="muted">비어 있음</span>') + '</p>';
+    } else if (state.step === 4) {
+      insp = '<p class="muted" style="margin:0">선택한 글자 오브젝트의 옵션이 여기에 나옵니다.</p><div class="row" style="margin-top:6px"><span class="tag">ESCAPE</span><span class="tag">CHAR_EVENT</span><span class="tag unk">0x4000</span></div><p class="muted" style="margin:6px 0 0;font-size:12.5px">이름을 모르는 옵션은 16진수로 표시합니다.</p>';
+    } else {
+      insp = '<p class="muted" style="margin:0">단계에서 항목을 선택하면 상세가 여기에 나옵니다.</p>';
+    }
+    $('side').innerHTML = '<section><h4>인스펙터</h4>' + insp + '</section><section><h4>미리보기</h4><div class="game" style="font-weight:700;min-height:74px"><div>' + (state.step === 3 && r[1] ? esc(r[1]) : state.step === 7 ? '저장 1' : '미리보기') + '</div><div class="y" style="color:#ffd24a">하이톱 마운틴</div></div></section>' +
+      '<section style="border-bottom:0"><h4>선택 정보</h4><p class="muted" style="margin:0;font-size:12.5px">' + esc(d.kind) + '</p></section>';
+  }
+
+  function renderBottom() {
+    var d = D[state.s], pc = d.problems.length;
+    $('btabs').innerHTML = '<button type="button" role="tab" data-b="prob" aria-selected="' + (state.bt === 'prob') + '">문제 ' + pc + '</button><button type="button" role="tab" data-b="log" aria-selected="' + (state.bt === 'log') + '">로그</button>';
+    var h = '';
+    if (state.bt === 'prob') {
+      d.problems.forEach(function (p) { h += '<div class="prob"><span class="tag ' + (p[0] === 'unk' ? 'unk' : p[0]) + '">' + (p[0] === 'unk' ? '알 수 없음' : '확인 필요') + '</span><span>' + esc(p[1]) + '</span><button type="button" class="btn small go" data-go="' + p[2] + '">이동</button></div>'; });
+    } else {
+      h = '<div class="log" id="log"><div>[추출] 전체 추출을 마쳤습니다</div><div>[분석] 텍스트 블리터 ' + (d.counts.blit || '…') + '개를 읽었습니다</div>' + (state.lastLog ? '<div>[방금] ' + esc(state.lastLog) + '</div>' : '') + '</div>';
+    }
+    $('bpanel').innerHTML = h;
+  }
+
+  function go(n) { state.step = n; renderAll(); }
+  function renderAll() { renderStatus(); renderNav(); renderWork(); renderSide(); renderBottom(); }
+
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('button, tr[data-i], .box');
+    if (!t) { return; }
+    if (t.dataset.s) { state.s = t.dataset.s; state.step = 1; state.lastLog = ''; Array.prototype.forEach.call($('scn').children, function (b) { b.setAttribute('aria-pressed', String(b === t)); }); renderAll(); return; }
+    if (t.dataset.go) { go(+t.dataset.go); return; }
+    if (t.dataset.step) { go(+t.dataset.step); return; }
+    if (t.dataset.b) { state.bt = t.dataset.b; renderBottom(); return; }
+    if (t.dataset.i !== undefined) { state.sel = +t.dataset.i; renderWork(); renderSide(); return; }
+    if (t.dataset.f !== undefined) { state.fsel = +t.dataset.f; renderWork(); renderSide(); return; }
+    if (t.id === 'showDlg' || t.id === 'extractAll') { state.modal = true; renderWork(); return; }
+    if (t.id === 'mYes') { state.modal = false; go(1); return; }
+    if (t.id === 'mNo') { state.modal = false; renderWork(); return; }
+    if (t.id === 'rebuild') { toast('새 파일을 만들었습니다: ' + D[state.s].file.replace('.', '_new.')); return; }
+    if (t.id === 'openJson') { toast('text/frameEventText.json을 열었습니다'); return; }
+  });
+  document.addEventListener('input', function (e) {
+    var id = e.target.id;
+    if (id === 'sz') { state.sz = +e.target.value; }
+    else if (id === 'ls') { state.ls = +e.target.value; }
+    else if (id === 'ol') { state.ol = +e.target.value; }
+    else if (id === 'gridT') { state.grid = e.target.checked; }
+    else { return; }
+    var g = document.querySelector('#work .game');
+    if (g) {
+      var sh = [];
+      for (var x = -state.ol; x <= state.ol; x++) { for (var y = -state.ol; y <= state.ol; y++) { if ((x || y) && state.ol > 0) { sh.push(x + 'px ' + y + 'px 0 #000'); } } }
+      g.style.fontSize = state.sz + 'px';
+      g.style.letterSpacing = state.ls + 'px';
+      g.style.textShadow = sh.join(',') || 'none';
+      g.classList.toggle('grid', state.grid);
+    }
+    var out = e.target.parentNode && e.target.parentNode.querySelector('output');
+    if (out) { out.textContent = e.target.value + 'px'; }
+  });
+  renderAll();
+})();
+</script>
+</body>
+</html>

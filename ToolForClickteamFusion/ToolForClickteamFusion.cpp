@@ -43,9 +43,9 @@ int wmain(int argc, WCHAR* argv[])
 
 	wcout << L"----------------------------------------------------" << endl;
 
-	wcout << L"ToolForClickteamFusion v1.0.01 GUI" << endl;
+	wcout << L"ToolForClickteamFusion v1.1.0 GUI" << endl;
 
-	if (!openApp(L"ToolForClickteamFusion v1.0.01")) {
+	if (!openApp(L"ToolForClickteamFusion v1.1.0")) {
 		closeApp();
 		return -1;
 	}

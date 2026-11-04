@@ -94,9 +94,43 @@ bool Dx9Application::init()
 	ImGui::StyleColorsDark();
 
 	// 한국어 / 일본어 폰트 세팅, 나머지 언어는 알아서 추가하던가 하면 될듯
-	const char* fontPath = "GUI_Font.ttf";
+	// 실행 파일 옆의 GUI_Font.ttf 를 먼저 쓰고, 없으면 윈도우 기본 한글 폰트(맑은 고딕)로 대신한다
 	float fontSize = 14.0f;
-	io->Fonts->AddFontFromFileTTF(fontPath, fontSize, NULL, io->Fonts->GetGlyphRangesKoreanAndJapanese());
+	{
+		auto toUtf8 = [](const wstring& w) {
+			if (w.empty()) { return string(); }
+			int n = WideCharToMultiByte(CP_UTF8, 0, w.c_str(), (int)w.size(), NULL, 0, NULL, NULL);
+			string s(n, '\0');
+			WideCharToMultiByte(CP_UTF8, 0, w.c_str(), (int)w.size(), &s[0], n, NULL, NULL);
+			return s;
+		};
+		wchar_t modulePath[MAX_PATH] = {};
+		GetModuleFileNameW(NULL, modulePath, MAX_PATH);
+		wstring exeDir = modulePath;
+		const size_t slash = exeDir.find_last_of(L"\\/");
+		exeDir = (slash == wstring::npos) ? L"." : exeDir.substr(0, slash);
+		wchar_t winDir[MAX_PATH] = {};
+		GetWindowsDirectoryW(winDir, MAX_PATH);
+
+		const wstring candidates[] = {
+			exeDir + L"\\GUI_Font.ttf",
+			L"GUI_Font.ttf",
+			wstring(winDir) + L"\\Fonts\\malgun.ttf",
+		};
+		ImFont* guiFont = NULL;
+		for (const wstring& candidate : candidates) {
+			if (GetFileAttributesW(candidate.c_str()) == INVALID_FILE_ATTRIBUTES) {
+				continue;
+			}
+			guiFont = io->Fonts->AddFontFromFileTTF(toUtf8(candidate).c_str(), fontSize, NULL, io->Fonts->GetGlyphRangesKoreanAndJapanese());
+			if (guiFont != NULL) {
+				break;
+			}
+		}
+		if (guiFont == NULL) {
+			wcout << errPrefix << L"<<function>> " << __FUNCTIONW__ << L": 화면 글꼴(GUI_Font.ttf, malgun.ttf)을 찾지 못해 기본 글꼴을 씁니다. 한글이 ?로 보일 수 있습니다." << endl;
+		}
+	}
 
 	// ini 파일 생성 방지
 	io->IniFilename = NULL;

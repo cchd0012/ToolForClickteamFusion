@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ToolForClickteamFusion 사용 가이드</title>
+<style>
+:root {
+  --bg: #f7f7f4; --panel: #ffffff; --ink: #1f2328; --muted: #5d6670; --line: #d9dde1;
+  --accent: #1f6feb; --accent-soft: #e3eefc; --code-bg: #f0f2f4; --pre-bg: #14181d; --pre-ink: #e6e9ed;
+  --head: #111418; --ok: #1a7f37; --warn-bg: #fff4d6; --warn-line: #e2b93d;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14171a; --panel: #1b1f23; --ink: #dde1e5; --muted: #98a2ad; --line: #2e353c;
+    --accent: #6ea8ff; --accent-soft: #1d2b40; --code-bg: #262c32; --pre-bg: #0d1013; --pre-ink: #dde3e9;
+    --head: #f2f4f6; --ok: #56d364; --warn-bg: #3a3118; --warn-line: #a8862a;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14171a; --panel: #1b1f23; --ink: #dde1e5; --muted: #98a2ad; --line: #2e353c;
+  --accent: #6ea8ff; --accent-soft: #1d2b40; --code-bg: #262c32; --pre-bg: #0d1013; --pre-ink: #dde3e9;
+  --head: #f2f4f6; --ok: #56d364; --warn-bg: #3a3118; --warn-line: #a8862a;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 16px/1.75 "Pretendard", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.topbar {
+  position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--panel) 92%, transparent);
+  backdrop-filter: blur(8px); border-bottom: 1px solid var(--line);
+}
+.topbar-inner { max-width: 1180px; margin: 0 auto; padding: 0 20px; height: 52px; display: flex; align-items: center; gap: 18px; }
+.brand { font-weight: 700; color: var(--head); white-space: nowrap; }
+.topnav { display: flex; gap: 4px; flex: 1; overflow-x: auto; }
+.topnav a {
+  padding: 6px 12px; border-radius: 8px; color: var(--muted); text-decoration: none; white-space: nowrap; font-size: 14px;
+}
+.topnav a:hover { background: var(--accent-soft); color: var(--accent); }
+.topnav a.current { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.theme { border: 1px solid var(--line); background: var(--panel); color: var(--muted); border-radius: 8px; padding: 5px 10px; cursor: pointer; font: inherit; font-size: 13px; }
+.theme:hover { color: var(--accent); border-color: var(--accent); }
+.layout { max-width: 1180px; margin: 0 auto; padding: 28px 20px 80px; display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 36px; }
+.toc { position: sticky; top: 76px; align-self: start; max-height: calc(100vh - 100px); overflow-y: auto; font-size: 14px; padding-right: 6px; }
+.toc-title { font-size: 12px; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px; font-weight: 700; }
+.toc ul { list-style: none; margin: 0; padding: 0; }
+.toc li a { display: block; padding: 5px 10px; border-left: 2px solid var(--line); color: var(--muted); text-decoration: none; line-height: 1.45; }
+.toc li.sub a { padding-left: 24px; font-size: 13px; }
+.toc li a:hover { color: var(--accent); }
+.toc li a.active { color: var(--accent); border-left-color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+.toc-mobile { display: none; }
+article {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 36px 44px 44px; min-width: 0;
+}
+article h1 { font-size: 30px; line-height: 1.3; margin: 0 0 18px; color: var(--head); letter-spacing: -0.01em; }
+article h2 { font-size: 23px; margin: 48px 0 14px; padding-top: 22px; border-top: 1px solid var(--line); color: var(--head); letter-spacing: -0.01em; }
+article h2:first-of-type { margin-top: 30px; }
+article h3 { font-size: 18px; margin: 32px 0 10px; color: var(--head); }
+article h4 { font-size: 16px; margin: 22px 0 8px; color: var(--head); }
+article p { margin: 12px 0; }
+article ul, article ol { margin: 12px 0; padding-left: 24px; }
+article li { margin: 6px 0; }
+article li::marker { color: var(--accent); }
+article a { color: var(--accent); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); }
+article a:hover { border-bottom-color: var(--accent); }
+article hr { border: 0; border-top: 1px solid var(--line); margin: 30px 0; }
+code { font: 0.88em/1.4 "Cascadia Mono", "D2Coding", Consolas, "Courier New", monospace; background: var(--code-bg); padding: 2px 6px; border-radius: 5px; word-break: break-word; }
+.code { margin: 16px 0; border-radius: 10px; overflow: hidden; background: var(--pre-bg); }
+.code-bar { display: flex; justify-content: space-between; align-items: center; padding: 6px 12px; font-size: 12px; color: #9aa4af; background: rgba(255,255,255,.05); }
+.copy { border: 1px solid rgba(255,255,255,.2); background: transparent; color: #c9d1d9; border-radius: 6px; padding: 2px 10px; cursor: pointer; font: inherit; font-size: 12px; }
+.copy:hover { background: rgba(255,255,255,.1); }
+pre { margin: 0; padding: 14px 16px; overflow-x: auto; color: var(--pre-ink); }
+pre code { background: none; padding: 0; font-size: 13.5px; line-height: 1.65; word-break: normal; white-space: pre; }
+.table-wrap { overflow-x: auto; margin: 16px 0; border: 1px solid var(--line); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; line-height: 1.55; }
+th, td { padding: 9px 14px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+th { background: var(--accent-soft); color: var(--head); font-weight: 600; white-space: nowrap; }
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--code-bg) 55%, transparent); }
+td code, th code { white-space: nowrap; }
+blockquote { margin: 16px 0; padding: 4px 18px; border-left: 4px solid var(--accent); background: var(--accent-soft); border-radius: 0 10px 10px 0; }
+footer { max-width: 1180px; margin: 0 auto; padding: 0 20px 40px; color: var(--muted); font-size: 13px; }
+@media (max-width: 960px) {
+  .layout { grid-template-columns: minmax(0, 1fr); padding-top: 16px; }
+  .toc { display: none; }
+  .toc-mobile { display: block; margin-bottom: 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; font-size: 14px; }
+  .toc-mobile summary { cursor: pointer; font-weight: 600; }
+  .toc-mobile a { display: block; padding: 5px 0; color: var(--accent); text-decoration: none; }
+  article { padding: 22px 18px 30px; border-radius: 10px; }
+  article h1 { font-size: 24px; }
+  article h2 { font-size: 20px; }
+}
+@media print {
+  .topbar, .toc, .toc-mobile, .copy, .theme { display: none !important; }
+  .layout { display: block; padding: 0; }
+  article { border: 0; padding: 0; }
+  body { background: #fff; color: #000; }
+  .code { background: #f3f3f3; } pre { color: #000; } .code-bar { display: none; }
+}
+</style>
+</head>
+<body>
+<header class="topbar"><div class="topbar-inner">
+  <span class="brand">ToolForClickteamFusion 문서</span>
+  <nav class="topnav"><a href="한글화_작업흐름.html">한글화 작업 흐름</a><a href="dtge_번역_가이드.html">dtge (DustTale: The Genocide's End) 번역 가이드</a><a href="사용_가이드.html" class="current">ToolForClickteamFusion 사용 가이드</a></nav>
+  <button type="button" class="theme">어둡게</button>
+</div></header>
+<div class="layout">
+  <aside class="toc"><p class="toc-title">목차</p><ul><li class=""><a href="#1-준비물">1. 준비물</a></li><li class=""><a href="#2-가장-짧은-흐름">2. 가장 짧은 흐름</a></li><li class=""><a href="#3-화면-구성">3. 화면 구성</a></li><li class=""><a href="#4-무엇을-할-수-있나">4. 무엇을 할 수 있나</a></li><li class=""><a href="#5-지금까지-확인한-것과-한계">5. 지금까지 확인한 것과 한계</a></li><li class=""><a href="#6-문제가-생겼을-때">6. 문제가 생겼을 때</a></li><li class=""><a href="#7-폴더-구조">7. 폴더 구조</a></li><li class=""><a href="#8-명령줄">8. 명령줄</a></li><li class=""><a href="#문서-목록">문서 목록</a></li></ul></aside>
+  <main>
+    <details class="toc-mobile"><summary>목차</summary><a href="#1-준비물">1. 준비물</a><a href="#2-가장-짧은-흐름">2. 가장 짧은 흐름</a><a href="#3-화면-구성">3. 화면 구성</a><a href="#4-무엇을-할-수-있나">4. 무엇을 할 수 있나</a><a href="#5-지금까지-확인한-것과-한계">5. 지금까지 확인한 것과 한계</a><a href="#6-문제가-생겼을-때">6. 문제가 생겼을 때</a><a href="#7-폴더-구조">7. 폴더 구조</a><a href="#8-명령줄">8. 명령줄</a><a href="#문서-목록">문서 목록</a></details>
+    <article>
+<h1 id="toolforclickteamfusion-사용-가이드">ToolForClickteamFusion 사용 가이드</h1>
+<p>Clickteam Fusion으로 만든 게임(exe / dat / ccn)을 <strong>한글화하기 위한 도구</strong>다. 게임 파일 안의 문구, 이미지, 글꼴, 이벤트를 꺼내서(추출) 고치고 다시 합친다(재합성). 원본은 건드리지 않고 <code>&lt;이름&gt;_new</code> 파일을 새로 만든다.</p>
+<p>이 문서는 버전 1.1.0 기준이며, 처음 쓰는 사람을 위한 전체 안내다. 자세한 내용은 맨 아래 <a href="#문서-목록">문서 목록</a>의 문서를 본다.</p>
+<h2 id="1-준비물">1. 준비물</h2>
+<p>도구는 설치하지 않는다. 압축을 풀어 아무 폴더에 두고 <code>ToolForClickteamFusion.exe</code>를 실행하면 된다. 64비트 Windows 10 / 11이 필요하다.</p>
+<p>배포 폴더에 들어 있는 것:</p>
+<div class="table-wrap"><table><thead><tr><th>파일</th><th>뜻</th></tr></thead><tbody><tr><td><code>ToolForClickteamFusion.exe</code></td><td>도구 본체</td></tr><tr><td><code>GUI_Font.ttf</code></td><td>도구 화면에 쓰는 한글 글꼴. exe와 <strong>같은 폴더</strong>에 둔다. 없으면 윈도우의 맑은 고딕(<code>malgun.ttf</code>)으로 대신한다</td></tr><tr><td><code>d3dx9_43.dll</code></td><td>화면을 그리는 DirectX 9 보조 라이브러리. 도구 화면이 안 뜨면 이 파일이 exe 옆에 있는지 본다</td></tr><tr><td><code>msvcp140.dll</code>, <code>vcruntime140.dll</code>, <code>vcruntime140_1.dll</code></td><td>Visual C++ 실행 라이브러리 (PC에 이미 있으면 안 써도 된다)</td></tr><tr><td><code>docs/</code></td><td>이 가이드를 포함한 문서 (HTML)</td></tr></tbody></table></div>
+<p>한글화에 필요하지만 도구에 들어 있지 않은 것:</p>
+<ul><li><strong>번역할 게임 파일.</strong> 도구는 게임을 주지 않는다.</li><li><strong>게임 글꼴이 한글을 갖고 있지 않을 때 쓸 한글 폰트</strong> (<code>.ttf</code> / <code>.otf</code>, 또는 BMFont <code>.fnt</code>). 게임이 글자를 그림으로 그리는 방식이면 이 폰트로 한글 글자 그림(폰트 아틀라스)을 만든다. 폰트는 라이선스를 확인하고 고른다.</li><li><strong>번역문.</strong> 도구는 번역해 주지 않는다. <code>text/frameEventText.json</code>의 <code>translation</code>에 직접 채운다.</li></ul>
+<p>게임 실행 확인용으로, 한글이 나오려면 아카이브의 코드페이지가 949여야 한다. 아카이브를 연 뒤 <code>진단</code> 화면 맨 위의 <code>프로젝트 정보</code>에 <code>한국어 코드페이지로 변경</code>, <code>한국어 로케일로 변경</code> 단추가 있다 (저장할 때 반영된다).</p>
+<h2 id="2-가장-짧은-흐름">2. 가장 짧은 흐름</h2>
+<ol><li><code>ToolForClickteamFusion.exe</code>를 실행하고 위쪽 메뉴 <code>프로젝트</code> → <code>열기</code>로 게임 파일(exe / dat / ccn)을 연다.</li><li>왼쪽 단계 목록의 <code>추출</code>에서 <code>전체 추출</code>을 한다. 게임 파일 옆에 <code>&lt;게임 이름&gt;/</code> 폴더가 생긴다.</li><li><code>진단</code>을 본다. 이 게임을 어떤 순서로 한글화하면 되는지, 문제가 될 만한 곳이 어디인지 알려 준다.</li><li><code>문구</code>에서 번역할 파일(<code>text/frameEventText.json</code>, <code>text/objectText.json</code>)을 열어 <code>translation</code>을 채운다.</li><li>게임이 글자를 그림으로 그리면 <code>글꼴·글자</code>에서 폰트 아틀라스를 만들고 글자 오브젝트에 적용한다. 그림 속 글자는 <code>이미지</code>에서 PNG를 바꾼다.</li><li><code>재합성</code>에서 고친 것을 골라 새 파일(<code>&lt;이름&gt;_new</code>)로 저장한다.</li><li>새 파일로 게임을 실행한다. 글자 위치가 궁금하면 도구의 <code>확인</code>(프레임 배치도)에서 미리 볼 수 있다.</li></ol>
+<p>고치고 다시 해 보는 일을 반복하게 된다. 편집기에서 JSON이나 PNG를 고치고 도구로 돌아오면 바뀐 파일을 자동으로 다시 읽는다 (위쪽의 <code>새로고침</code>을 눌러도 된다).</p>
+<h2 id="3-화면-구성">3. 화면 구성</h2>
+<ul><li>맨 위 메뉴: <code>프로젝트</code>(열기, 저장), <code>보기</code>, <code>고급 도구</code>, <code>도움말</code></li><li>왼쪽: 단계 목록. 위에서 아래로 진행하면 된다.</li><li>가운데: 고른 단계의 작업 화면</li><li>아래: 문제 / 로그 패널. 도구가 한 일과 경고가 쌓인다. 막혔을 때 먼저 본다.</li></ul>
+<div class="table-wrap"><table><thead><tr><th>단계</th><th>하는 일</th></tr></thead><tbody><tr><td>진단</td><td>아카이브 구조를 분석해 한글화 진행 방향을 안내한다</td></tr><tr><td>추출</td><td>데이터를 파일(PNG, JSON 등)로 꺼낸다</td></tr><tr><td>문구</td><td>번역할 문자열 파일을 연다</td></tr><tr><td>글꼴·글자</td><td>한글 폰트 아틀라스를 만들고 글자 오브젝트와 게임 모듈에 적용한다</td></tr><tr><td>이미지</td><td>이미지를 고치거나 추가한다</td></tr><tr><td>재합성</td><td>고친 파일을 아카이브에 합쳐 새 파일로 저장한다</td></tr><tr><td>확인</td><td>프레임에 오브젝트가 놓인 모습을 본다 (처음 배치. 이벤트는 실행하지 않는다)</td></tr></tbody></table></div>
+<p><code>고급 도구</code>에는 같은 기능을 메뉴로 쓰는 <code>1.추출</code>, <code>2.수정</code>, <code>3.교체</code>가 있고, 아래 고급 화면도 <code>보기</code> 메뉴에서 연다.</p>
+<div class="table-wrap"><table><thead><tr><th>고급 화면</th><th>하는 일</th></tr></thead><tbody><tr><td>청크 트리</td><td>아카이브의 청크 구조를 본다</td></tr><tr><td>스크립트 JSON</td><td>디컴파일한 이벤트와 오브젝트 JSON을 고치고 리컴파일한다</td></tr><tr><td>이벤트 찾기</td><td>이벤트에서 오브젝트나 동작을 찾는다. 찾은 동작이 무슨 일을 하는지 안내하고, 식을 숫자로 바꿔 고칠 수도 있다</td></tr></tbody></table></div>
+<h2 id="4-무엇을-할-수-있나">4. 무엇을 할 수 있나</h2>
+<ul><li><strong>문구 번역:</strong> 이벤트의 문자열, 오브젝트의 문자열, Text 문단을 원문 / 번역 쌍으로 꺼내 번역을 적용한다.</li><li><strong>글자 그림(텍스트 블리터) 한글화:</strong> 이미지 글꼴로 글을 그리는 게임에 한글 폰트 아틀라스를 만들어 넣는다. 자동 줄바꿈, 정렬, 글자 폭 계산을 한글에 맞게 정한다.</li><li><strong>이미지 교체와 추가:</strong> PNG로 꺼내서 같은 이름으로 바꾸거나 새로 더한다. 옛 형식 게임의 16 / 24비트 그림도 색과 투명이 맞게 나온다.</li><li><strong>글꼴(TrueType) 교체:</strong> 게임 안의 글꼴을 한글 글꼴로 바꾼다.</li><li><strong>이벤트와 오브젝트를 읽는 JSON으로 풀기 / 다시 합치기:</strong> 고치지 않은 것은 합쳐도 내용이 바뀌지 않는다.</li><li><strong>이벤트 찾기:</strong> 예를 들어 플레이어 HP가 줄어드는 곳을 찾아 그 식을 0으로 바꿔 시험할 수 있다.</li><li><strong>진단:</strong> 지금 연 파일만 분석해서 어떤 문제가 있을 수 있는지, 다음에 무엇을 하면 되는지 알려 준다. 판단하지 못한 것은 "알 수 없음"으로 둔다.</li></ul>
+<h2 id="5-지금까지-확인한-것과-한계">5. 지금까지 확인한 것과 한계</h2>
+<p>직접 해 본 게임: PrototypeNCSAGE, Sally (Whisper of Soul), Sonic 3D in 2D, Lone Fungus (그림), dtge (DustTale: The Genocide's End). dtge는 <a href="dtge_번역_가이드.html">번역 가이드</a>가 따로 있다.</p>
+<p>아직 하지 못하거나 확인하지 못한 것:</p>
+<ul><li>그림 속 글자(제목 로고, 메뉴 그림)는 글꼴이 아니라 이미지다. <code>이미지</code>에서 PNG를 직접 고친다.</li><li>글자 출력 모드(물결, 회전 등)를 쓰는 텍스트 블리터는 지원하지 않는다.</li><li>15비트 그림은 아직 지원하지 않는다 (해당 게임을 만나면 추가한다).</li><li><code>확인</code> 화면은 처음 배치다. 이벤트가 만들거나 옮기는 오브젝트, 화면 전환 효과는 나오지 않는다. 빠른 배경(Quick Backdrop)의 채움은 아직 그리지 않는다.</li><li>이벤트 찾기에서 이름이 붙는 동작 / 조건 번호는 확인한 일부뿐이다. 모르는 번호는 이름을 지어내지 않고 번호와 쓰인 예만 보여 준다. 식 고치기는 식 전체를 숫자 하나로 바꾸는 것만 된다.</li><li>데이터가 여러 파일로 나뉜 게임은 파일마다 따로 열어서 추출·교체해야 한다. 이런 게임으로 끝까지 해 본 적은 아직 없다.</li><li>한 번에 많이 고치지 말고, 고친 뒤 게임에서 확인하는 일을 자주 한다. 원본은 항상 그대로 두므로 되돌릴 수 있다.</li></ul>
+<h2 id="6-문제가-생겼을-때">6. 문제가 생겼을 때</h2>
+<div class="table-wrap"><table><thead><tr><th>증상</th><th>확인할 것</th></tr></thead><tbody><tr><td>실행하면 바로 꺼지거나 <code>d3dx9_43.dll</code>이 없다고 나온다</td><td><code>d3dx9_43.dll</code>이 exe와 같은 폴더에 있는지 본다</td></tr><tr><td><code>VCRUNTIME140</code>, <code>MSVCP140</code>이 없다고 나온다</td><td>배포 폴더의 해당 <code>.dll</code> 3개가 exe 옆에 있는지 본다. 없으면 Microsoft의 Visual C++ 재배포 가능 패키지(x64)를 설치한다</td></tr><tr><td>도구 화면의 한글이 <code>?</code>로 보인다</td><td><code>GUI_Font.ttf</code>가 exe 옆에 있는지 본다. 없고 윈도우 글꼴 폴더에 맑은 고딕도 없으면 한글이 안 나온다</td></tr><tr><td>게임에서 한글이 <code>?</code> 또는 깨져 보인다</td><td>코드페이지가 949인지, 글꼴 아틀라스를 오브젝트에 적용했는지, 게임이 실행 중에 글꼴 이미지를 다시 불러오는지 (진단의 <code>확인 필요</code>) 본다. <a href="한글화_작업흐름.html">작업 흐름</a>의 2-4</td></tr><tr><td>번역을 채웠는데 안 바뀐다</td><td>문자열은 <strong>정확히 같은 것만</strong> 바뀐다. <code>translation</code>이 비어 있지 않고 원문과 달라야 한다. <code>재합성</code>에서 <code>text</code>를 골랐는지도 본다</td></tr><tr><td>번역하니 게임이 깨진다</td><td>키 문자열(INI 키, 파일 경로 등)을 번역했을 수 있다. <code>text/textFlow.json</code>과 <code>이벤트 찾기</code>로 그 문자열이 어디에 쓰이는지 확인한다</td></tr><tr><td>고쳤는데 도구에 반영이 안 된다</td><td>위쪽의 <code>새로고침</code>을 누른다. 도구가 직접 쓴 파일은 바뀐 것으로 보지 않는다</td></tr><tr><td>아카이브를 열었는데 아무것도 못 한다</td><td>아래 로그 패널의 오류 줄을 본다. 도구가 모르는 형식이면 이유가 로그에 남는다</td></tr></tbody></table></div>
+<h2 id="7-폴더-구조">7. 폴더 구조</h2>
+<p>추출하면 게임 파일 옆에 이런 폴더가 생긴다 (자세한 설명은 <a href="한글화_작업흐름.html">작업 흐름</a>의 폴더 구조).</p>
+<div class="code"><div class="code-bar"><span>코드</span><button type="button" class="copy">복사</button></div><pre><code>&lt;게임 이름&gt;/
+  text/        frameEventText.json, objectText.json, textFlow.json
+  script/      frame/*.json, object/*.json, backup/ (이벤트 찾기에서 고칠 때 원본)
+  image/ font/ modules/
+  glyph/       build_&lt;이름&gt;.json, atlases.json, atlas/&lt;이름&gt;.{png,kft,json}, txtblt_patched.mfx</code></pre></div>
+<h2 id="8-명령줄">8. 명령줄</h2>
+<p>화면을 쓰지 않고 같은 일을 명령줄로도 할 수 있다.</p>
+<div class="code"><div class="code-bar"><span>bash</span><button type="button" class="copy">복사</button></div><pre><code>ToolForClickteamFusion.exe --extract game.dat script text flow
+ToolForClickteamFusion.exe --diagnose game.dat
+ToolForClickteamFusion.exe --replace game.dat codepage=949 locale=1042 script text</code></pre></div>
+<h2 id="문서-목록">문서 목록</h2>
+<div class="table-wrap"><table><thead><tr><th>문서</th><th>내용</th></tr></thead><tbody><tr><td><a href="한글화_작업흐름.html">한글화 작업 흐름</a></td><td>단계별 자세한 설명: 진단, 추출, 문구, 글꼴·글자, 확인, 이벤트 찾기, 재합성, 명령줄</td></tr><tr><td><a href="dtge_번역_가이드.html">dtge 번역 가이드</a></td><td>DustTale: The Genocide's End 번역 순서와 그 게임 전용 설정</td></tr><tr><td><a href="UI_와이어프레임.html">화면 구조</a></td><td>화면 설계 그림</td></tr></tbody></table></div>
+    </article>
+  </main>
+</div>
+<footer>이 문서는 <code>docs/사용_가이드.md</code> 에서 <code>docs/build_docs.py</code> 로 만든 것입니다. 고칠 때는 .md 를 고치고 다시 만드세요.</footer>
+<script>
+(function () {
+  var root = document.documentElement;
+  try { var saved = localStorage.getItem('docs-theme'); if (saved) root.setAttribute('data-theme', saved); } catch (e) {}
+  var btn = document.querySelector('.theme');
+  function current() {
+    var t = root.getAttribute('data-theme');
+    if (t) return t;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  function label() { btn.textContent = current() === 'dark' ? '밝게' : '어둡게'; }
+  if (btn) {
+    label();
+    btn.addEventListener('click', function () {
+      var next = current() === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('docs-theme', next); } catch (e) {}
+      label();
+    });
+  }
+  document.querySelectorAll('.copy').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var code = b.closest('.code').querySelector('code').innerText;
+      var done = function () { b.textContent = '복사됨'; setTimeout(function () { b.textContent = '복사'; }, 1400); };
+      if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(code).then(done, done); }
+      else { var t = document.createElement('textarea'); t.value = code; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(t); done(); }
+    });
+  });
+  var links = document.querySelectorAll('.toc a');
+  var map = {};
+  links.forEach(function (a) { map[a.getAttribute('href').slice(1)] = a; });
+  var heads = Array.prototype.slice.call(document.querySelectorAll('article h2, article h3')).filter(function (h) { return map[h.id]; });
+  function onScroll() {
+    var y = window.scrollY + 110, cur = null;
+    heads.forEach(function (h) { if (h.offsetTop <= y) cur = h; });
+    links.forEach(function (a) { a.classList.remove('active'); });
+    if (cur && map[cur.id]) { map[cur.id].classList.add('active'); }
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+})();
+</script>
+</body>
+</html>

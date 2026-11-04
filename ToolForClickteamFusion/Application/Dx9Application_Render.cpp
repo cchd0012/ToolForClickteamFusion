@@ -101,7 +101,7 @@ void Dx9Application::renderMenuTab()
 	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
 	ImGui::SetNextWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x, (float)states.menuHeight), ImGuiCond_Always);
 
-	if (!ImGui::Begin("ToolForClickteamFusion_Gui_ver1.0.01", &states.isOpen, menuFlags)) {
+	if (!ImGui::Begin("ToolForClickteamFusion_Gui_ver1.1.0", &states.isOpen, menuFlags)) {
 		ImGui::End();
 		return;
 	}

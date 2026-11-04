@@ -38,3 +38,6 @@
 
 # ---- extraction output folders produced by the tool ----
 /ToolForClickteamFusion/font/
+
+# ---- 배포 산출물 ----
+/dist/

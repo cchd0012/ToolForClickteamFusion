@@ -24,6 +24,7 @@ CheckUiState::CheckUiState()
 	zoom = 0;
 	showNames = false;
 	showImages = true;
+	useGlyphs = true;
 	hideOverlays = true;
 }
 
@@ -331,6 +332,11 @@ void Dx9Application::renderShellStepCheck()
 	ImGui::SameLine();
 	ImGui::Checkbox(u8"그림 표시", &c.showImages);
 	ImGui::SameLine();
+	ImGui::Checkbox(u8"폰트 아틀라스 글자", &c.useGlyphs);
+	if (ImGui::IsItemHovered()) {
+		ImGui::SetTooltip(u8"글자 오브젝트에 폰트 아틀라스가 배정되어 있으면 그 글자로 그립니다.\n끄면 도구의 글꼴로 대신 그립니다");
+	}
+	ImGui::SameLine();
 	ImGui::Checkbox(u8"덮개 숨김", &c.hideOverlays);
 	if (ImGui::IsItemHovered()) {
 		ImGui::SetTooltip(u8"맨 위에 그려지는 전체 화면 그림(페이드 덮개 등)을 숨깁니다.\n이벤트가 걷어내는 것이라 처음 배치도에서는 화면을 가립니다");
@@ -423,12 +429,18 @@ void Dx9Application::renderShellStepCheck()
 		if (!drewImage && !(object.found && object.imageHandle > 0 && c.images.count(object.imageHandle) > 0)) {
 			if (object.isBlitter && !object.blitterText.empty()) {
 				// 글자 오브젝트: 처음 문자열을 그린다 (칸 크기를 몰라 글자 크기는 근사)
-				const float fontSize = max(8.0f * scale, 6.0f);
-				string text = withoutCarriageReturn(object.blitterText);
-				ImVec2 extent = font->CalcTextSizeA(fontSize, FLT_MAX, 0.0f, text.c_str());
 				minPos = ImVec2(origin.x + x * scale, origin.y + y * scale);
-				maxPos = ImVec2(minPos.x + extent.x, minPos.y + extent.y);
-				drawList->AddText(font, fontSize, minPos, IM_COL32(235, 240, 255, 255), text.c_str());
+				ImVec2 glyphSize;
+				if (c.useGlyphs && drawBlitterGlyphs(object.fontTable, object.blitterText, minPos, scale, max(c.frameWidth - x, 8), glyphSize)) {
+					maxPos = ImVec2(minPos.x + glyphSize.x, minPos.y + glyphSize.y);
+				}
+				else {
+					const float fontSize = max(8.0f * scale, 6.0f);
+					string text = withoutCarriageReturn(object.blitterText);
+					ImVec2 extent = font->CalcTextSizeA(fontSize, FLT_MAX, 0.0f, text.c_str());
+					maxPos = ImVec2(minPos.x + extent.x, minPos.y + extent.y);
+					drawList->AddText(font, fontSize, minPos, IM_COL32(235, 240, 255, 255), text.c_str());
+				}
 				drawList->AddRect(minPos, maxPos, IM_COL32(82, 196, 210, 140));
 			}
 			else if (object.width > 0 && object.height > 0) {

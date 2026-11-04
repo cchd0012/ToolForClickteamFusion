@@ -72,6 +72,7 @@ namespace CTT {
 			int zoom;					// 0 = 화면에 맞춤, 1 이상 = 배율
 			bool showNames;
 			bool showImages;
+			bool useGlyphs;				// 글자 오브젝트를 배정한 폰트 아틀라스 글자로 그린다
 			bool hideOverlays;			// 맨 위에 그려지는 전체 화면 그림(페이드 덮개 등)을 숨긴다
 			set<int> hiddenObjects;		// 사용자가 숨긴 오브젝트 번호
 

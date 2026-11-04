@@ -433,30 +433,47 @@ namespace {
 	}
 
 	// 글자를 상자 안에 그려서 미리 보여 준다. 반환값은 그린 줄 수
-	int drawPreview(LPDIRECT3DDEVICE9 device, HangulPreviewAtlas& pa, const string& utf8Text, int boxWidth, int scale)
+	// 문자열을 폰트 아틀라스 글자로 origin 에 그린다 (화면 좌표). background 이면 초록 바탕을 깐다.
+	// 그린 글자 전체의 크기를 outSize 로 돌려주고, 줄 수를 돌려준다
+	int drawPreviewAt(LPDIRECT3DDEVICE9 device, HangulPreviewAtlas& pa, const string& utf8Text, int boxWidth, float scale, ImVec2 origin, bool background, ImVec2* outSize)
 	{
 		vector<PlacedGlyph> placed;
 		int lines = layoutPreview(pa.data, fromUtf8(utf8Text), boxWidth, placed);
 		int lineHeight = pa.data.lineHeight;
 
-		ImVec2 origin = ImGui::GetCursorScreenPos();
-		ImVec2 size((float)(boxWidth * scale), (float)(lines * lineHeight * scale));
 		ImDrawList* drawList = ImGui::GetWindowDrawList();
-		drawList->AddRectFilled(origin, ImVec2(origin.x + size.x, origin.y + size.y), IM_COL32(32, 80, 56, 255));
+		if (background) {
+			drawList->AddRectFilled(origin, ImVec2(origin.x + boxWidth * scale, origin.y + lines * lineHeight * scale), IM_COL32(32, 80, 56, 255));
+		}
+		int right = 0;
 		drawList->AddCallback(setPointSampler, device);
 		for (size_t k = 0; k < placed.size(); k++) {
 			map<UINT16, FontAtlasGlyph>::const_iterator it = pa.data.glyphs.find(placed[k].code);
-			if (it == pa.data.glyphs.end() || it->second.width == 0 || it->second.height == 0) {
+			if (it == pa.data.glyphs.end()) {
 				continue;
 			}
 			const FontAtlasGlyph& g = it->second;
-			ImVec2 p0(origin.x + (float)((placed[k].x + g.offsetX) * scale), origin.y + (float)(placed[k].line * lineHeight * scale));
-			ImVec2 p1(p0.x + (float)(g.width * scale), p0.y + (float)(g.height * scale));
+			right = max(right, placed[k].x + (int)g.advance);
+			if (g.width == 0 || g.height == 0) {
+				continue;
+			}
+			ImVec2 p0(origin.x + (placed[k].x + g.offsetX) * scale, origin.y + placed[k].line * lineHeight * scale);
+			ImVec2 p1(p0.x + g.width * scale, p0.y + g.height * scale);
 			ImVec2 uv0((float)g.x / pa.data.atlasWidth, (float)g.y / pa.data.atlasHeight);
 			ImVec2 uv1((float)(g.x + g.width) / pa.data.atlasWidth, (float)(g.y + g.height) / pa.data.atlasHeight);
 			drawList->AddImage((ImTextureID)pa.texture, p0, p1, uv0, uv1);
 		}
 		drawList->AddCallback(setLinearSampler, device);
+		if (outSize != NULL) {
+			*outSize = ImVec2(background ? boxWidth * scale : right * scale, lines * lineHeight * scale);
+		}
+		return lines;
+	}
+
+	int drawPreview(LPDIRECT3DDEVICE9 device, HangulPreviewAtlas& pa, const string& utf8Text, int boxWidth, int scale)
+	{
+		ImVec2 size;
+		int lines = drawPreviewAt(device, pa, utf8Text, boxWidth, (float)scale, ImGui::GetCursorScreenPos(), true, &size);
 		ImGui::Dummy(size);
 		return lines;
 	}
@@ -1447,4 +1464,24 @@ void Dx9Application::renderHangulBlitterPreview()
 		ImGui::PopID();
 	}
 	ImGui::EndChild();
+}
+
+
+// 글자 오브젝트의 문자열을 배정한 폰트 아틀라스 글자로 origin(화면 좌표)에 그린다. 아틀라스가 없으면 false
+bool Dx9Application::drawBlitterGlyphs(INT32 fontTable, const string& text, ImVec2 origin, float scale, int boxWidth, ImVec2& outSize)
+{
+	HangulUiState& h = hangul;
+	if (fontTable <= 0) {
+		return false;
+	}
+	if (!h.atlasesLoaded) {
+		loadAtlasList(archive, h);
+	}
+	wstring atlasName = atlasNameForId(h, fontTable);
+	HangulPreviewAtlas* pa = atlasName.empty() ? NULL : ensurePreviewAtlas(pD3dDevice, archive, h, atlasName);
+	if (pa == NULL) {
+		return false;
+	}
+	drawPreviewAt(pD3dDevice, *pa, text, max(boxWidth, 8), scale, origin, false, &outSize);
+	return true;
 }

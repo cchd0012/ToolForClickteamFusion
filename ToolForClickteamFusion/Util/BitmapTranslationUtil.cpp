@@ -311,9 +311,10 @@ bool CTT::BitmapTranslationUtil::Normal16BitImageToRGBA(BYTE* translatingData, U
 			// 초록은 6비트라서 2칸만 올린다 (3칸 올리면 BYTE 를 넘쳐 값이 감긴다). 게임이 정하는 투명색도 이 값(흰색이면 g=252)이다
 				bitmapData[bitmapStartPos + (j * 4) + 1] = (BYTE)(((cv & 0x07E0) >> 5) << 2);
 			bitmapData[bitmapStartPos + (j * 4) + 2] = (BYTE)((cv & 0xF800) >> 11) << 3;
-			if ((bitmapData[bitmapStartPos + (j * 4) + 0] == transparent.r)
+			// 투명색은 COLORREF 순서(R, G, B)로 저장되어 있고, bitmapData 는 B, G, R 순서이다 (0번이 파랑)
+			if ((bitmapData[bitmapStartPos + (j * 4) + 0] == transparent.b)
 				&& (bitmapData[bitmapStartPos + (j * 4) + 1] == transparent.g)
-				&& (bitmapData[bitmapStartPos + (j * 4) + 2] == transparent.b)) {
+				&& (bitmapData[bitmapStartPos + (j * 4) + 2] == transparent.r)) {
 				bitmapData[bitmapStartPos + (j * 4) + 3] = 0x00;
 			}
 			else {
@@ -354,9 +355,10 @@ bool CTT::BitmapTranslationUtil::RGBAToNormal16BitImage(BYTE* bitmapData, UINT32
 				b = bitmapData[bitmapStartPos + (j * 4) + 2] >> 3;
 			}
 			else {
-				r = transparent.r;
-				g = transparent.g;
-				b = transparent.b;
+				// 투명 픽셀은 투명색을 16비트(5, 6, 5)로 줄여 넣는다 (ToolForSW 와 같다. r 은 낮은 5비트 = 파랑, b 는 높은 5비트 = 빨강)
+				r = transparent.b >> 3;
+				g = transparent.g >> 2;
+				b = transparent.r >> 3;
 			}
 			UINT16 cv = (r) | (g << 5) | (b << 11);
 			*(UINT16*)(&translatingData[translationStartPos + (j * 2)]) = cv;

@@ -37,6 +37,11 @@ bool ImageDataChunk::exportImageList(wstring& exportJsonPath)
 		item["hotspotY"] = (int)(INT16)image->getHotSpotY();
 		item["graphicMode"] = image->getGraphicMode();
 		item["flags"] = image->getFlags();
+		Json::Value transparent(Json::arrayValue);		// 투명색 R, G, B (이 색과 같은 픽셀은 투명으로 그려진다)
+		transparent.append((int)image->getTransparent().r);
+		transparent.append((int)image->getTransparent().g);
+		transparent.append((int)image->getTransparent().b);
+		item["transparent"] = transparent;
 		wostringstream fileName;
 		fileName << setw(6) << setfill(L'0') << i << L".png";
 		item["file"] = getAnsiStr(fileName.str(), CodePage::CP_UTF_8);

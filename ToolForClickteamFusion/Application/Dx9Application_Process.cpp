@@ -30,7 +30,16 @@ bool Dx9Application::openArchive()
 	else {
 		archive = new CcnArchive(archivePath);
 	}
-	return archive->init();
+	bool opened = archive->init();
+	if (opened) {
+		addShellLog(ShellLogLevel::Info, string(u8"아카이브를 열었습니다: ") + archivePathUtf8);
+		shell.step = SHELL_STEP_DIAGNOSE;
+		shell.problems.clear();
+	}
+	else {
+		addShellLog(ShellLogLevel::Error, string(u8"아카이브를 열지 못했습니다: ") + archivePathUtf8);
+	}
+	return opened;
 }
 
 

@@ -3,6 +3,7 @@
 #include "Application.h"
 #include "../ImGUI/Headers.h"
 #include "HangulUi.h"
+#include "ShellUi.h"
 
 namespace CTT {
 
@@ -33,10 +34,28 @@ namespace CTT {
 			void renderArchivePartExtractModal();
 			void renderArchiveReplaceModal();
 			void renderArchivePartReplaceModal();
-			void renderArchiveInfoWindow();
+			void renderArchiveInfoContent();
 			void renderTreeNodes(ChunkTreeNode* node, UINT32 depth, UINT32 index, bool isRoot);
-			void renderArchiveChunkListWindow();
-			void renderArchiveEachChunkInfoWindow();
+			void renderArchiveChunkListContent();
+			void renderArchiveEachChunkInfoContent();
+			// 화면 틀(껍데기): 단계 목록, 상태 줄, 작업 영역, 문제/로그 패널, Dx9Application_Shell.cpp
+			void renderShell();
+			void renderShellStart(float x, float y, float w, float h);
+			void renderShellStatus(float x, float y, float w, float h);
+			void renderShellNav(float x, float y, float w, float h);
+			void renderShellWork(float x, float y, float w, float h);
+			void renderShellBottom(float x, float y, float w, float h);
+			void renderShellStepDiagnose();
+			void renderShellStepExtract();
+			void renderShellStepText();
+			void renderShellStepFont();
+			void renderShellStepImage();
+			void renderShellStepRebuild();
+			void renderShellStepCheck();
+			void renderShellStepChunkTree();
+			void renderShellStepScriptJson();
+			int shellStepStatus(int step);
+			void addShellLog(ShellLogLevel level, const string& text);
 			// 한글화 도구 창 (수정 단계), Dx9Application_Hangul.cpp
 			void renderHangulToolWindow();
 			void renderHangulAtlasTab();
@@ -55,6 +74,7 @@ namespace CTT {
 			bool isDeviceLost;
 			D3DPRESENT_PARAMETERS d3dPp;
 			HangulUiState hangul;
+			ShellUiState shell;
 		};
 
 	}

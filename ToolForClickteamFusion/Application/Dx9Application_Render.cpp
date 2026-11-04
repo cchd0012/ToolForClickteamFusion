@@ -42,16 +42,12 @@ void Dx9Application::render()
 	// 메뉴 탭 렌더링
 	renderMenuTab();
 
-	// (아카이브를 열었을 때) 아카이브 정보, Chunk 리스트 윈도우 렌더링
-	if (states.isArchiveOpened) {
-		renderArchiveInfoWindow();
-		renderArchiveChunkListWindow();
-		renderArchiveEachChunkInfoWindow();
+	// 화면 틀(왼쪽 단계 목록, 위쪽 상태 줄, 작업 영역, 아래 문제/로그 패널). 아카이브를 열기 전에는 시작 화면
+	renderShell();
 
-		// 한글화 도구 창 (수정 단계)
-		if (hangul.showWindow) {
-			renderHangulToolWindow();
-		}
+	// 한글화 도구 창 (수정 단계, 3단계에서 단계 화면 안으로 옮길 예정)
+	if (states.isArchiveOpened && hangul.showWindow) {
+		renderHangulToolWindow();
 	}
 
 	// 에러가 있다면 에러 메시지 박스 렌더링
@@ -121,7 +117,7 @@ void Dx9Application::renderMenuTab()
 		states.isDraggable = (mousePos.y <= states.menuHeight);
 
 		// 아카이브
-        if (ImGui::BeginMenu(u8"아카이브"))
+        if (ImGui::BeginMenu(u8"프로젝트"))
         {
 			// 열기
 			if (ImGui::MenuItem(u8"열기")) {
@@ -149,6 +145,33 @@ void Dx9Application::renderMenuTab()
 			ImGui::EndMenu();
         }
 		// 추출
+		// 보기: 단계 이동, 문제/로그 패널
+		if (ImGui::BeginMenu(u8"보기"))
+		{
+			if (!states.isArchiveOpened) {
+				ImGui::BeginDisabled(true);
+			}
+			const char* viewNames[SHELL_STEP_COUNT] = { u8"진단", u8"추출", u8"문구", u8"글꼴·글자", u8"이미지", u8"재합성", u8"확인", u8"청크 트리", u8"스크립트 JSON" };
+			for (int i = 0; i < SHELL_STEP_COUNT; i++) {
+				if (i == SHELL_STEP_CHUNK_TREE) {
+					ImGui::Separator();
+				}
+				if (ImGui::MenuItem(viewNames[i], NULL, shell.step == i)) {
+					shell.step = i;
+				}
+			}
+			ImGui::Separator();
+			if (ImGui::MenuItem(u8"문제/로그 패널", NULL, shell.bottomOpen)) {
+				shell.bottomOpen = !shell.bottomOpen;
+			}
+			if (!states.isArchiveOpened) {
+				ImGui::EndDisabled();
+			}
+			ImGui::EndMenu();
+		}
+		// 고급 도구: 단계 화면 밖에서도 쓸 수 있도록 기존 추출/수정/교체 메뉴를 그대로 둔다
+		if (ImGui::BeginMenu(u8"고급 도구"))
+		{
 		if (ImGui::BeginMenu(u8"1.추출"))
 		{
 			ImGui::TextDisabled(u8"1단계: 아카이브의 데이터를 파일(PNG, JSON 등)로 꺼냅니다");
@@ -313,7 +336,9 @@ void Dx9Application::renderMenuTab()
 			ImGui::EndMenu();
 		}
 		// 기타
-		if (ImGui::BeginMenu(u8"기타"))
+		ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu(u8"도움말"))
 		{
 			// 정보
 			if (ImGui::MenuItem(u8"정보")) {
@@ -556,6 +581,7 @@ void Dx9Application::renderArchiveSaveModal()
 
 		// 저장이 끝났으면 상태 초기화 후 이 모달이 꺼지도록 세팅하며, dirty 상태도 해제한다
 		if (states.savingThreadState == ThreadState::THREAD_FINISHED) {
+			addShellLog(ShellLogLevel::Info, u8"아카이브 정보를 새 파일로 저장했습니다");
 			states.isSaveModalShow = false;
 			states.savingThreadState = ThreadState::THREAD_READY;
 			states.isDirty = false;
@@ -644,6 +670,7 @@ void Dx9Application::renderArchiveExtractModal()
 
 		// 추출이 끝났으면 상태 초기화 후 이 모달이 꺼지도록 세팅한다
 		if (states.extractingThreadState == ThreadState::THREAD_FINISHED) {
+			addShellLog(ShellLogLevel::Info, u8"전체 추출을 마쳤습니다");
 			states.isExtractModalShow = false;
 			states.extractingThreadState = ThreadState::THREAD_READY;
 			ImGui::CloseCurrentPopup();
@@ -703,6 +730,7 @@ void Dx9Application::renderArchivePartExtractModal()
 
 		// 추출이 끝났으면 상태 초기화만 해 주고, 추출 목록은 선택된 채로 놔둔다
 		if (states.extractingThreadState == ThreadState::THREAD_FINISHED) {
+			addShellLog(ShellLogLevel::Info, u8"지정한 유형의 추출을 마쳤습니다");
 			states.extractingThreadState = ThreadState::THREAD_READY;
 		}
 
@@ -834,6 +862,7 @@ void Dx9Application::renderArchiveReplaceModal()
 
 		// 교체가 끝났으면 상태 초기화 후 이 모달이 꺼지도록 세팅하며, dirty 상태도 해제한다
 		if (states.replacingThreadState == ThreadState::THREAD_FINISHED) {
+			addShellLog(ShellLogLevel::Info, u8"전체 교체를 마쳤습니다. ~_new 아카이브가 만들어졌습니다");
 			states.isReplaceModalShow = false;
 			states.replacingThreadState = ThreadState::THREAD_READY;
 			states.isDirty = false;
@@ -889,6 +918,7 @@ void Dx9Application::renderArchivePartReplaceModal()
 
 		// 교체가 끝났으면 상태 초기화만 해 주고, 추출 목록은 선택된 채로 놔두고, dirty 상태도 해제한다
 		if (states.replacingThreadState == ThreadState::THREAD_FINISHED) {
+			addShellLog(ShellLogLevel::Info, u8"지정한 유형의 교체를 마쳤습니다. ~_new 아카이브가 만들어졌습니다");
 			states.replacingThreadState = ThreadState::THREAD_READY;
 			states.isDirty = false;
 		}
@@ -964,25 +994,8 @@ void Dx9Application::renderArchivePartReplaceModal()
 
 
 // 아카이브 정보 윈도우
-void Dx9Application::renderArchiveInfoWindow()
+void Dx9Application::renderArchiveInfoContent()
 {
-	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize;
-
-	// 메뉴 바로 밑에 지정
-	float xPos = 0.0f;
-	float yPos = (float)states.menuHeight;
-	ImVec2 windowSize;
-	windowSize.x = ImGui::GetIO().DisplaySize.x;
-	windowSize.y = (float)states.archiveOpenWindowHeight;
-	ImGui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiCond_Always);
-	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
-
-	// 타이틀에 dirty 반영
-	string archiveInfoTitle = !states.isDirty ? u8"아카이브 정보" : u8"아카이브 정보(*)";
-	if (!ImGui::Begin(archiveInfoTitle.c_str(), NULL, windowFlags)) {
-		ImGui::End();
-		return;
-	}
 
 	// 게임명 라인 (편집 전환 기능 구현, 이 사이에 UTF-16 <> UTF-8 변환 필요)
 	ImGui::Text(u8"게임명:");
@@ -1110,7 +1123,6 @@ void Dx9Application::renderArchiveInfoWindow()
 		}
 	}
 
-	ImGui::End();
 
 }
 
@@ -1248,29 +1260,11 @@ void Dx9Application::renderTreeNodes(ChunkTreeNode *node, UINT32 depth, UINT32 i
 
 
 // 아카이브 Chunk 리스트 윈도우
-void Dx9Application::renderArchiveChunkListWindow()
+void Dx9Application::renderArchiveChunkListContent()
 {
-	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize;
-
-	// 아카이브 정보 윈도우 바로 밑에 지정
-	float xPos = 0.0f;
-	float yPos = (float)states.menuHeight + (float)states.archiveOpenWindowHeight;
-	ImVec2 windowSize;
-	windowSize.x = (float)states.chunkListWindowWidth;
-	windowSize.y = ImGui::GetIO().DisplaySize.y - yPos;
-	ImGui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiCond_Always);
-	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
-
-	if (!ImGui::Begin(u8"Chunk 리스트", NULL, windowFlags)) {
-		ImGui::End();
-		return;
-	}
 
 	ImGuiWindowFlags tableFlags = ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody | ImGuiTableFlags_ScrollY;
-	ImVec2 tableSize = windowSize;
-	float tabHeight = ImGui::GetTextLineHeight() + (ImGui::GetStyle().ItemSpacing.y * 2.0f);
-	tableSize.x -= (ImGui::GetStyle().FramePadding.x * 2 + 8.0f);
-	tableSize.y -= ((ImGui::GetStyle().FramePadding.y * 2) + tabHeight + 8.0f);
+	ImVec2 tableSize = ImGui::GetContentRegionAvail();
 	
 	if (ImGui::BeginTable("3ways", 3, tableFlags, tableSize))
 	{
@@ -1284,29 +1278,13 @@ void Dx9Application::renderArchiveChunkListWindow()
 		ImGui::EndTable();
 	}
 
-	ImGui::End();
 
 }
 
 
 // 아카이브의 각 Chunk 정보 윈도우
-void Dx9Application::renderArchiveEachChunkInfoWindow()
+void Dx9Application::renderArchiveEachChunkInfoContent()
 {
-	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize;
-
-	// 아카이브 정보 윈도우 바로 밑, chunk 리스트 윈도우 오른쪽에 지정
-	float xPos = (float)states.chunkListWindowWidth;
-	float yPos = (float)states.menuHeight + (float)states.archiveOpenWindowHeight;
-	ImVec2 windowSize;
-	windowSize.x = ImGui::GetIO().DisplaySize.x - xPos;
-	windowSize.y = ImGui::GetIO().DisplaySize.y - yPos;
-	ImGui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiCond_Always);
-	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
-	
-	if (!ImGui::Begin(u8"각 Chunk 정보", NULL, windowFlags)) {
-		ImGui::End();
-		return;
-	}
 
 	// 이쪽은 하나만 선택됐을때 그 정보만 렌더링한다
 	ChunkTreeNode* selectedNode = states.chunkTreeNodeContainer.getSelectedNode();
@@ -1430,14 +1408,13 @@ void Dx9Application::renderArchiveEachChunkInfoWindow()
 
 		// 각 chunk의 value 라인
 		ImGui::Text(u8"데이터:");
-		ImGui::PushTextWrapPos(states.windowWidth - states.chunkListWindowWidth - ImGui::GetStyle().FramePadding.x);
+		ImGui::PushTextWrapPos(0.0f);
 		if (states.renderingChunk != NULL) {
 			states.renderingChunk->renderData();
 		}
 		ImGui::PopTextWrapPos();
 	}
 
-	ImGui::End();
 
 }
 

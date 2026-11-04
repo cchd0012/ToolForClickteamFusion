@@ -146,6 +146,7 @@
     <ClCompile Include="Application\Dx9Application_Hangul.cpp" />
     <ClCompile Include="Application\Dx9Application_Shell.cpp" />
     <ClCompile Include="Application\Dx9Application_Check.cpp" />
+    <ClCompile Include="Application\Dx9Application_EventSearch.cpp" />
     <ClCompile Include="Application\Dx9Application_Refresh.cpp" />
     <ClCompile Include="Application\FileWatch.cpp" />
     <ClCompile Include="Diagnosis\Diagnosis.cpp" />
@@ -300,6 +301,7 @@
     <ClInclude Include="Application\HangulUi.h" />
     <ClInclude Include="Application\ShellUi.h" />
     <ClInclude Include="Application\CheckUi.h" />
+    <ClInclude Include="Application\EventSearchUi.h" />
     <ClInclude Include="Application\FileWatch.h" />
     <ClInclude Include="Diagnosis\Diagnosis.h" />
     <ClInclude Include="archive\Archive.h" />

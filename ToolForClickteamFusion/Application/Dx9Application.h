@@ -5,6 +5,7 @@
 #include "HangulUi.h"
 #include "ShellUi.h"
 #include "CheckUi.h"
+#include "EventSearchUi.h"
 
 namespace CTT {
 
@@ -57,6 +58,7 @@ namespace CTT {
 			void renderCheckInspector();
 			void renderShellStepChunkTree();
 			void renderShellStepScriptJson();
+			void renderShellStepEventSearch();
 			int shellStepStatus(int step);
 			void addShellLog(ShellLogLevel level, const string& text);
 			void runDiagnosis();
@@ -91,6 +93,7 @@ namespace CTT {
 			HangulUiState hangul;
 			ShellUiState shell;
 			CheckUiState check;
+			EventSearchUiState eventSearch;
 		};
 
 	}

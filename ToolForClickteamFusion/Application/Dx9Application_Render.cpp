@@ -149,7 +149,7 @@ void Dx9Application::renderMenuTab()
 			if (!states.isArchiveOpened) {
 				ImGui::BeginDisabled(true);
 			}
-			const char* viewNames[SHELL_STEP_COUNT] = { u8"진단", u8"추출", u8"문구", u8"글꼴·글자", u8"이미지", u8"재합성", u8"확인", u8"청크 트리", u8"스크립트 JSON" };
+			const char* viewNames[SHELL_STEP_COUNT] = { u8"진단", u8"추출", u8"문구", u8"글꼴·글자", u8"이미지", u8"재합성", u8"확인", u8"청크 트리", u8"스크립트 JSON", u8"이벤트 찾기" };
 			for (int i = 0; i < SHELL_STEP_COUNT; i++) {
 				if (i == SHELL_STEP_CHUNK_TREE) {
 					ImGui::Separator();

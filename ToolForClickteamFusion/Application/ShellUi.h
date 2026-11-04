@@ -28,6 +28,7 @@ namespace CTT {
 			SHELL_STEP_CHECK,
 			SHELL_STEP_CHUNK_TREE,		// 고급
 			SHELL_STEP_SCRIPT_JSON,		// 고급
+			SHELL_STEP_EVENT_SEARCH,	// 고급
 			SHELL_STEP_COUNT
 		};
 

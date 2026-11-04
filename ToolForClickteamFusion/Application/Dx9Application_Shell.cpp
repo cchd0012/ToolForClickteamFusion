@@ -39,7 +39,8 @@ namespace {
 		{ u8"재합성", u8"고친 파일을 아카이브에 합쳐 새 아카이브(~_new)로 저장합니다" },
 		{ u8"확인", u8"프레임 배치도로 오브젝트가 놓인 모습을 봅니다" },
 		{ u8"청크 트리", u8"아카이브의 청크 구조를 봅니다" },
-		{ u8"스크립트 JSON", u8"디컴파일한 이벤트와 오브젝트 JSON을 고치고 리컴파일합니다" }
+		{ u8"스크립트 JSON", u8"디컴파일한 이벤트와 오브젝트 JSON을 고치고 리컴파일합니다" },
+		{ u8"이벤트 찾기", u8"디컴파일한 이벤트에서 오브젝트나 동작을 찾고, 찾은 것에 대한 안내를 봅니다" }
 	};
 
 	bool pathExists(const wstring& path, bool wantDirectory)
@@ -400,6 +401,7 @@ void Dx9Application::renderShellWork(float x, float y, float w, float h)
 			case SHELL_STEP_CHECK:		renderShellStepCheck(); break;
 			case SHELL_STEP_CHUNK_TREE:	renderShellStepChunkTree(); break;
 			case SHELL_STEP_SCRIPT_JSON: renderShellStepScriptJson(); break;
+			case SHELL_STEP_EVENT_SEARCH: renderShellStepEventSearch(); break;
 			default: break;
 		}
 	}

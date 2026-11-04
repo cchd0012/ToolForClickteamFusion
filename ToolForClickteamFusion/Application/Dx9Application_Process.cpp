@@ -67,5 +67,6 @@ void Dx9Application::closeArchive()
 	hangul.atlasSnap = DirSnapshot();
 	hangul.registrySnap = DirSnapshot();
 	check.reset();
+	eventSearch.reset();
 	shell.refresh = RefreshState();
 }

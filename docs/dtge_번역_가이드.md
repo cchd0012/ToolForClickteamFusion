@@ -55,6 +55,8 @@ dtge는 글자를 한 가지 방식으로 그리지 않는다. 방식마다 필�
 | `binaries/UndertaleSans.ttf` | Undertale Sans | a시월구일굴림1 | 11172자 |
 | `binaries/pixelated-wingdings.ttf` | Wingdings 픽셀 | Pixel-winding-edit (그대로 사용) | 2350자 (윙딩스풍 기호) |
 
+> `binaries/*.ttf` 가 글꼴로 쓰이는 방식: 프레임 0(시작 화면)에서 `Font Embed Object`(`fontembed.mfx`, Chris Denyer 의 확장)의 `Embed a font` 동작이 이 파일 아홉 개를 하나씩 등록한다 (경로 `C:\<파일 이름>`). 모듈 안에서는 `AddFontResourceExA(경로, FR_PRIVATE, 0)` 를 부르는 것이 전부라서, 이 게임 프로세스 안에서만 글꼴이 등록되고 오브젝트의 글꼴 이름이 그 TTF 의 이름과 같으면 그 글꼴로 그려진다. 그래서 파일 내용만 한글 글꼴로 바꾸는 방식이 통한다. 이름은 바꾸지 말고, 경로 문자열(ANSI)도 건드리지 마세요.
+
 - `binaries/`의 TTF는 게임이 시작할 때 `C:\`에 설치하는 것들이고, 글자 이미지 생성기도 이 파일에서 글자를 그린다.
 - DeterminationMonoK2에는 `【】「」『』〈〉《》（）－`과 U+00AD가 없다. 번역문에는 반각 문장부호를 쓴다 (예: `[Z] - 재시도`).
 - 2350자 폰트에 없는 음절(예: 일부 받침 조합)은 네이티브 텍스트에서 비어 보인다. 번역문을 2350자 안에서 쓰거나 11172자 폰트를 쓴다.

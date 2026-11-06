@@ -31,7 +31,12 @@ foreach ($item in $Keys.Split(';')) {
     $plan += [pscustomobject]@{ T = [double]$t; K = $kv[1]; Hold = $hold; Done = $false }
 }
 New-Item -ItemType Directory -Force $OutDir | Out-Null
-$p = Start-Process -FilePath $Exe -PassThru -WorkingDirectory (Split-Path $Exe)
+# 폴더 이름에 [ ] 가 있어도 되도록 Start-Process(와일드카드로 해석함) 대신 ProcessStartInfo 로 띄운다
+$psi = New-Object System.Diagnostics.ProcessStartInfo
+$psi.FileName = $Exe
+$psi.WorkingDirectory = [System.IO.Path]::GetDirectoryName($Exe)
+$psi.UseShellExecute = $false
+$p = [System.Diagnostics.Process]::Start($psi)
 $myPid = $p.Id
 $start = Get-Date
 $lastShot = -100

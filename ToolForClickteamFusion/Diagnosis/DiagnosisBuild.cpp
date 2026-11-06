@@ -8,7 +8,7 @@ using namespace CTT::Diagnosis;
 namespace {
 
 	const INT64 kGlyphTableModuleSize = 37376;				// 글자표 방식을 쓸 수 있는 txtblt.mfx 원본의 크기
-	const char* kFoldModuleHash = "8424C67E";				// 접기 방식 대상 txtblt(119KB판)의 모듈 번호. 추출한 파일 이름에 들어 있다
+	const char* kFoldModuleHash = "8424C67E";				// 반각 칸 나누기 방식(접기)으로 패치할 수 있는 txtblt(dtge판)의 모듈 번호. 추출한 파일 이름에 들어 있다
 
 	void addItem(Json::Value& items, const char* id, const char* status, const string& title, const string& detail, int step)
 	{
@@ -196,25 +196,25 @@ void CTT::Diagnosis::buildDiagnosis(const DiagnosisInput& in, Json::Value& out)
 	}
 	else if (in.txtbltHasKfont) {
 		glyphTable = true;
-		addItem(items, "glyph", "ok", u8"글자 방식", blitterHead + u8"글자표 방식이 이미 적용된 모듈입니다.", DIAG_STEP_FONT);
+		addItem(items, "glyph", "ok", u8"글자 방식", blitterHead + u8"이 txtblt 모듈에는 이 도구가 만든 한글 글자표가 이미 들어 있습니다.", DIAG_STEP_FONT);
 	}
 	else if (in.txtbltHasKfold) {
 		fold = true;
-		addItem(items, "glyph", "ok", u8"글자 방식", blitterHead + u8"접기 방식이 이미 적용된 모듈입니다.", DIAG_STEP_FONT);
+		addItem(items, "glyph", "ok", u8"글자 방식", blitterHead + u8"이 txtblt 모듈은 이미 한글 패치가 되어 있습니다 (한글 글자 하나를 반각 칸 두 개로 나눠 그리는 방식).", DIAG_STEP_FONT);
 	}
 	else if (!in.txtbltFound) {
 		addItem(items, "glyph", "unknown", u8"글자 방식", blitterHead + u8"txtblt 모듈 파일을 찾지 못해 글자를 그리는 방식을 판단하지 못했습니다.", DIAG_STEP_FONT);
 	}
 	else if (in.txtbltSize == kGlyphTableModuleSize) {
 		glyphTable = true;
-		addItem(items, "glyph", "ok", u8"글자 방식", blitterHead + u8"모듈이 37376바이트판이라 글자표 방식으로 한글화할 수 있습니다.", DIAG_STEP_FONT);
+		addItem(items, "glyph", "ok", u8"글자 방식", blitterHead + u8"txtblt 모듈이 37376바이트판입니다. 한글 글자표를 만들어 넣는 방식으로 한글화할 수 있습니다 (글꼴·글자 단계).", DIAG_STEP_FONT);
 	}
 	else if (in.txtbltName.find(kFoldModuleHash) != string::npos) {
 		fold = true;
-		addItem(items, "glyph", "warn", u8"글자 방식", blitterHead + u8"모듈이 접기 방식 대상판입니다. 한 문자열에 음절 약 51개, KS X 1001 2350자까지 쓸 수 있습니다.", DIAG_STEP_FONT);
+		addItem(items, "glyph", "warn", u8"글자 방식", blitterHead + u8"txtblt 모듈이 dtge에 쓰인 판(모듈 번호 8424C67E)입니다. 모듈에 코드를 심어 한글을 그리게 할 수 있습니다 (한글 글자 하나를 반각 칸 두 개로 나눠 그리는 방식). 문자열 하나에 서로 다른 음절을 약 51개, KS X 1001의 2350자까지 쓸 수 있습니다.", DIAG_STEP_FONT);
 	}
 	else {
-		addItem(items, "glyph", "unknown", u8"글자 방식", blitterHead + u8"도구가 모르는 txtblt 판입니다 (" + to_string(in.txtbltSize) + u8"바이트). 글자표와 접기 방식 모두 쓸 수 없습니다.", DIAG_STEP_FONT);
+		addItem(items, "glyph", "unknown", u8"글자 방식", blitterHead + u8"도구가 모르는 txtblt 판입니다 (" + to_string(in.txtbltSize) + u8"바이트). 한글 글자표 방식(37376바이트판용)과 반각 칸 나누기 방식(8424C67E판용)을 모두 쓸 수 없습니다.", DIAG_STEP_FONT);
 	}
 
 	// 글꼴 이미지를 실행 중에 다시 불러오는가
@@ -322,7 +322,7 @@ void CTT::Diagnosis::buildDiagnosis(const DiagnosisInput& in, Json::Value& out)
 		}
 	}
 	else if (fold) {
-		addGuide(guide, u8"대사 글자 아틀라스를 만들고 게임 모듈을 접기 방식으로 패치합니다", DIAG_STEP_FONT);
+		addGuide(guide, u8"대사 글자 아틀라스를 만들고, 게임 모듈에 한글을 그리는 코드를 심습니다 (한글 글자 하나를 반각 칸 두 개로 나눠 그리는 방식)", DIAG_STEP_FONT);
 	}
 	else if (in.hasScript && in.blitterCount > 0) {
 		addGuide(guide, u8"글자를 그리는 방식을 직접 확인합니다 (txtblt 판을 알 수 없습니다)", DIAG_STEP_FONT);

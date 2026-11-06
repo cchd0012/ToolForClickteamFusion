@@ -169,7 +169,7 @@ int main()
 		check(statusOf(result, "charevent") == "warn", "handlers make the char event a warning");
 	}
 
-	// 5) 접기 방식 대상 모듈(dtge): 경고, 동작 번호가 달라 글꼴 불러오기는 알 수 없음
+	// 5) 반각 칸 나누기(접기) 방식으로 패치할 수 있는 모듈(dtge): 경고, 동작 번호가 달라 글꼴 불러오기는 알 수 없음
 	{
 		DiagnosisInput in = baseInput();
 		in.txtbltSize = 125440;
@@ -177,7 +177,7 @@ int main()
 		buildDiagnosis(in, result);
 		check(statusOf(result, "glyph") == "warn", "fold build is a warning");
 		check(statusOf(result, "reload") == "unknown", "reload is unknown on the fold build");
-		check(guideHas(result, "접기 방식으로 패치"), "fold guide");
+		check(guideHas(result, "한글을 그리는 코드를 심습니다"), "fold guide");
 	}
 
 	// 6) 도구가 모르는 txtblt 판과 모듈을 찾지 못한 경우

@@ -373,7 +373,7 @@ static FrameNameChunk* findFrameNameChunk(vector<CTT::Chunk::Chunk*>& chunkList)
 }
 
 
-// 프레임의 화면 배치(크기, 배경색, 오브젝트 인스턴스 위치)를 JSON 으로 만든다. 보기 전용이라 리컴파일은 이 값을 쓰지 않는다
+// 프레임의 화면 배치(크기, 배경색, 오브젝트 인스턴스 위치)를 JSON 으로 만든다. 리컴파일은 JSON 에 "applyLayout": true 가 있을 때만 인스턴스 x, y 를 반영한다
 // 인스턴스 청크(0x3338): [개수 i32] + 20바이트 항목 (핸들 u16, 오브젝트 번호 u16, x i32, y i32, 부모 종류 i16, 레이어 i16, 인스턴스 i16, 부모 핸들 i16)
 static void decompileFrameLayout(vector<CTT::Chunk::Chunk*>& chunkList, Json::Value& value)
 {
@@ -460,6 +460,64 @@ bool FrameChunk::recompileScript(const Json::Value& value, string& errorMessage)
 		return false;
 	}
 
+	// 화면 배치(인스턴스 x, y): JSON 에 "applyLayout": true 를 직접 적은 경우에만 반영한다 (추출한 JSON 에는 이 값이 없으므로 기존 동작은 그대로다).
+	// 핸들과 오브젝트 번호가 모두 같은 인스턴스를 찾아 x, y 만 바꾼다. 하나라도 못 찾으면 아무것도 바꾸지 않고 실패한다.
+	// 여기서는 바꿀 위치만 모으고, 이벤트 반영까지 성공한 뒤에 실제로 쓴다.
+	UnknownChunk* layoutChunk = NULL;
+	vector<size_t> layoutOffsets;
+	vector<INT32> layoutValues;
+	if (value.isMember("applyLayout") && value["applyLayout"].asBool()) {
+		if (!value.isMember("layout") || !value["layout"].isMember("instances") || !value["layout"]["instances"].isArray()) {
+			errorMessage = "applyLayout is true, but the json has no layout.instances";
+			return false;
+		}
+		for (size_t i = 0; i < chunkList.size(); i++) {
+			if (chunkList[i]->getType() == ChunkType::CHUNK_FRAME_OBJECT_INSTANCE) {
+				layoutChunk = dynamic_cast<UnknownChunk*>(chunkList[i]);
+				break;
+			}
+		}
+		if (layoutChunk == NULL || layoutChunk->getValue() == NULL || layoutChunk->getValueSize() < 4) {
+			errorMessage = "applyLayout is true, but the frame has no object instance chunk";
+			return false;
+		}
+		const BYTE* data = layoutChunk->getValue();
+		INT32 count = *(const INT32*)data;
+		const Json::Value& instances = value["layout"]["instances"];
+		for (Json::ArrayIndex k = 0; k < instances.size(); k++) {
+			const Json::Value& inst = instances[k];
+			if (!inst.isObject() || !inst.isMember("handle") || !inst.isMember("objectInfo") || !inst.isMember("x") || !inst.isMember("y")) {
+				errorMessage = "layout.instances[" + to_string(k) + "] needs handle, objectInfo, x and y";
+				return false;
+			}
+			int handle = inst["handle"].asInt();
+			int objectInfo = inst["objectInfo"].asInt();
+			bool found = false;
+			for (INT32 n = 0; n < count; n++) {
+				size_t offset = 4 + (size_t)n * 20;
+				if (offset + 20 > layoutChunk->getValueSize()) {
+					break;
+				}
+				const BYTE* p = data + offset;
+				if ((int)*(const UINT16*)(p + 0) == handle && (int)*(const UINT16*)(p + 2) == objectInfo) {
+					INT32 newX = inst["x"].asInt();
+					INT32 newY = inst["y"].asInt();
+					if (*(const INT32*)(p + 4) != newX || *(const INT32*)(p + 8) != newY) {
+						layoutOffsets.push_back(offset);
+						layoutValues.push_back(newX);
+						layoutValues.push_back(newY);
+					}
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				errorMessage = "layout.instances[" + to_string(k) + "]: no instance with handle " + to_string(handle) + " and objectInfo " + to_string(objectInfo);
+				return false;
+			}
+		}
+	}
+
 	// 이벤트를 먼저 반영한다 (실패하면 아무것도 바꾸지 않는다)
 	if (value.isMember("events")) {
 		FrameEventChunk* eventChunk = findFrameEventChunk(chunkList);
@@ -480,6 +538,16 @@ bool FrameChunk::recompileScript(const Json::Value& value, string& errorMessage)
 			return false;
 		}
 		nameChunk->setValue(getUniStr(value["name"].asString(), CodePage::CP_UTF_8));
+	}
+
+	// 화면 배치 반영 (위에서 모아 둔 x, y 만 쓴다)
+	for (size_t i = 0; i < layoutOffsets.size(); i++) {
+		BYTE* p = layoutChunk->getValue() + layoutOffsets[i];
+		*(INT32*)(p + 4) = layoutValues[i * 2];
+		*(INT32*)(p + 8) = layoutValues[i * 2 + 1];
+	}
+	if (!layoutOffsets.empty()) {
+		wcout << infoPrefix << L"<<function>> " << __FUNCTIONW__ << L": 화면 배치 " << layoutOffsets.size() << L"개의 위치를 바꿨습니다." << endl;
 	}
 	return true;
 }

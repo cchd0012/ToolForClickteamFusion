@@ -105,6 +105,9 @@ namespace {
 			else if (key == "output") {
 				copyText(s.outputParent, sizeof(s.outputParent), value);
 			}
+			else if (key == "image") {
+				copyText(s.imageDir, sizeof(s.imageDir), value);
+			}
 			else if (key == "override") {
 				copyText(s.overrideDir, sizeof(s.overrideDir), value);
 			}
@@ -127,6 +130,7 @@ namespace {
 		text += string("translation=") + s.translationDir + "\r\n";
 		text += string("font=") + s.fontDir + "\r\n";
 		text += string("output=") + s.outputParent + "\r\n";
+		text += string("image=") + s.imageDir + "\r\n";
 		text += string("override=") + s.overrideDir + "\r\n";
 		text += string("nodamage=") + (s.noDamage ? "1" : "0") + "\r\n";
 		for (int i = 0; i < kDtgeFontSlotCount; i++) {
@@ -150,6 +154,7 @@ namespace {
 		o.translationDir = wideOf(s.translationDir);
 		o.fontDir = wideOf(s.fontDir);
 		o.outputParent = wideOf(s.outputParent);
+		o.imageDir = wideOf(s.imageDir);
 		o.overrideDir = wideOf(s.overrideDir);
 		o.noDamage = s.noDamage;
 		for (int i = 0; i < kDtgeFontSlotCount; i++) {
@@ -161,7 +166,7 @@ namespace {
 	// 입력이 바뀌었는지 알아보는 열쇠 (점검은 바뀌었거나 시간이 지났을 때만 다시 한다)
 	string inputKey(const DtgeUiState& s)
 	{
-		string key = string(s.exePath) + "|" + s.translationDir + "|" + s.fontDir + "|" + s.outputParent + "|" + s.overrideDir;
+		string key = string(s.exePath) + "|" + s.translationDir + "|" + s.fontDir + "|" + s.outputParent + "|" + s.overrideDir + "|" + s.imageDir;
 		for (int i = 0; i < kDtgeFontSlotCount; i++) {
 			key += string("|") + s.fontOverride[i];
 		}
@@ -304,7 +309,7 @@ void Dx9Application::renderDtgeScreen(float x, float y, float w, float h)
 	// 입력 점검: 바뀌었거나 0.5초가 지났을 때
 	const string key = inputKey(d);
 	const DWORD now = GetTickCount();
-	if (key != d.checkedKey || now - d.checkedTick > 500 || d.checks.size() != 5) {
+	if (key != d.checkedKey || now - d.checkedTick > 500 || d.checks.size() != 6) {
 		checkDtgeInputs(makeOptions(d), d.checks);
 		d.checkedKey = key;
 		d.checkedTick = now;
@@ -344,7 +349,9 @@ void Dx9Application::renderDtgeScreen(float x, float y, float w, float h)
 		ImGui::Spacing();
 		changed |= pathRow(u8"4. 결과를 만들 위치 (이 안에 새 폴더를 만듭니다)", "output", d.outputParent, sizeof(d.outputParent), "DtgeOutDlg", u8"결과를 만들 위치를 선택하세요", NULL, &d.checks[3], inner);
 		ImGui::Spacing();
-		changed |= pathRow(u8"5. (선택) 고친 스크립트 폴더 - 이 안의 script\\... 파일을 추출 폴더에 덮어씁니다", "override", d.overrideDir, sizeof(d.overrideDir), "DtgeOverrideDlg", u8"고친 스크립트가 든 폴더를 선택하세요 (script 폴더가 든 폴더)", NULL, &d.checks[4], inner);
+		changed |= pathRow(u8"5. (선택) 고친 스크립트 폴더 - 이 안의 script\\... 파일을 추출 폴더에 덮어씁니다 (image\\ 폴더도 쓰입니다)", "override", d.overrideDir, sizeof(d.overrideDir), "DtgeOverrideDlg", u8"고친 파일이 든 폴더를 선택하세요 (script 폴더나 image 폴더가 든 폴더)", NULL, &d.checks[4], inner);
+		ImGui::Spacing();
+		changed |= pathRow(u8"6. (선택) 고친 이미지 폴더 - 000414.png 처럼 번호가 이름인 PNG 가 든 폴더", "image", d.imageDir, sizeof(d.imageDir), "DtgeImageDlg", u8"고친 이미지(PNG)가 든 폴더를 선택하세요", NULL, &d.checks[5], inner);
 		ImGui::Spacing();
 
 		// 글꼴 지정(고급): 자리마다 쓸 폰트를 직접 고른다. 비워 두면 위의 폰트 폴더의 기본 파일을 쓴다

@@ -26,6 +26,7 @@ namespace CTT {
 			wstring fontDir;			// 한글 폰트 폴더 (000000.ttf ~ 000009.ttf). 자리별로 지정하지 않은 폰트의 기본값
 			wstring fontOverride[kDtgeFontSlotCount];	// 자리별로 직접 고른 폰트 파일 (비어 있으면 폰트 폴더의 기본 파일)
 			wstring outputParent;		// 결과 폴더를 새로 만들 위치
+			wstring imageDir;			// (선택) 고친 이미지 폴더. <번호>.png 파일이 직접 든 폴더 (비우면 overrideDir\image 를 쓴다)
 			wstring overrideDir;		// (선택) 고친 스크립트 폴더. 이 안의 script\... 파일을 추출한 같은 경로에 덮어쓴다 (비우면 쓰지 않는다)
 			bool noDamage;				// 켜면 한글판(_kor.exe)에 더해 시험용 HP 무감소판(_kor_nodamage.exe)도 만든다
 

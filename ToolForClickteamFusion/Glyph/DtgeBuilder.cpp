@@ -260,8 +260,7 @@ namespace {
 	{
 		wstring scriptRoot = joinPath(o.overrideDir, L"script");
 		if (!dirExists(scriptRoot)) {
-			c.say(2, 3, u8"고친 스크립트 폴더 안에 script 폴더가 없습니다");
-			return false;
+			return true;	// script 폴더가 없으면 스크립트는 건드리지 않는다 (image 폴더만 있어도 된다)
 		}
 		vector<wstring> files;
 		collectFiles(scriptRoot, wstring(), files);
@@ -290,6 +289,58 @@ namespace {
 			c.say(2, 0, string(u8"스크립트를 덮어썼습니다: ") + utf8(rel));
 		}
 		c.say(2, 0, string(u8"고친 스크립트 ") + to_string(changed) + u8"개를 반영했습니다 (원본과 같아 건너뜀 " + to_string(skippedSame) + u8"개, 원본에 없어 건너뜀 " + to_string(skippedMissing) + u8"개)");
+		return true;
+	}
+
+	// ---- 4-1. 고친 이미지 덮어쓰기: overrideDir\image\<번호>.png 를 추출한 image 폴더에 넣는다.
+	// 글자 이미지 단계가 원본 PNG 를 모두 치우므로, (a) 그 전에 원본과 내용이 다른 파일만 골라 두고 (b) 그 단계가 끝난 뒤에 넣는다.
+	// 그러면 재합성 때 같은 번호의 이미지가 교체된다. 원본을 추출했을 때 있던 번호만 받는다 (오타로 새 이미지가 생기지 않게).
+	// 000953.png 는 파티클 문구 글꼴 이미지라 건드리지 않는다. 추출 폴더 전체를 지정해도 원본과 같은 파일은 건너뛰므로 안전하다.
+	wstring imageOverrideRoot(const DtgeOptions& o)
+	{
+		return !o.imageDir.empty() ? o.imageDir : joinPath(o.overrideDir, L"image");
+	}
+
+	void selectChangedImages(const Ctx& c, const DtgeOptions& o, const wstring& gameDir, vector<wstring>& selected)
+	{
+		selected.clear();
+		wstring imageRoot = imageOverrideRoot(o);
+		if (!dirExists(imageRoot)) {
+			return;
+		}
+		vector<wstring> files = listFiles(imageRoot, L"*.png");
+		int same = 0;
+		for (size_t i = 0; i < files.size(); i++) {
+			wstring original = joinPath(joinPath(gameDir, L"image"), files[i]);
+			if (_wcsicmp(files[i].c_str(), L"000953.png") == 0 || !fileExists(original)) {
+				c.say(3, 0, string(u8"원본에 없거나 건드리면 안 되는 이미지라 건너뜁니다: ") + utf8(files[i]));
+				continue;
+			}
+			string a, b;
+			if (readAllBytes(joinPath(imageRoot, files[i]), a) && readAllBytes(original, b) && a == b) {
+				same++;
+				continue;
+			}
+			selected.push_back(files[i]);
+		}
+		if (same > 0) {
+			c.say(3, 0, string(u8"원본과 같은 이미지 ") + to_string(same) + u8"개는 건너뜁니다");
+		}
+	}
+
+	bool applyChangedImages(const Ctx& c, const DtgeOptions& o, const wstring& gameDir, const vector<wstring>& selected)
+	{
+		wstring imageRoot = imageOverrideRoot(o);
+		for (size_t i = 0; i < selected.size(); i++) {
+			wstring to = joinPath(joinPath(gameDir, L"image"), selected[i]);
+			if (!CopyFileW(joinPath(imageRoot, selected[i]).c_str(), to.c_str(), FALSE)) {
+				c.say(3, 3, string(u8"이미지를 덮어쓰지 못했습니다: ") + utf8(selected[i]));
+				return false;
+			}
+		}
+		if (!selected.empty()) {
+			c.say(3, 0, string(u8"고친 이미지 ") + to_string(selected.size()) + u8"개를 반영했습니다");
+		}
 		return true;
 	}
 
@@ -533,7 +584,7 @@ const char* CTT::Dtge::dtgeStepName(int step)
 
 void CTT::Dtge::checkDtgeInputs(const DtgeOptions& o, vector<DtgeCheck>& checks)
 {
-	checks.assign(5, DtgeCheck());
+	checks.assign(6, DtgeCheck());
 
 	// 0. 원본 exe
 	if (o.originalExe.empty()) {
@@ -612,16 +663,34 @@ void CTT::Dtge::checkDtgeInputs(const DtgeOptions& o, vector<DtgeCheck>& checks)
 		checks[4].level = 0;
 		checks[4].text = u8"폴더가 없습니다";
 	}
-	else if (!dirExists(joinPath(o.overrideDir, L"script"))) {
+	else if (!dirExists(joinPath(o.overrideDir, L"script")) && !dirExists(joinPath(o.overrideDir, L"image"))) {
 		checks[4].level = 0;
-		checks[4].text = u8"이 폴더 안에 script 폴더가 없습니다 (추출한 폴더와 같은 구조: script\\frame\\000002.json)";
+		checks[4].text = u8"이 폴더 안에 script 폴더나 image 폴더가 없습니다 (추출한 폴더와 같은 구조: script\\frame\\000002.json, image\\000414.png)";
 	}
 	else {
 		vector<wstring> files;
 		collectFiles(joinPath(o.overrideDir, L"script"), wstring(), files);
-		checks[4].level = files.empty() ? 1 : 2;
-		checks[4].text = files.empty() ? string(u8"script 폴더에 파일이 없습니다")
-			: string(u8"script 아래 파일 ") + to_string(files.size()) + u8"개 중 원본과 다른 것을 덮어씁니다 (번역 문구는 그 위에 들어갑니다)";
+		size_t scriptCount = files.size();
+		size_t imageCount = listFiles(joinPath(o.overrideDir, L"image"), L"*.png").size();
+		checks[4].level = (scriptCount + imageCount == 0) ? 1 : 2;
+		checks[4].text = (scriptCount + imageCount == 0) ? string(u8"script 와 image 폴더에 파일이 없습니다")
+			: string(u8"script 파일 ") + to_string(scriptCount) + u8"개 (원본과 다른 것만 덮어씁니다), image PNG " + to_string(imageCount) + u8"개를 반영합니다 (번역 문구는 스크립트 위에 들어갑니다)";
+	}
+
+	// 5. 고친 이미지 폴더 (선택)
+	if (o.imageDir.empty()) {
+		checks[5].level = 2;
+		checks[5].text = u8"선택 사항입니다. 비워 두면 원본 이미지를 그대로 씁니다";
+	}
+	else if (!dirExists(o.imageDir)) {
+		checks[5].level = 0;
+		checks[5].text = u8"폴더가 없습니다";
+	}
+	else {
+		size_t count = listFiles(o.imageDir, L"*.png").size();
+		checks[5].level = (count == 0) ? 1 : 2;
+		checks[5].text = (count == 0) ? string(u8"PNG 파일이 없습니다 (000414.png 처럼 번호가 이름인 PNG 를 이 폴더에 바로 두세요)")
+			: string(u8"PNG ") + to_string(count) + u8"개 중 원본과 다른 것을 반영합니다";
 	}
 
 	// 3. 출력 위치
@@ -705,7 +774,14 @@ bool CTT::Dtge::runDtgeBuild(const DtgeOptions& o, DtgeLogFn log, void* user, ws
 	c.say(2, 2, u8"번역을 넣었습니다");
 
 	c.say(3, 1, u8"번역문에 쓰인 글자를 대사 글꼴별로 그립니다");
+	vector<wstring> changedImages;
+	if (!o.overrideDir.empty() || !o.imageDir.empty()) {
+		selectChangedImages(c, o, gameDir, changedImages);
+	}
 	if (!stepGlyphs(c, workDir, gameDir, configPath)) {
+		return false;
+	}
+	if (!applyChangedImages(c, o, gameDir, changedImages)) {
 		return false;
 	}
 	c.say(3, 2, u8"글자 이미지를 만들었습니다");

@@ -5,7 +5,7 @@
 //   ToolForClickteamFusion.exe --replace   <아카이브 경로> [데이터 종류...]   추출해 둔 데이터로 교체한다 (기본: text)
 //   ToolForClickteamFusion.exe --diagnose  <아카이브 경로>                  구조를 분석해 한글화 진행 방향을 알려 준다 (추출 폴더가 있으면 text/diagnosis.json 도 저장)
 //                                          데이터 종류 자리에 codepage=949 locale=1042 를 적으면 앱 코드페이지/로케일도 바꾼다
-//   ToolForClickteamFusion.exe --dtge-build <원본 dtge exe> <번역 폴더> <폰트 폴더> <결과를 만들 위치> [override=<고친 스크립트 폴더>] [nodamage]
+//   ToolForClickteamFusion.exe --dtge-build <원본 dtge exe> <번역 폴더> <폰트 폴더> <결과를 만들 위치> [override=<고친 스크립트 폴더>] [image=<고친 이미지 폴더>] [nodamage]
 //                                          dtge 0.1.4 한글 빌드 화면과 같은 빌드를 창 없이 실행한다 (결과는 새 폴더에만 쓴다)
 //
 // --roundtrip / --replace 는 일반 "저장" 과정(rewriteNewArchive)을 실행하고, 입력 파일 옆에
@@ -65,7 +65,7 @@ namespace {
 	int runDtgeBuildCommand(int argc, WCHAR** argv)
 	{
 		if (argc < 6) {
-			wcout << L"usage: --dtge-build <원본 dtge exe> <번역 폴더> <폰트 폴더> <결과를 만들 위치> [override=<고친 스크립트 폴더>] [nodamage]" << endl;
+			wcout << L"usage: --dtge-build <원본 dtge exe> <번역 폴더> <폰트 폴더> <결과를 만들 위치> [override=<고친 스크립트 폴더>] [image=<고친 이미지 폴더>] [nodamage]" << endl;
 			return 2;
 		}
 		HeadlessApplication* app = new HeadlessApplication();
@@ -83,6 +83,9 @@ namespace {
 			}
 			else if (arg.compare(0, 9, L"override=") == 0) {
 				options.overrideDir = arg.substr(9);
+			}
+			else if (arg.compare(0, 6, L"image=") == 0) {
+				options.imageDir = arg.substr(6);
 			}
 		}
 		std::wstring resultExe, resultDir;

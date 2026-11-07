@@ -105,6 +105,9 @@ namespace {
 			else if (key == "output") {
 				copyText(s.outputParent, sizeof(s.outputParent), value);
 			}
+			else if (key == "override") {
+				copyText(s.overrideDir, sizeof(s.overrideDir), value);
+			}
 			else if (key == "nodamage") {
 				s.noDamage = (value == "1");
 			}
@@ -124,6 +127,7 @@ namespace {
 		text += string("translation=") + s.translationDir + "\r\n";
 		text += string("font=") + s.fontDir + "\r\n";
 		text += string("output=") + s.outputParent + "\r\n";
+		text += string("override=") + s.overrideDir + "\r\n";
 		text += string("nodamage=") + (s.noDamage ? "1" : "0") + "\r\n";
 		for (int i = 0; i < kDtgeFontSlotCount; i++) {
 			if (s.fontOverride[i][0] != 0) {
@@ -146,6 +150,7 @@ namespace {
 		o.translationDir = wideOf(s.translationDir);
 		o.fontDir = wideOf(s.fontDir);
 		o.outputParent = wideOf(s.outputParent);
+		o.overrideDir = wideOf(s.overrideDir);
 		o.noDamage = s.noDamage;
 		for (int i = 0; i < kDtgeFontSlotCount; i++) {
 			o.fontOverride[i] = wideOf(s.fontOverride[i]);
@@ -156,7 +161,7 @@ namespace {
 	// 입력이 바뀌었는지 알아보는 열쇠 (점검은 바뀌었거나 시간이 지났을 때만 다시 한다)
 	string inputKey(const DtgeUiState& s)
 	{
-		string key = string(s.exePath) + "|" + s.translationDir + "|" + s.fontDir + "|" + s.outputParent;
+		string key = string(s.exePath) + "|" + s.translationDir + "|" + s.fontDir + "|" + s.outputParent + "|" + s.overrideDir;
 		for (int i = 0; i < kDtgeFontSlotCount; i++) {
 			key += string("|") + s.fontOverride[i];
 		}
@@ -299,7 +304,7 @@ void Dx9Application::renderDtgeScreen(float x, float y, float w, float h)
 	// 입력 점검: 바뀌었거나 0.5초가 지났을 때
 	const string key = inputKey(d);
 	const DWORD now = GetTickCount();
-	if (key != d.checkedKey || now - d.checkedTick > 500 || d.checks.size() != 4) {
+	if (key != d.checkedKey || now - d.checkedTick > 500 || d.checks.size() != 5) {
 		checkDtgeInputs(makeOptions(d), d.checks);
 		d.checkedKey = key;
 		d.checkedTick = now;
@@ -339,6 +344,8 @@ void Dx9Application::renderDtgeScreen(float x, float y, float w, float h)
 		ImGui::Spacing();
 		changed |= pathRow(u8"4. 결과를 만들 위치 (이 안에 새 폴더를 만듭니다)", "output", d.outputParent, sizeof(d.outputParent), "DtgeOutDlg", u8"결과를 만들 위치를 선택하세요", NULL, &d.checks[3], inner);
 		ImGui::Spacing();
+		changed |= pathRow(u8"5. (선택) 고친 스크립트 폴더 - 이 안의 script\\... 파일을 추출 폴더에 덮어씁니다", "override", d.overrideDir, sizeof(d.overrideDir), "DtgeOverrideDlg", u8"고친 스크립트가 든 폴더를 선택하세요 (script 폴더가 든 폴더)", NULL, &d.checks[4], inner);
+		ImGui::Spacing();
 
 		// 글꼴 지정(고급): 자리마다 쓸 폰트를 직접 고른다. 비워 두면 위의 폰트 폴더의 기본 파일을 쓴다
 		if (ImGui::CollapsingHeader(u8"글꼴 지정 (고급) - 자리마다 쓸 폰트를 직접 고릅니다")) {
@@ -372,9 +379,9 @@ void Dx9Application::renderDtgeScreen(float x, float y, float w, float h)
 			ImGui::Spacing();
 		}
 
-		ImGui::Checkbox(u8"시험용: 플레이어 HP 가 닳지 않게 하기", &d.noDamage);
+		ImGui::Checkbox(u8"시험용: HP 무감소판도 같이 만들기", &d.noDamage);
 		ImGui::SameLine();
-		ImGui::TextDisabled(u8"(엔딩까지 확인하기 어려운 사람을 위한 옵션. 결과 파일 이름에 _nodamage 가 붙습니다)");
+		ImGui::TextDisabled(u8"(한글판 _kor.exe 와 HP 가 닳지 않는 _kor_nodamage.exe 를 둘 다 만듭니다. 시간이 1분쯤 더 걸립니다)");
 		ImGui::EndDisabled();
 		if (changed) {
 			d.checkedTick = 0;

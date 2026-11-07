@@ -20,6 +20,7 @@ namespace CTT {
 			char translationDir[520];	// 번역 폴더
 			char fontDir[520];			// 한글 폰트 폴더
 			char outputParent[520];		// 결과 폴더를 만들 위치
+			char overrideDir[520];		// (선택) 고친 스크립트 폴더
 			char fontOverride[CTT::Dtge::kDtgeFontSlotCount][520];	// 자리별로 직접 고른 폰트
 			bool noDamage;				// 시험용: HP 무감소
 			bool showFonts;				// 글꼴 지정 칸을 펼쳤는지
@@ -52,6 +53,7 @@ namespace CTT {
 				translationDir[0] = 0;
 				fontDir[0] = 0;
 				outputParent[0] = 0;
+				overrideDir[0] = 0;
 				for (int i = 0; i < CTT::Dtge::kDtgeFontSlotCount; i++) {
 					fontOverride[i][0] = 0;
 				}

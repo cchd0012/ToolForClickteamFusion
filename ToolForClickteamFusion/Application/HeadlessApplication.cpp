@@ -5,6 +5,8 @@
 //   ToolForClickteamFusion.exe --replace   <아카이브 경로> [데이터 종류...]   추출해 둔 데이터로 교체한다 (기본: text)
 //   ToolForClickteamFusion.exe --diagnose  <아카이브 경로>                  구조를 분석해 한글화 진행 방향을 알려 준다 (추출 폴더가 있으면 text/diagnosis.json 도 저장)
 //                                          데이터 종류 자리에 codepage=949 locale=1042 를 적으면 앱 코드페이지/로케일도 바꾼다
+//   ToolForClickteamFusion.exe --dtge-build <원본 dtge exe> <번역 폴더> <폰트 폴더> <결과를 만들 위치> [override=<고친 스크립트 폴더>] [nodamage]
+//                                          dtge 0.1.4 한글 빌드 화면과 같은 빌드를 창 없이 실행한다 (결과는 새 폴더에만 쓴다)
 //
 // --roundtrip / --replace 는 일반 "저장" 과정(rewriteNewArchive)을 실행하고, 입력 파일 옆에
 // <이름>_new.<확장자> 로 기록한다. 게임을 읽고 다시 쓸 때 모든 청크(프레임/이벤트 포함)가 그대로 유지되는지
@@ -17,6 +19,7 @@
 #include "../Archive/Dat/DatArchive.h"
 #include "../Archive/Ccn/CcnArchive.h"
 #include "../Diagnosis/Diagnosis.h"
+#include "../Glyph/DtgeBuilder.h"
 #include "../Util/CommonUtil.h"
 
 // Application.cpp 에 정의되어 있다
@@ -50,9 +53,54 @@ namespace {
 }
 
 
+namespace {
+
+	void headlessDtgeLog(void* user, int step, int state, const std::string& message)
+	{
+		(void)user;
+		(void)state;
+		wcout << L"DTGE[" << step << L"] " << CTT::CommonUtil::getUniStr(message, CodePage::CP_UTF_8) << endl;
+	}
+
+	int runDtgeBuildCommand(int argc, WCHAR** argv)
+	{
+		if (argc < 6) {
+			wcout << L"usage: --dtge-build <원본 dtge exe> <번역 폴더> <폰트 폴더> <결과를 만들 위치> [override=<고친 스크립트 폴더>] [nodamage]" << endl;
+			return 2;
+		}
+		HeadlessApplication* app = new HeadlessApplication();
+		_application = app;
+
+		CTT::Dtge::DtgeOptions options;
+		options.originalExe = argv[2];
+		options.translationDir = argv[3];
+		options.fontDir = argv[4];
+		options.outputParent = argv[5];
+		for (int i = 6; i < argc; i++) {
+			std::wstring arg = argv[i];
+			if (arg == L"nodamage") {
+				options.noDamage = true;
+			}
+			else if (arg.compare(0, 9, L"override=") == 0) {
+				options.overrideDir = arg.substr(9);
+			}
+		}
+		std::wstring resultExe, resultDir;
+		bool ok = CTT::Dtge::runDtgeBuild(options, headlessDtgeLog, NULL, resultExe, resultDir);
+		wcout << (ok ? L"HEADLESS: --dtge-build finished: " : L"HEADLESS: --dtge-build failed: ") << resultExe << endl;
+		closeApp();
+		return ok ? 0 : 1;
+	}
+
+}
+
+
 int CTT::App::runHeadlessCommand(int argc, WCHAR** argv)
 {
 	std::wstring mode = (argc >= 2) ? argv[1] : L"";
+	if (mode == L"--dtge-build") {
+		return runDtgeBuildCommand(argc, argv);
+	}
 	if (argc < 3) {
 		wcout << L"usage: " << mode << L" <archive path> [data type ...]" << endl;
 		return 2;

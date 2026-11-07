@@ -207,6 +207,92 @@ namespace {
 		return ok;
 	}
 
+	// 폴더 안의 모든 파일을 root 기준 상대 경로로 모은다 (링크/접합 지점은 따라가지 않는다)
+	void collectFiles(const wstring& root, const wstring& rel, vector<wstring>& out)
+	{
+		wstring dir = rel.empty() ? root : root + L"\\" + rel;
+		WIN32_FIND_DATAW fd;
+		HANDLE h = FindFirstFileW((dir + L"\\*").c_str(), &fd);
+		if (h == INVALID_HANDLE_VALUE) {
+			return;
+		}
+		do {
+			wstring name = fd.cFileName;
+			if (name == L"." || name == L"..") {
+				continue;
+			}
+			if (fd.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
+				continue;
+			}
+			wstring childRel = rel.empty() ? name : rel + L"\\" + name;
+			if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+				collectFiles(root, childRel, out);
+			}
+			else {
+				out.push_back(childRel);
+			}
+		} while (FindNextFileW(h, &fd));
+		FindClose(h);
+	}
+
+	bool readAllBytes(const wstring& path, string& out)
+	{
+		out.clear();
+		HANDLE h = CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		if (h == INVALID_HANDLE_VALUE) {
+			return false;
+		}
+		LARGE_INTEGER size;
+		bool ok = GetFileSizeEx(h, &size) != 0 && size.QuadPart < (LONGLONG)256 * 1024 * 1024;
+		if (ok && size.QuadPart > 0) {
+			out.resize((size_t)size.QuadPart);
+			DWORD read = 0;
+			ok = ReadFile(h, &out[0], (DWORD)size.QuadPart, &read, NULL) != 0 && read == (DWORD)size.QuadPart;
+		}
+		CloseHandle(h);
+		return ok;
+	}
+
+	// ---- 3-1. 고친 스크립트 덮어쓰기: overrideDir\script\... 의 파일을 추출한 폴더의 같은 경로에 덮어쓴다.
+	// 재합성에서는 스크립트가 먼저 반영되고 그 위에 번역 문구가 얹히므로, 스크립트 파일에는 원문(영어)을 그대로 둔 채 숫자/구조만 고친다.
+	// 추출한 폴더에 이미 있는 파일만 덮어쓰고(오타로 엉뚱한 파일이 생기지 않게), 원본과 내용이 같은 파일은 건너뛴다.
+	bool stepOverrides(const Ctx& c, const DtgeOptions& o, const wstring& gameDir)
+	{
+		wstring scriptRoot = joinPath(o.overrideDir, L"script");
+		if (!dirExists(scriptRoot)) {
+			c.say(2, 3, u8"고친 스크립트 폴더 안에 script 폴더가 없습니다");
+			return false;
+		}
+		vector<wstring> files;
+		collectFiles(scriptRoot, wstring(), files);
+		int changed = 0;
+		int skippedSame = 0;
+		int skippedMissing = 0;
+		for (size_t i = 0; i < files.size(); i++) {
+			wstring rel = L"script\\" + files[i];
+			wstring from = joinPath(scriptRoot, files[i]);
+			wstring to = joinPath(gameDir, rel);
+			if (!fileExists(to)) {
+				skippedMissing++;
+				c.say(2, 0, string(u8"원본에 없는 파일이라 건너뜁니다: ") + utf8(rel));
+				continue;
+			}
+			string a, b;
+			if (readAllBytes(from, a) && readAllBytes(to, b) && a == b) {
+				skippedSame++;
+				continue;
+			}
+			if (!CopyFileW(from.c_str(), to.c_str(), FALSE)) {
+				c.say(2, 3, string(u8"스크립트를 덮어쓰지 못했습니다: ") + utf8(rel));
+				return false;
+			}
+			changed++;
+			c.say(2, 0, string(u8"스크립트를 덮어썼습니다: ") + utf8(rel));
+		}
+		c.say(2, 0, string(u8"고친 스크립트 ") + to_string(changed) + u8"개를 반영했습니다 (원본과 같아 건너뜀 " + to_string(skippedSame) + u8"개, 원본에 없어 건너뜀 " + to_string(skippedMissing) + u8"개)");
+		return true;
+	}
+
 	// ---- 2. 한글 폰트 교체: 내장 TTF 와 binaries 의 TTF 를 한글 폰트로 바꾸고 LogFont 의 charset 을 129(한글)로
 	bool stepFonts(const Ctx& c, const DtgeOptions& o, const wstring& gameDir)
 	{
@@ -288,20 +374,20 @@ namespace {
 		wstring path = joinPath(gameDir, L"script\\frame\\000014.json");
 		Json::Value root;
 		if (!readFromJson(root, path)) {
-			c.say(2, 3, u8"전투 프레임(000014.json)을 읽지 못했습니다");
+			c.say(6, 3, u8"전투 프레임(000014.json)을 읽지 못했습니다");
 			return false;
 		}
 		int count = 0;
 		patchHpActions(root, count);
 		if (count == 0) {
-			c.say(2, 3, u8"HP 를 빼는 동작을 찾지 못했습니다 (dtge 0.1.4 가 아닌 것 같습니다)");
+			c.say(6, 3, u8"HP 를 빼는 동작을 찾지 못했습니다 (dtge 0.1.4 가 아닌 것 같습니다)");
 			return false;
 		}
 		if (!writeIntoJson(root, path, 700)) {
-			c.say(2, 3, u8"전투 프레임을 저장하지 못했습니다");
+			c.say(6, 3, u8"전투 프레임을 저장하지 못했습니다");
 			return false;
 		}
-		c.say(2, 0, string(u8"HP 빼기 동작 ") + to_string(count) + u8"개를 0 으로 바꿨습니다 (시험용)");
+		c.say(6, 0, string(u8"HP 빼기 동작 ") + to_string(count) + u8"개를 0 으로 바꿨습니다 (시험용)");
 		return true;
 	}
 
@@ -391,6 +477,26 @@ namespace {
 		return true;
 	}
 
+	bool stepReplace(const Ctx& c, const wstring& workExe);
+
+	// 재합성해서 나온 새 exe 를 알아보기 쉬운 이름으로 바꾼다 (결과 폴더 안에 새로 만든 파일이라 겹치지 않는다)
+	bool makeKoreanExe(const Ctx& c, const wstring& workExe, const wstring& builtExe, const wstring& finalExe, wstring& outExe)
+	{
+		if (fileExists(builtExe) || fileExists(finalExe)) {
+			c.say(6, 3, u8"결과 폴더에 이미 같은 이름의 파일이 있어 멈춥니다");
+			return false;
+		}
+		if (!stepReplace(c, workExe)) {
+			return false;
+		}
+		if (!fileExists(builtExe)) {
+			c.say(6, 3, u8"새 exe 가 만들어지지 않았습니다");
+			return false;
+		}
+		outExe = MoveFileW(builtExe.c_str(), finalExe.c_str()) ? finalExe : builtExe;
+		return true;
+	}
+
 	// ---- 7. 재합성: 코드페이지 949 / 로케일 1042 로 새 exe (<이름>_new.exe) 를 만든다
 	bool stepReplace(const Ctx& c, const wstring& workExe)
 	{
@@ -427,7 +533,7 @@ const char* CTT::Dtge::dtgeStepName(int step)
 
 void CTT::Dtge::checkDtgeInputs(const DtgeOptions& o, vector<DtgeCheck>& checks)
 {
-	checks.assign(4, DtgeCheck());
+	checks.assign(5, DtgeCheck());
 
 	// 0. 원본 exe
 	if (o.originalExe.empty()) {
@@ -495,6 +601,27 @@ void CTT::Dtge::checkDtgeInputs(const DtgeOptions& o, vector<DtgeCheck>& checks)
 			checks[2].level = 0;
 			checks[2].text = string(u8"쓸 폰트가 없는 자리: ") + missing;
 		}
+	}
+
+	// 4. 고친 스크립트 폴더 (선택)
+	if (o.overrideDir.empty()) {
+		checks[4].level = 2;
+		checks[4].text = u8"선택 사항입니다. 비워 두면 원본 스크립트를 그대로 씁니다";
+	}
+	else if (!dirExists(o.overrideDir)) {
+		checks[4].level = 0;
+		checks[4].text = u8"폴더가 없습니다";
+	}
+	else if (!dirExists(joinPath(o.overrideDir, L"script"))) {
+		checks[4].level = 0;
+		checks[4].text = u8"이 폴더 안에 script 폴더가 없습니다 (추출한 폴더와 같은 구조: script\\frame\\000002.json)";
+	}
+	else {
+		vector<wstring> files;
+		collectFiles(joinPath(o.overrideDir, L"script"), wstring(), files);
+		checks[4].level = files.empty() ? 1 : 2;
+		checks[4].text = files.empty() ? string(u8"script 폴더에 파일이 없습니다")
+			: string(u8"script 아래 파일 ") + to_string(files.size()) + u8"개 중 원본과 다른 것을 덮어씁니다 (번역 문구는 그 위에 들어갑니다)";
 	}
 
 	// 3. 출력 위치
@@ -567,12 +694,12 @@ bool CTT::Dtge::runDtgeBuild(const DtgeOptions& o, DtgeLogFn log, void* user, ws
 	c.say(1, 2, u8"폰트를 바꿨습니다");
 
 	c.say(2, 1, u8"번역 파일을 넣습니다");
+	if (!o.overrideDir.empty() && !stepOverrides(c, o, gameDir)) {
+		return false;
+	}
 	if (!CopyFileW(joinPath(o.translationDir, L"frameEventText.json").c_str(), joinPath(gameDir, L"text\\frameEventText.json").c_str(), FALSE)
 		|| !CopyFileW(joinPath(o.translationDir, L"objectText.json").c_str(), joinPath(gameDir, L"text\\objectText.json").c_str(), FALSE)) {
 		c.say(2, 3, u8"번역 파일을 복사하지 못했습니다");
-		return false;
-	}
-	if (o.noDamage && !stepNoDamage(c, gameDir)) {
 		return false;
 	}
 	c.say(2, 2, u8"번역을 넣었습니다");
@@ -596,22 +723,28 @@ bool CTT::Dtge::runDtgeBuild(const DtgeOptions& o, DtgeLogFn log, void* user, ws
 	c.say(5, 2, u8"파서 모듈을 넣었습니다");
 
 	c.say(6, 1, u8"코드페이지 949 / 로케일 1042 로 새 exe 를 만듭니다 (1분쯤 걸립니다)");
-	if (!stepReplace(c, workExe)) {
-		return false;
-	}
 	wstring builtExe = joinPath(workDir, L"dtge_new.exe");
-	if (!fileExists(builtExe)) {
-		c.say(6, 3, u8"새 exe 가 만들어지지 않았습니다");
+	wstring korExe;
+	if (!makeKoreanExe(c, workExe, builtExe, joinPath(workDir, baseNameOf(o.originalExe) + L"_kor.exe"), korExe)) {
 		return false;
 	}
-	// 알아보기 쉬운 이름으로 바꾼다: <원본 이름>_kor.exe (결과 폴더 안에 새로 만든 파일이라 겹치지 않는다)
-	wstring finalExe = joinPath(workDir, baseNameOf(o.originalExe) + (o.noDamage ? L"_kor_nodamage.exe" : L"_kor.exe"));
-	if (MoveFileW(builtExe.c_str(), finalExe.c_str())) {
-		builtExe = finalExe;
-	}
-	c.say(6, 2, string(u8"완성: ") + utf8(builtExe));
+	c.say(6, 0, string(u8"한글판 완성: ") + utf8(korExe));
 
-	resultExe = builtExe;
+	// 시험용 HP 무감소판: 같은 추출 폴더의 전투 프레임만 고쳐서 한 번 더 합친다 (한글판은 그대로 둔다)
+	if (o.noDamage) {
+		c.say(6, 0, u8"HP 무감소판을 이어서 만듭니다 (1분쯤 더 걸립니다)");
+		if (!stepNoDamage(c, gameDir)) {
+			return false;
+		}
+		wstring nodamageExe;
+		if (!makeKoreanExe(c, workExe, builtExe, joinPath(workDir, baseNameOf(o.originalExe) + L"_kor_nodamage.exe"), nodamageExe)) {
+			return false;
+		}
+		c.say(6, 0, string(u8"HP 무감소판 완성: ") + utf8(nodamageExe));
+	}
+	c.say(6, 2, u8"완성했습니다");
+
+	resultExe = korExe;
 	resultDir = workDir;
 	return true;
 }

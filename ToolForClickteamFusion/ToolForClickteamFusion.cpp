@@ -43,11 +43,22 @@ int wmain(int argc, WCHAR* argv[])
 
 	wcout << L"----------------------------------------------------" << endl;
 
-	wcout << L"ToolForClickteamFusion v1.1.0 GUI" << endl;
+	// 실행 파일 이름이 dtge 로 시작하면 dtge 한글 빌더로 시작한다 (같은 프로그램을 이름만 바꿔 쓴다. 예: DtgeKoreanBuilder.exe)
+	wchar_t modulePath[MAX_PATH * 2] = {};
+	GetModuleFileNameW(NULL, modulePath, MAX_PATH * 2);
+	const wchar_t* moduleName = wcsrchr(modulePath, L'\\');
+	moduleName = (moduleName != NULL) ? moduleName + 1 : modulePath;
+	const bool dtgeName = (_wcsnicmp(moduleName, L"dtge", 4) == 0);
 
-	if (!openApp(L"ToolForClickteamFusion v1.1.0")) {
+	wcout << (dtgeName ? L"dtge Korean Builder v1.1.0 GUI" : L"ToolForClickteamFusion v1.1.0 GUI") << endl;
+
+	if (!openApp(dtgeName ? L"dtge Korean Builder v1.1.0" : L"ToolForClickteamFusion v1.1.0")) {
 		closeApp();
 		return -1;
+	}
+	if (dtgeName) {
+		getApp()->getStates()->startupDtge = true;
+		getApp()->getStates()->dtgeBranding = true;
 	}
 
 	// 개발용 스위치: 시작하자마자 아카이브를 연다 (--open <아카이브> [atlas] [blitter] [module]. 한글화 도구 창을 해당 탭으로 같이 연다)

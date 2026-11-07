@@ -32,8 +32,8 @@ dtge는 글자를 한 가지 방식으로 그리지 않는다. 방식마다 필�
 | 원본 `dtge-v0.1.2.exe` | 원본은 건드리지 않는다. 매번 여기서 새로 만든다 |
 | 한글 폰트 폴더 | `apply_ko_fonts.py`의 표가 가리키는 파일들이 들어 있는 폴더 (이전 시리즈의 `ex_font`) |
 | 유니코드 `parser.mfx` | `Extensions/ParserUnicode/build_parser_unicode.bat <출력 폴더>`로 만든다 (Visual Studio 2022, 32비트 컴파일러 필요) |
-| Python 3 | 폰트 교체 스크립트용 (표준 라이브러리만 쓴다) |
-| Git Bash | `build_dtge.sh`용 |
+| Python 3 | 폰트 교체 스크립트용 (표준 라이브러리만 쓴다). `build_dtge.ps1`이 쓴다 |
+| PowerShell | `build_dtge.ps1`용. 윈도우에 기본으로 들어 있다. Git Bash는 `build_dtge.sh`를 쓸 때만 필요하다 |
 
 ### 폰트 대응표 (`docs/dtge/apply_ko_fonts.py`)
 
@@ -65,7 +65,20 @@ dtge는 글자를 한 가지 방식으로 그리지 않는다. 방식마다 필�
 
 ## 2. 한 번에 빌드하기
 
-번역 JSON만 고치고 매번 같은 결과가 나오도록 `docs/dtge/build_dtge.sh`가 원본 exe에서 새 exe까지 만든다.
+번역 JSON만 고치고 매번 같은 결과가 나오도록 `docs/dtge/build_dtge.ps1`이 원본 exe에서 새 exe까지 만든다. Git Bash 없이 윈도우에서 바로 돌아가고, 폴더 이름에 한글이나 `[ ]`가 있어도 된다.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File docs\dtge\build_dtge.ps1 `
+  -Exe "<원본 dtge-v0.1.2.exe>" -Work "<작업 폴더>" -Tool "<도구 exe>" `
+  -ExFont "<ex_font 폴더>" -Parser "<parser.mfx>" -Trans "<번역 폴더>"
+```
+
+- **작업 폴더(`-Work`)는 새 폴더(또는 없는 경로)를 지정한다.** 이 스크립트는 작업 폴더를 매번 지우고 다시 만든다. 그래서 원본 exe나 게임 폴더를 작업 폴더로 지정하면 안 된다. 작업 폴더 안에 입력 파일(원본 exe, 도구, 폰트, parser.mfx, 번역 폴더)이 있거나, 비어 있지 않은데 이 스크립트가 만든 폴더(표식 파일 `.build_dtge_work`이 있는 폴더)가 아니면 아무것도 지우지 않고 멈춘다.
+- **dtge 0.1.4는 `-Config`로 0.1.4용 설정을 지정한다:** `-Config docs\dtge\dtge_glyph_config_v0.1.4.json`. 기본 설정(`dtge_glyph_config.json`)은 0.1.2 기준이라 0.1.4에서는 글자 오브젝트 번호가 달라서 글자 이미지 단계에서 실패한다 (아래 표).
+- 시험용으로 HP가 닳지 않게 하려면 `-NoDamage`를 붙인다. 0.1.2와 0.1.4 모두 HP 빼기 동작 2개를 찾아 고친다.
+- 같은 입력으로 `build_dtge.sh`와 `build_dtge.ps1`을 돌려서 결과 exe가 **바이트까지 같은 것**을 확인했다.
+
+Git Bash를 쓰는 경우에는 같은 일을 `build_dtge.sh`로 할 수 있다.
 
 ```bash
 TOOL="<도구 exe>" EX_FONT="<ex_font 폴더>" PARSER="<parser.mfx>" TRANS="<번역 폴더>" \
@@ -109,6 +122,13 @@ TOOL="<도구 exe>" EX_FONT="<ex_font 폴더>" PARSER="<parser.mfx>" TRANS="<번
 | `papyrus32` | 14613 (PixelPapyrus) | 32 / 32 | 518 의 슬롯 14 | 글씨체 3 (Papyrus) |
 | `glitch38` | pixelated-wingdings | 38 / 36 (세로 -8) | 38, 60 의 슬롯 13, 321, 347 의 슬롯 14 | 글리치 연출 (한글이 윙딩스풍 기호로 나온다. 원문도 외계 문자라 의도된 것) |
 
+- **버전별 글자 오브젝트 번호:** 0.1.4는 이름이 `letter`인 글자 오브젝트 8개가 그대로 있고 번호만 밀려 있다. 글자 슬롯 구성(12, 13, 14)은 같다.
+
+  | 0.1.2 | 38 | 60 | 321 | 347 | 518 | 520 (말풍선) | 554 | 577 |
+  |---|---|---|---|---|---|---|---|---|
+  | 0.1.4 | 38 | 61 | 321 | 349 | 520 | 522 (말풍선) | 556 | 579 |
+
+  파티클 문구의 모듈 이름(`0004_8424C67E_txtblt.mfx`), 글꼴 이미지(`000953.png`), 오브젝트 이름(`Text Blitter (particle)`), 프레임(14)은 0.1.4에서도 같다. 0.1.4에서 7단계를 끝까지 돌려 게임에서 한글 대사가 나오는 것을 확인했다.
 - 한글 글자 오른쪽에 1px 여백(`hangulPad`)을 준 스타일은 구두점이 한글에 붙어 보이는 문제를 피하기 위한 것이다.
 - 한글 글자 폭은 영문 칸의 약 2배이다 (16px 칸 폰트에 32px).
 - 글자가 폰트에 없으면 `fallbackChar`(`?`)로 그린다. 추가로 넣을 글자는 `extraChars`에 적는다.
@@ -203,9 +223,11 @@ TOOL="<도구 exe>" EX_FONT="<ex_font 폴더>" PARSER="<parser.mfx>" TRANS="<번
 docs/
   dtge_번역_가이드.md      이 문서
   dtge/
-    build_dtge.sh           원본 exe에서 새 exe까지 한 번에 (Git Bash)
+    build_dtge.ps1          원본 exe에서 새 exe까지 한 번에 (PowerShell, 권장)
+    build_dtge.sh           같은 일을 Git Bash에서
     apply_ko_fonts.py       한글 폰트 교체 (위의 대응표)
-    dtge_glyph_config.json  글자 이미지 스타일 + 파티클 설정
+    dtge_glyph_config.json  글자 이미지 스타일 + 파티클 설정 (dtge 0.1.2)
+    dtge_glyph_config_v0.1.4.json  같은 설정의 dtge 0.1.4판 (글자 오브젝트 번호만 다르다)
     list_dialogue.py        번역할 문장 후보 표 만들기 (읽기만 함)
 Extensions/ParserUnicode/   유니코드 parser.mfx 소스와 빌드 스크립트
 ```

@@ -41,6 +41,12 @@ void Dx9Application::render()
 		hangul.requestTab = states.startupShowAtlas ? 0 : (states.startupShowBlitter ? 1 : (states.startupShowModule ? 2 : -1));
 	}
 
+	// 실행 파일 이름이 dtge 로 시작하면 한글 빌드 화면으로 시작한다
+	if (states.startupDtge) {
+		states.startupDtge = false;
+		dtge.active = true;
+	}
+
 	// 메뉴 탭 렌더링
 	renderMenuTab();
 
@@ -101,7 +107,7 @@ void Dx9Application::renderMenuTab()
 	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
 	ImGui::SetNextWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x, (float)states.menuHeight), ImGuiCond_Always);
 
-	if (!ImGui::Begin("ToolForClickteamFusion_Gui_ver1.1.0", &states.isOpen, menuFlags)) {
+	if (!ImGui::Begin(states.dtgeBranding ? "DtgeKoreanBuilder_Gui_ver1.1.0" : "ToolForClickteamFusion_Gui_ver1.1.0", &states.isOpen, menuFlags)) {
 		ImGui::End();
 		return;
 	}
@@ -123,6 +129,15 @@ void Dx9Application::renderMenuTab()
 			}
 			if (ImGui::IsItemHovered()) {
 				ImGui::SetTooltip(u8"ClickteamFusion 아카이브 파일을 엽니다");
+			}
+			// dtge 한글 빌드 화면 (아카이브를 열지 않은 상태에서만)
+			ImGui::BeginDisabled(states.isArchiveOpened);
+			if (ImGui::MenuItem(u8"dtge 0.1.4 한글 빌드", NULL, dtge.active)) {
+				dtge.active = !dtge.active;
+			}
+			ImGui::EndDisabled();
+			if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+				ImGui::SetTooltip(states.isArchiveOpened ? u8"열어 둔 아카이브가 있으면 쓸 수 없습니다. 먼저 닫으세요" : u8"DustTale: The Genocide's End 0.1.4 원본에서 한글 exe 를 만드는 전용 화면입니다");
 			}
 			// 저장 [아카이브를 열지 않거나 dirty 상태가 아니라면 비활성화]
 			if (!states.isArchiveOpened || !states.isDirty) {

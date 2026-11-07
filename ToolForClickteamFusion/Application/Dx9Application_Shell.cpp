@@ -204,6 +204,12 @@ void Dx9Application::renderShell()
 	const float top = (float)states.menuHeight;
 	const float fontSize = ImGui::GetFontSize();
 
+	// dtge 한글 빌드 화면: 아카이브를 열지 않고 쓰는 별도 화면
+	if (dtge.active && !states.isArchiveOpened) {
+		renderDtgeScreen(0.0f, top, width, height - top);
+		return;
+	}
+
 	if (!states.isArchiveOpened) {
 		renderShellStart(0.0f, top, width, height - top);
 		return;
@@ -266,6 +272,13 @@ void Dx9Application::renderShellStart(float x, float y, float w, float h)
 		ImGui::Spacing();
 		if (ImGui::Button(u8"아카이브 열기")) {
 			states.isOpenModalShow = true;
+		}
+		ImGui::SameLine();
+		if (ImGui::Button(u8"dtge 0.1.4 한글 빌드")) {
+			dtge.active = true;
+		}
+		if (ImGui::IsItemHovered()) {
+			ImGui::SetTooltip(u8"DustTale: The Genocide's End 0.1.4 원본에서 한글 exe 를 만드는 전용 화면을 엽니다");
 		}
 	}
 	ImGui::End();

@@ -184,6 +184,12 @@
     <ClCompile Include="Glyph\TxtbltHangul.cpp">
       <Filter>Glyph</Filter>
     </ClCompile>
+    <ClCompile Include="Glyph\DtgeBuilder.cpp">
+      <Filter>Glyph</Filter>
+    </ClCompile>
+    <ClCompile Include="Application\Dx9Application_Dtge.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
     <ClCompile Include="Glyph\GlyphGenerator.cpp">
       <Filter>Glyph</Filter>
     </ClCompile>
@@ -425,6 +431,15 @@
     </ClInclude>
     <ClInclude Include="Glyph\TxtbltHangul.h">
       <Filter>Glyph</Filter>
+    </ClInclude>
+    <ClInclude Include="Glyph\DtgeBuilder.h">
+      <Filter>Glyph</Filter>
+    </ClInclude>
+    <ClInclude Include="Glyph\DtgeEmbedded.h">
+      <Filter>Glyph</Filter>
+    </ClInclude>
+    <ClInclude Include="Application\DtgeUi.h">
+      <Filter>Application</Filter>
     </ClInclude>
     <ClInclude Include="Glyph\GlyphGenerator.h">
       <Filter>Glyph</Filter>

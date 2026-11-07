@@ -9,9 +9,27 @@ EX = os.environ.get('DTLG_EX_FONT', r'ex_font')  # 이전 한글판 작업의 ex
 HANGUL = re.compile('[\uac00-\ud7a3\u3131-\u318e]')
 
 out = sys.argv[1]
+
+# ---- 안전장치: 작업 폴더는 아래에서 지우고 다시 만든다. 입력 폴더가 그 안에 있거나, 비어 있지 않은데 이 스크립트가 만든 폴더가 아니면 지우지 않고 멈춘다
+MARKER = '.build_ko_work'
+
+
+def _norm(p):
+    return os.path.normcase(os.path.abspath(p))
+
+
+_out = _norm(out)
+for _p in (SRC_NEW, SRC_OLD, EX, BASE):
+    _n = _norm(_p)
+    if _n == _out or _n.startswith(_out + os.sep):
+        sys.exit('오류: 작업 폴더 안에 입력 폴더가 있어서 중단합니다. 새로운 빈 폴더를 지정하세요.\n  작업 폴더: %s\n  입력: %s' % (out, _p))
+if os.path.exists(out) and os.listdir(out) and not os.path.exists(os.path.join(out, MARKER)):
+    sys.exit('오류: 작업 폴더가 비어 있지 않고 이 스크립트가 만든 폴더도 아니라서 지우지 않고 중단합니다. 새로운 빈 폴더를 지정하세요.\n  작업 폴더: %s' % out)
+
 if os.path.exists(out):
     shutil.rmtree(out)
 shutil.copytree(SRC_NEW, out)
+open(os.path.join(out, MARKER), 'w', encoding='utf-8').write('build_ko 가 만든 작업 폴더. 다음 실행 때 지우고 다시 만든다\n')
 log = []
 
 

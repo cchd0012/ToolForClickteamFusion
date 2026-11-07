@@ -6,6 +6,7 @@
 #include "ShellUi.h"
 #include "CheckUi.h"
 #include "EventSearchUi.h"
+#include "DtgeUi.h"
 
 namespace CTT {
 
@@ -59,6 +60,8 @@ namespace CTT {
 			void renderShellStepChunkTree();
 			void renderShellStepScriptJson();
 			void renderShellStepEventSearch();
+			// dtge 0.1.4 한글 빌드 화면 (아카이브를 열지 않고 쓴다), Dx9Application_Dtge.cpp
+			void renderDtgeScreen(float x, float y, float w, float h);
 			int shellStepStatus(int step);
 			void addShellLog(ShellLogLevel level, const string& text);
 			void runDiagnosis();
@@ -94,6 +97,7 @@ namespace CTT {
 			ShellUiState shell;
 			CheckUiState check;
 			EventSearchUiState eventSearch;
+			DtgeUiState dtge;
 		};
 
 	}

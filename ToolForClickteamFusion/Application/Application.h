@@ -25,6 +25,9 @@ namespace CTT {
 			// 아카이브 포인터 획득 함수
 			CTT::Archive::Archive* getArchive() { return archive; }
 
+			// 화면 없이 아카이브를 다루는 쪽(dtge 한글 빌드)이 현재 아카이브를 잠깐 등록/해제할 때 쓴다
+			void setCurrentArchive(CTT::Archive::Archive* a) { archive = a; }
+
 			// app 상태 포인터 획득 함수
 			ApplicationState* getStates() { return &states; }
 

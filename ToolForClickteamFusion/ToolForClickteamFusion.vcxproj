@@ -147,6 +147,7 @@
     <ClCompile Include="Application\Dx9Application_Shell.cpp" />
     <ClCompile Include="Application\Dx9Application_Check.cpp" />
     <ClCompile Include="Application\Dx9Application_EventSearch.cpp" />
+    <ClCompile Include="Application\Dx9Application_Dtge.cpp" />
     <ClCompile Include="Application\Dx9Application_Refresh.cpp" />
     <ClCompile Include="Application\FileWatch.cpp" />
     <ClCompile Include="Diagnosis\Diagnosis.cpp" />
@@ -212,6 +213,7 @@
     <ClCompile Include="Glyph\GlyphGenerator.cpp" />
     <ClCompile Include="Glyph\TxtbltFontPatch.cpp" />
     <ClCompile Include="Glyph\TxtbltHangul.cpp" />
+    <ClCompile Include="Glyph\DtgeBuilder.cpp" />
     <ClCompile Include="$(SolutionDir)includes\src\freetype-2.13.2\src\base\ftsystem.c">
       <PreprocessorDefinitions>FT2_BUILD_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CompileAs>CompileAsC</CompileAs>
@@ -302,6 +304,7 @@
     <ClInclude Include="Application\ShellUi.h" />
     <ClInclude Include="Application\CheckUi.h" />
     <ClInclude Include="Application\EventSearchUi.h" />
+    <ClInclude Include="Application\DtgeUi.h" />
     <ClInclude Include="Application\FileWatch.h" />
     <ClInclude Include="Diagnosis\Diagnosis.h" />
     <ClInclude Include="archive\Archive.h" />
@@ -343,6 +346,8 @@
     <ClInclude Include="Glyph\TxtbltFontCode.h" />
     <ClInclude Include="Glyph\TxtbltFontPatch.h" />
     <ClInclude Include="Glyph\TxtbltHangul.h" />
+    <ClInclude Include="Glyph\DtgeBuilder.h" />
+    <ClInclude Include="Glyph\DtgeEmbedded.h" />
     <ClInclude Include="Util\ByteBufferUtil.h" />
     <ClInclude Include="Chunk\Frame\FrameEffectChunk.h" />
     <ClInclude Include="Chunk\Frame\FrameEvent\FrameEventChunk.h" />

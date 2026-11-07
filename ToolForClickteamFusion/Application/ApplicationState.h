@@ -37,6 +37,10 @@ typedef struct _application_state {
 	bool startupShowBlitter;
 	bool startupShowModule;
 
+	// 실행 파일 이름이 dtge 로 시작하면 dtge 한글 빌드 화면으로 시작하고 제목도 바꾼다 (ToolForClickteamFusion.cpp)
+	bool startupDtge;
+	bool dtgeBranding;
+
 	// 에러 관련 상태
 	bool isError;
 	char lastErrorTitle[MAX_ERROR_TITLE_LENGTH];

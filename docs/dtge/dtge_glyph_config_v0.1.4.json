@@ -1,0 +1,147 @@
+{
+  "type": "glyphConfig",
+  "version": 1,
+  "charsFrom": [
+    "text/frameEventText.json",
+    "text/objectText.json"
+  ],
+  "extraChars": "",
+  "fallbackChar": "?",
+  "styles": [
+    {
+      "name": "mono32",
+      "font": "binaries/DTM-Mono-RU.ttf",
+      "size": 32,
+      "cellHeight": 36,
+      "dx": 0,
+      "dy": 0,
+      "targets": [
+        {
+          "object": 38,
+          "slot": 12
+        },
+        {
+          "object": 61,
+          "slot": 12
+        },
+        {
+          "object": 321,
+          "slot": 12
+        },
+        {
+          "object": 349,
+          "slot": 12
+        },
+        {
+          "object": 520,
+          "slot": 12
+        },
+        {
+          "object": 556,
+          "slot": 12
+        },
+        {
+          "object": 579,
+          "slot": 12
+        }
+      ]
+    },
+    {
+      "name": "comic32",
+      "font": "binaries/17838.ttf",
+      "size": 32,
+      "cellHeight": 32,
+      "targets": [
+        {
+          "object": 321,
+          "slot": 13
+        },
+        {
+          "object": 349,
+          "slot": 13
+        },
+        {
+          "object": 520,
+          "slot": 13
+        },
+        {
+          "object": 556,
+          "slot": 13
+        },
+        {
+          "object": 579,
+          "slot": 13
+        }
+      ],
+      "regenerateExisting": true,
+      "hangulPad": 1
+    },
+    {
+      "name": "comic16",
+      "font": "binaries/17838.ttf",
+      "size": 16,
+      "cellHeight": 16,
+      "targets": [
+        {
+          "object": 522,
+          "slot": 12
+        }
+      ],
+      "regenerateExisting": true,
+      "hangulPad": 1
+    },
+    {
+      "name": "papyrus32",
+      "font": "binaries/14613.ttf",
+      "size": 32,
+      "cellHeight": 32,
+      "targets": [
+        {
+          "object": 520,
+          "slot": 14
+        }
+      ],
+      "regenerateExisting": true,
+      "hangulPad": 1
+    },
+    {
+      "name": "glitch38",
+      "font": "binaries/pixelated-wingdings.ttf",
+      "size": 38,
+      "cellHeight": 36,
+      "substitute": "hangulHash",
+      "targets": [
+        {
+          "object": 38,
+          "slot": 13
+        },
+        {
+          "object": 61,
+          "slot": 13
+        },
+        {
+          "object": 321,
+          "slot": 14
+        },
+        {
+          "object": 349,
+          "slot": 14
+        }
+      ],
+      "dy": -8,
+      "dx": 0
+    }
+  ],
+  "txtbltHangul": {
+    "module": "modules/0004_8424C67E_txtblt.mfx",
+    "fontImage": "image/000953.png",
+    "objectName": "Text Blitter (particle)",
+    "frames": [
+      14
+    ],
+    "font": "binaries/DTM-Mono-RU.ttf",
+    "size": 32,
+    "cellWidth": 16,
+    "cellHeight": 32
+  }
+}
